@@ -1,140 +1,203 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
-import { Search, ShoppingCart, Sun, Moon, Languages, Menu, X } from 'lucide-react';
-import { clsx } from 'clsx';
+import { getSimbaData } from '@/lib/data';
+import { Search, ShoppingCart, ChevronDown, MapPin, Clock, X, Sun, Moon, Languages, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
+import { clsx } from 'clsx';
 
-export default function Navbar() {
-  const { 
-    language, setLanguage, 
-    isDarkMode, toggleDarkMode, 
-    cart, searchQuery, setSearchQuery,
-    setCartOpen
+const POPULAR = ['Fresh Milk', 'Bread', 'Avocado', 'Cooking Oil', 'Rice', 'Eggs', 'Juice', 'Yogurt'];
+
+export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
+  const {
+    language, setLanguage, isDarkMode, toggleDarkMode,
+    cart, searchQuery, setSearchQuery, setCartOpen,
+    addresses, selectedAddressId, setAddressModalOpen,
+    activeTab, setActiveTab,
   } = useSimbaStore();
-  
+
   const t = translations[language];
-  const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const cartCount = cart.reduce((a, i) => a + i.quantity, 0);
+  const selectedAddress = addresses.find(a => a.id === selectedAddressId);
+
+  const [focused, setFocused] = useState(false);
+  const [results, setResults] = useState<ReturnType<typeof getSimbaData>['products']>([]);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (searchQuery.trim().length < 2) { setResults([]); return; }
+    const data = getSimbaData();
+    setResults(data.products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 7));
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const fn = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setFocused(false);
+    };
+    document.addEventListener('mousedown', fn);
+    return () => document.removeEventListener('mousedown', fn);
+  }, []);
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-white/80 dark:bg-simba-dark/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <header className="sticky top-0 z-50 bg-brand-dark shadow-lg shadow-black/30">
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center gap-3 h-16">
+
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-simba-gold rounded-full flex items-center justify-center font-bold text-simba-blue text-xl shadow-lg transform hover:scale-110 transition-transform">
+          <Link href="/" onClick={() => setActiveTab('home')} className="flex items-center gap-2 flex-shrink-0">
+            <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center font-black text-gray-900 text-lg">
               S
             </div>
-            <span className="hidden sm:block font-bold text-2xl tracking-tighter text-simba-blue dark:text-simba-gold">
-              SIMBA
-            </span>
+            <span className="hidden sm:block font-black text-xl text-white tracking-tight">SIMBA</span>
           </Link>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-md mx-4 sm:mx-8 relative">
-            <div className="relative z-[60]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+          {/* Menu / categories button */}
+          {onMenuClick && (
+            <button
+              onClick={onMenuClick}
+              className="p-2 rounded-xl hover:bg-white/10 transition-colors flex-shrink-0"
+              aria-label="Open categories"
+            >
+              <Menu className="w-5 h-5 text-white" />
+            </button>
+          )}
+
+          {/* Address selector */}
+          <button
+            onClick={() => setAddressModalOpen(true)}
+            className="hidden md:flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors flex-shrink-0 max-w-[220px]"
+          >
+            <MapPin className="w-4 h-4 text-brand-accent flex-shrink-0" />
+            <div className="text-left min-w-0">
+              <p className="text-[9px] text-white/60 font-bold uppercase tracking-wider leading-none mb-0.5">Deliver to</p>
+              <p className="text-xs text-white font-bold truncate leading-none">{selectedAddress?.label ?? 'Select address'}</p>
+            </div>
+            <ChevronDown className="w-3.5 h-3.5 text-white/60 flex-shrink-0" />
+          </button>
+
+          {/* Delivery time badge */}
+          <div className="hidden lg:flex items-center gap-1.5 px-3 py-2 bg-white/10 rounded-xl flex-shrink-0">
+            <Clock className="w-3.5 h-3.5 text-brand-accent" />
+            <span className="text-xs font-black text-white">45 min</span>
+          </div>
+
+          {/* Search */}
+          <div ref={searchRef} className="flex-1 relative">
+            <div className={clsx(
+              'flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white transition-all',
+              focused ? 'ring-2 ring-brand-accent' : ''
+            )}>
+              <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
               <input
+                ref={inputRef}
                 type="text"
                 value={searchQuery}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setFocused(true)}
+                onChange={e => setSearchQuery(e.target.value)}
                 placeholder={t.searchPlaceholder}
-                className="w-full pl-10 pr-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 border-none focus:ring-2 focus:ring-simba-gold transition-all outline-none text-sm"
+                className="flex-1 bg-transparent outline-none text-sm text-gray-900 placeholder:text-gray-400 font-medium"
               />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} className="p-0.5 hover:bg-gray-100 rounded-full">
+                  <X className="w-3.5 h-3.5 text-gray-400" />
+                </button>
+              )}
             </div>
 
-            {/* Smart Discovery Dropdown */}
+            {/* Dropdown */}
             <AnimatePresence>
-              {isSearchFocused && !searchQuery && (
+              {focused && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 rounded-3xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-gray-800 p-6 z-50 overflow-hidden"
+                  exit={{ opacity: 0, y: 6 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50"
                 >
-                  <div className="mb-6">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-4">Trending Categories</p>
-                    <div className="flex flex-wrap gap-2">
-                        {['Groceries', 'Bakery', 'Electronics', 'Baby Products'].map(cat => (
-                            <button 
-                                key={cat}
-                                onClick={() => setSearchQuery(cat)}
-                                className="px-4 py-2 bg-gray-50 dark:bg-gray-800 rounded-full text-xs font-bold hover:bg-simba-gold hover:text-simba-blue transition-colors"
-                            >
-                                {cat}
-                            </button>
+                  {results.length > 0 ? (
+                    <>
+                      <div className="px-4 pt-3 pb-1">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Results</p>
+                      </div>
+                      {results.map(p => (
+                        <button
+                          key={p.id}
+                          onMouseDown={() => { setSearchQuery(p.name); setFocused(false); }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                            <Image src={p.image} alt={p.name} fill className="object-cover" />
+                          </div>
+                          <div className="flex-1 text-left min-w-0">
+                            <p className="text-sm font-bold text-gray-900 truncate">{p.name}</p>
+                            <p className="text-xs text-gray-400">{p.category}</p>
+                          </div>
+                          <span className="text-sm font-black text-brand flex-shrink-0">{p.price.toLocaleString()} RWF</span>
+                        </button>
+                      ))}
+                    </>
+                  ) : searchQuery.length < 2 ? (
+                    <div className="p-4">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Popular</p>
+                      <div className="flex flex-wrap gap-2">
+                        {POPULAR.map(s => (
+                          <button key={s} onMouseDown={() => { setSearchQuery(s); setFocused(false); }}
+                            className="px-3 py-1.5 bg-brand-muted text-brand rounded-full text-xs font-bold hover:bg-brand hover:text-white transition-colors">
+                            {s}
+                          </button>
                         ))}
+                      </div>
                     </div>
-                  </div>
-
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-4">Popular Searches</p>
-                    <div className="space-y-3">
-                        {['Fresh Milk', 'Simba Bread', 'Avocado', 'Cooking Oil'].map(item => (
-                            <button 
-                                key={item}
-                                onClick={() => setSearchQuery(item)}
-                                className="flex items-center gap-3 w-full text-left text-sm font-medium hover:text-simba-primary transition-colors group"
-                            >
-                                <div className="w-8 h-8 bg-gray-50 dark:bg-gray-800 rounded-lg flex items-center justify-center group-hover:bg-simba-primary/10">
-                                    <Search className="w-3 h-3 opacity-40" />
-                                </div>
-                                {item}
-                            </button>
-                        ))}
+                  ) : (
+                    <div className="px-4 py-6 text-center">
+                      <p className="text-sm text-gray-400">No results for "{searchQuery}"</p>
                     </div>
-                  </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            <button 
-              onClick={toggleDarkMode}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
-              {isDarkMode ? <Sun className="w-5 h-5 text-simba-gold" /> : <Moon className="w-5 h-5 text-gray-600" />}
+          {/* Right actions */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {/* Dark mode */}
+            <button onClick={toggleDarkMode} className="p-2 rounded-xl hover:bg-white/10 transition-colors" aria-label="Toggle theme">
+              {isDarkMode ? <Sun className="w-5 h-5 text-brand-accent" /> : <Moon className="w-5 h-5 text-white/80" />}
             </button>
 
+            {/* Language */}
             <div className="relative group">
-              <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-1">
-                <Languages className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                <span className="text-xs font-medium uppercase">{language}</span>
+              <button className="p-2 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-1">
+                <Languages className="w-4 h-4 text-white/80" />
+                <span className="text-xs font-black text-white uppercase">{language}</span>
               </button>
-              <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-gray-100 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[100] overflow-hidden">
-                {(['en', 'fr', 'rw'] as const).map((lang) => (
-                  <button
-                    key={lang}
-                    onClick={() => setLanguage(lang)}
-                    className={clsx(
-                      "w-full text-left px-5 py-3 text-sm font-bold transition-colors hover:bg-gray-50 dark:hover:bg-gray-700",
-                      language === lang 
-                        ? "text-simba-primary bg-simba-primary/5" 
-                        : "text-slate-900 dark:text-slate-200"
-                    )}
-                  >
-                    {lang === 'en' ? 'English' : lang === 'fr' ? 'Français' : 'Kinyarwanda'}
+              <div className="absolute right-0 top-full mt-1 w-44 bg-white rounded-2xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[100] overflow-hidden py-1">
+                {(['en', 'fr', 'rw'] as const).map(lang => (
+                  <button key={lang} onClick={() => setLanguage(lang)}
+                    className={clsx('w-full text-left px-4 py-2.5 text-sm font-bold transition-colors',
+                      language === lang ? 'text-brand bg-brand-muted' : 'text-gray-700 hover:bg-gray-50'
+                    )}>
+                    {lang === 'en' ? '🇬🇧 English' : lang === 'fr' ? '🇫🇷 Français' : '🇷🇼 Kinyarwanda'}
                   </button>
                 ))}
               </div>
             </div>
 
-            <button 
+            {/* Cart */}
+            <button
               id="cart-icon"
               onClick={() => setCartOpen(true)}
-              className="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group"
+              className="relative flex items-center gap-2 px-3 py-2 bg-brand hover:bg-brand-dark text-gray-900 rounded-xl transition-all font-black text-sm ml-1 shadow-brand-md"
             >
-              <ShoppingCart className="w-6 h-6 text-gray-700 dark:text-gray-200 group-hover:text-simba-primary transition-colors" />
+              <ShoppingCart className="w-5 h-5" />
+              <span className="hidden sm:block">{cartCount > 0 ? `${cartCount} item${cartCount > 1 ? 's' : ''}` : t.cart}</span>
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-simba-accent text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-simba-dark animate-pulse shadow-lg">
+                <span className="sm:hidden absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-brand">
                   {cartCount}
                 </span>
               )}
@@ -142,6 +205,7 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-    </nav>
+    </header>
   );
 }
+

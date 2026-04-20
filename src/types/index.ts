@@ -22,3 +22,16 @@ export interface SimbaData {
 }
 
 export type Language = 'en' | 'fr' | 'rw';
+
+export interface CartItem extends Product {
+  quantity: number;
+}
+
+export type CheckoutStep = 'cart' | 'details' | 'payment' | 'tracking' | 'success';
+
+export interface Address {
+  id: string;
+  label: string;
+  full: string;
+}
+
