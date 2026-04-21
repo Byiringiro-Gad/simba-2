@@ -2,12 +2,12 @@
 
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
-import { Home, Search, Heart, ClipboardList, User } from 'lucide-react';
+import { Home, Search, Heart, ClipboardList, User, LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 
 export default function BottomNav() {
-  const { activeTab, setActiveTab, favorites, orders, language } = useSimbaStore();
+  const { activeTab, setActiveTab, favorites, orders, language, user, setAuthOpen } = useSimbaStore();
   const t = translations[language];
 
   const TABS = [
@@ -24,12 +24,26 @@ export default function BottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 sm:hidden safe-area-pb">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 sm:hidden">
       <div className="flex items-center justify-around px-2 py-2">
         {TABS.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           const badge = badges[tab.id];
+
+          // Account tab — show Sign In prompt if not logged in
+          if (tab.id === 'account' && !user) {
+            return (
+              <button
+                key="signin"
+                onClick={() => setAuthOpen(true)}
+                className="flex flex-col items-center gap-1 px-3 py-1"
+              >
+                <LogIn className="w-6 h-6 text-brand" />
+                <span className="text-[10px] font-bold text-brand">Sign In</span>
+              </button>
+            );
+          }
 
           return (
             <button
@@ -67,4 +81,3 @@ export default function BottomNav() {
     </nav>
   );
 }
-

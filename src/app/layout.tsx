@@ -4,6 +4,7 @@ import "./globals.css";
 import ThemeProvider from "@/components/ThemeProvider";
 import SimbaPulse from "@/components/SimbaPulse";
 import ToastContainer from "@/components/Toast";
+import AuthModal from "@/components/AuthModal";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           {children}
           <SimbaPulse />
+          <AuthModal />
           <ToastContainer />
         </ThemeProvider>
       </body>

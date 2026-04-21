@@ -16,13 +16,30 @@ interface Order {
   status: 'delivered' | 'processing' | 'cancelled';
 }
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  avatar?: string;
+  referralCode?: string;  // user's unique referral code
+}
+
 interface SimbaState {
+  // Auth
+  user: User | null;
+  isAuthOpen: boolean;
+
   // Cart
   cart: CartItem[];
   isCartOpen: boolean;
+  scheduledDelivery: 'asap' | 'morning' | 'afternoon' | 'evening';
 
   // Favorites
   favorites: number[];
+
+  // Recently viewed
+  recentlyViewed: number[];  // product IDs
 
   // Address
   addresses: Address[];
@@ -46,15 +63,24 @@ interface SimbaState {
   appliedPromo: string | null;
   promoDiscount: number;
 
+  // Actions — Auth
+  login: (user: User) => void;
+  logout: () => void;
+  setAuthOpen: (open: boolean) => void;
+
   // Actions — Cart
   addToCart: (product: Product) => void;
   removeFromCart: (productId: number) => void;
   updateQuantity: (productId: number, quantity: number) => void;
   clearCart: () => void;
   setCartOpen: (open: boolean) => void;
+  setScheduledDelivery: (slot: SimbaState['scheduledDelivery']) => void;
 
   // Actions — Favorites
   toggleFavorite: (productId: number) => void;
+
+  // Actions — Recently viewed
+  addToRecentlyViewed: (productId: number) => void;
 
   // Actions — Address
   addAddress: (address: Omit<Address, 'id'>) => void;
@@ -92,10 +118,14 @@ const PROMO_CODES: Record<string, number> = {
 
 export const useSimbaStore = create<SimbaState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
+      user: null,
+      isAuthOpen: false,
       cart: [],
       isCartOpen: false,
+      scheduledDelivery: 'asap',
       favorites: [],
+      recentlyViewed: [],
       addresses: DEFAULT_ADDRESSES,
       selectedAddressId: '1',
       isAddressModalOpen: false,
@@ -108,6 +138,15 @@ export const useSimbaStore = create<SimbaState>()(
       orders: [],
       appliedPromo: null,
       promoDiscount: 0,
+
+      // Auth
+      login: (user) => {
+        // Generate referral code if not present
+        const code = user.referralCode ?? `SIMBA${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+        set({ user: { ...user, referralCode: code }, isAuthOpen: false });
+      },
+      logout: () => set({ user: null }),
+      setAuthOpen: (isAuthOpen) => set({ isAuthOpen }),
 
       // Cart
       addToCart: (product) => set((state) => {
@@ -123,11 +162,18 @@ export const useSimbaStore = create<SimbaState>()(
       })),
       clearCart: () => set({ cart: [], appliedPromo: null, promoDiscount: 0 }),
       setCartOpen: (open) => set({ isCartOpen: open }),
+      setScheduledDelivery: (scheduledDelivery) => set({ scheduledDelivery }),
 
       // Favorites
       toggleFavorite: (id) => set((s) => ({
         favorites: s.favorites.includes(id) ? s.favorites.filter(f => f !== id) : [...s.favorites, id]
       })),
+
+      // Recently viewed
+      addToRecentlyViewed: (id) => set((s) => {
+        const filtered = s.recentlyViewed.filter(v => v !== id);
+        return { recentlyViewed: [id, ...filtered].slice(0, 12) };
+      }),
 
       // Address
       addAddress: (addr) => set((s) => {
@@ -150,13 +196,7 @@ export const useSimbaStore = create<SimbaState>()(
       // Orders
       placeOrder: (items, total) => {
         const id = `SIMB-${Math.floor(Math.random() * 90000 + 10000)}`;
-        const order: Order = {
-          id,
-          date: new Date().toISOString(),
-          items,
-          total,
-          status: 'processing',
-        };
+        const order: Order = { id, date: new Date().toISOString(), items, total, status: 'processing' };
         set((s) => ({ orders: [order, ...s.orders] }));
         return id;
       },
@@ -164,10 +204,7 @@ export const useSimbaStore = create<SimbaState>()(
       // Promo
       applyPromo: (code) => {
         const discount = PROMO_CODES[code.toUpperCase()];
-        if (discount) {
-          set({ appliedPromo: code.toUpperCase(), promoDiscount: discount });
-          return true;
-        }
+        if (discount) { set({ appliedPromo: code.toUpperCase(), promoDiscount: discount }); return true; }
         return false;
       },
       removePromo: () => set({ appliedPromo: null, promoDiscount: 0 }),
@@ -175,4 +212,3 @@ export const useSimbaStore = create<SimbaState>()(
     { name: 'simba-store-v2' }
   )
 );
-

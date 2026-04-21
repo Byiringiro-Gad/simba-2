@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import { getSimbaData } from '@/lib/data';
-import { Search, ShoppingCart, ChevronDown, MapPin, Clock, X, Sun, Moon, Languages, Menu } from 'lucide-react';
+import { Search, ShoppingCart, ChevronDown, MapPin, Clock, X, Sun, Moon, Languages, Menu, User, LogOut, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -18,6 +18,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
     cart, searchQuery, setSearchQuery, setCartOpen,
     addresses, selectedAddressId, setAddressModalOpen,
     activeTab, setActiveTab,
+    user, setAuthOpen, logout,
   } = useSimbaStore();
 
   const t = translations[language];
@@ -187,6 +188,47 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                 ))}
               </div>
             </div>
+
+            {/* User / Login */}
+            {user ? (
+              <div className="relative group">
+                <button className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
+                  <div className="w-6 h-6 bg-brand rounded-full flex items-center justify-center font-black text-gray-900 text-xs flex-shrink-0">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="hidden sm:block text-xs font-bold text-white max-w-[80px] truncate">{user.name.split(' ')[0]}</span>
+                </button>
+                {/* Dropdown */}
+                <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[100] overflow-hidden py-1">
+                  <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                    <p className="font-black text-sm text-gray-900 dark:text-white truncate">{user.name}</p>
+                    <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                  </div>
+                  <button onClick={() => setActiveTab('account')}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <User className="w-4 h-4" /> My Account
+                  </button>
+                  <button onClick={() => setActiveTab('orders')}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <ChevronRight className="w-4 h-4" /> My Orders
+                  </button>
+                  <div className="border-t border-gray-100 dark:border-gray-800 mt-1 pt-1">
+                    <button onClick={logout}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                      <LogOut className="w-4 h-4" /> Sign Out
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setAuthOpen(true)}
+                className="hidden sm:flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white text-xs font-black"
+              >
+                <User className="w-4 h-4" />
+                Sign In
+              </button>
+            )}
 
             {/* Cart */}
             <button

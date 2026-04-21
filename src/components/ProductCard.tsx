@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { clsx } from 'clsx';
+import { getProductRating, getStockCount } from '@/lib/reviews';
 
 interface ProductCardProps {
   product: Product;
@@ -18,6 +19,8 @@ export default function ProductCard({ product }: ProductCardProps) {
   const cartItem = cart.find(i => i.id === product.id);
   const quantity = cartItem?.quantity ?? 0;
   const isFav = favorites.includes(product.id);
+  const { avg, count } = getProductRating(product.id);
+  const stockLeft = getStockCount(product.id);
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault(); e.stopPropagation();
@@ -39,6 +42,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <div className="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-lg hover:border-gray-200 dark:hover:border-gray-700 transition-all duration-200 flex flex-col">
+
       {/* Image */}
       <Link href={`/products/${product.id}`} className="block relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-800">
         <Image
@@ -49,14 +53,21 @@ export default function ProductCard({ product }: ProductCardProps) {
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
         />
 
-        {/* Favorite button */}
+        {/* Favorite */}
         <button
           onClick={handleFav}
           className="absolute top-2 right-2 w-7 h-7 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition-transform z-10"
-          aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
+          aria-label={isFav ? 'Remove from favourites' : 'Save'}
         >
           <Heart className={clsx('w-3.5 h-3.5 transition-colors', isFav ? 'fill-red-500 text-red-500' : 'text-gray-400')} />
         </button>
+
+        {/* Low stock badge */}
+        {stockLeft !== null && product.inStock && (
+          <div className="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white rounded-full text-[9px] font-black uppercase tracking-wide shadow-sm">
+            Only {stockLeft} left!
+          </div>
+        )}
 
         {/* Out of stock */}
         {!product.inStock && (
@@ -70,6 +81,13 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* Info */}
       <div className="p-3 flex flex-col flex-1">
+        {/* Rating row */}
+        <div className="flex items-center gap-1 mb-1">
+          <span className="text-brand text-[10px]">{'★'.repeat(Math.round(avg))}</span>
+          <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400">{avg}</span>
+          <span className="text-[10px] text-gray-400">({count})</span>
+        </div>
+
         <Link href={`/products/${product.id}`}>
           <h3 className="text-xs font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug mb-1 hover:text-brand transition-colors min-h-[2rem]">
             {product.name}
@@ -99,7 +117,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 className={clsx(
                   'w-8 h-8 rounded-xl flex items-center justify-center transition-all',
                   product.inStock
-                    ? 'bg-brand hover:bg-brand-dark text-white active:scale-95 shadow-sm shadow-brand/30'
+                    ? 'bg-brand-dark hover:bg-brand text-white active:scale-95 shadow-sm'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-300 cursor-not-allowed'
                 )}
               >
@@ -112,7 +130,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.8, opacity: 0 }}
                 transition={{ duration: 0.12 }}
-                className="flex items-center bg-brand rounded-xl overflow-hidden shadow-sm shadow-brand/30"
+                className="flex items-center bg-brand-dark rounded-xl overflow-hidden shadow-sm"
               >
                 <button onClick={handleDec} className="w-7 h-8 flex items-center justify-center text-white hover:bg-black/10 transition-colors">
                   <Minus className="w-3 h-3 stroke-[3px]" />
@@ -129,4 +147,3 @@ export default function ProductCard({ product }: ProductCardProps) {
     </div>
   );
 }
-

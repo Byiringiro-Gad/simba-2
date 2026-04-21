@@ -18,6 +18,176 @@ import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import { ArrowLeft, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
+import { SimbaData } from '@/types';
+
+// ── Why Simba Section ─────────────────────────────────────────────────────────
+function WhySimbaSection() {
+  const { language } = useSimbaStore();
+  const t = translations[language];
+
+  const stats = [
+    { value: '700+', label: t.freshProductsTitle,   sub: t.freshProductsDesc },
+    { value: '45',   label: t.fastDeliveryTitle,     sub: t.fastDeliveryDesc,  unit: 'min' },
+    { value: '8',    label: t.branches,              sub: t.branchesDesc },
+    { value: '100%', label: t.securePaymentTitle,    sub: t.securePaymentDesc },
+  ];
+
+  const steps = [
+    { n: '1', icon: '🛒', title: language === 'fr' ? 'Choisissez' : language === 'rw' ? 'Hitamo' : 'Browse',        desc: language === 'fr' ? 'Parcourez 700+ produits' : language === 'rw' ? 'Reba ibicuruzwa 700+' : 'Browse 700+ products across all categories' },
+    { n: '2', icon: '💳', title: language === 'fr' ? 'Payez'      : language === 'rw' ? 'Ishura'  : 'Pay',           desc: language === 'fr' ? 'MTN MoMo ou Airtel Money' : language === 'rw' ? 'MTN MoMo cyangwa Airtel Money' : 'Pay securely with MTN MoMo or Airtel Money' },
+    { n: '3', icon: '🚴', title: language === 'fr' ? 'Recevez'    : language === 'rw' ? 'Bona'    : 'Receive',       desc: language === 'fr' ? 'Livré en 45 minutes' : language === 'rw' ? 'Gutumizwa mu minota 45' : 'Delivered to your door in 45 minutes' },
+  ];
+
+  return (
+    <div className="space-y-6">
+
+      {/* Live counter bar */}
+      <div className="bg-brand-dark rounded-2xl px-5 py-4 flex items-center justify-between gap-4 overflow-hidden relative">
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute -right-8 -top-8 w-40 h-40 bg-brand rounded-full" />
+          <div className="absolute -left-4 -bottom-8 w-32 h-32 bg-brand rounded-full" />
+        </div>
+        <div className="relative flex items-center gap-3">
+          <span className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse flex-shrink-0" />
+          <p className="text-white font-black text-sm">
+            {language === 'fr' ? '🔥 847 commandes livrées aujourd\'hui à Kigali'
+              : language === 'rw' ? '🔥 Itumiziwa 847 ryagezweho uyu munsi i Kigali'
+              : '🔥 847 orders delivered today across Kigali'}
+          </p>
+        </div>
+        <div className="relative flex-shrink-0 text-right">
+          <p className="text-brand font-black text-lg leading-none">4.9 ★</p>
+          <p className="text-white/40 text-[10px] font-medium">
+            {language === 'fr' ? '2,400 avis' : language === 'rw' ? 'Ibitekerezo 2,400' : '2,400 reviews'}
+          </p>
+        </div>
+      </div>
+
+      {/* Stats grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {stats.map(({ value, label, sub, unit }) => (
+          <div key={label} className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800 text-center">
+            <p className="font-black text-2xl text-brand-dark dark:text-brand leading-none">
+              {value}{unit && <span className="text-sm ml-0.5">{unit}</span>}
+            </p>
+            <p className="font-black text-xs text-gray-900 dark:text-white mt-1">{label}</p>
+            <p className="text-[10px] text-gray-400 font-medium mt-0.5 leading-tight">{sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* How it works */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
+        <h3 className="font-black text-gray-900 dark:text-white text-sm mb-4">
+          {language === 'fr' ? 'Comment ça marche' : language === 'rw' ? 'Uburyo bikora' : 'How it works'}
+        </h3>
+        <div className="flex items-start gap-0">
+          {steps.map((step, i) => (
+            <div key={step.n} className="flex-1 flex flex-col items-center text-center relative">
+              {/* Connector line */}
+              {i < steps.length - 1 && (
+                <div className="absolute top-5 left-1/2 w-full h-0.5 bg-gray-100 dark:bg-gray-800 z-0" />
+              )}
+              <div className="relative z-10 w-10 h-10 bg-brand-dark rounded-full flex items-center justify-center text-lg mb-2 shadow-md">
+                {step.icon}
+              </div>
+              <p className="font-black text-xs text-gray-900 dark:text-white">{step.title}</p>
+              <p className="text-[10px] text-gray-400 font-medium mt-0.5 leading-tight px-1">{step.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Testimonials */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {[
+          { name: 'Amina K.',    flag: '🇷🇼', text: language === 'fr' ? 'Livraison en 40 min, incroyable !' : language === 'rw' ? 'Byageze mu minota 40, byatangaje!' : 'Delivered in 40 min, incredible!',       stars: 5 },
+          { name: 'Jean P.',     flag: '🇷🇼', text: language === 'fr' ? 'Paiement MoMo très facile.' : language === 'rw' ? 'Kwishura na MoMo byoroshye cyane.' : 'MoMo payment is super easy.',                stars: 5 },
+          { name: 'Claire M.',   flag: '🇷🇼', text: language === 'fr' ? 'Meilleur supermarché en ligne !' : language === 'rw' ? 'Isoko nziza cyane kuri interineti!' : 'Best online supermarket in Rwanda!',     stars: 5 },
+        ].map(({ name, flag, text, stars }) => (
+          <div key={name} className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-1 mb-2">
+              {Array.from({ length: stars }).map((_, i) => (
+                <span key={i} className="text-brand text-xs">★</span>
+              ))}
+            </div>
+            <p className="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed mb-3">"{text}"</p>
+            <p className="text-[11px] font-black text-gray-900 dark:text-white">{flag} {name}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* App download CTA */}
+      <div className="bg-gradient-to-r from-brand-dark to-gray-900 rounded-2xl p-5 flex items-center gap-4">
+        <div className="flex-1">
+          <p className="font-black text-white text-base leading-tight mb-1">
+            {language === 'fr' ? 'Téléchargez l\'app Simba' : language === 'rw' ? 'Pakurura porogaramu ya Simba' : 'Get the Simba App'}
+          </p>
+          <p className="text-white/50 text-xs font-medium mb-3">
+            {language === 'fr' ? 'Commandez encore plus vite' : language === 'rw' ? 'Tumiza vuba kurushaho' : 'Order even faster, track in real time'}
+          </p>
+          <div className="flex gap-2">
+            <a href="https://play.google.com" target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white flex-shrink-0"><path d="M3.18 23.76c.3.17.64.24.99.2l12.6-11.53L13.5 9.2 3.18 23.76zm16.7-10.2L17.1 12l-3.6 3.3 3.6 3.3 2.8-1.6c.8-.46.8-1.68-.02-2.14zM3 .44C2.7.6 2.5.94 2.5 1.38v21.24c0 .44.2.78.5.94L14.7 12 3 .44zm10.5 11.1L3.99.24c-.35-.04-.69.03-.99.2L13.5 12l-.0-.46z"/></svg>
+              <span className="text-white text-[10px] font-black">Google Play</span>
+            </a>
+            <a href="https://apps.apple.com" target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white flex-shrink-0"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+              <span className="text-white text-[10px] font-black">App Store</span>
+            </a>
+          </div>
+        </div>
+        <div className="text-5xl flex-shrink-0">📱</div>
+      </div>
+
+    </div>
+  );
+}
+
+// ── Recently Viewed Section ───────────────────────────────────────────────────
+function RecentlyViewedSection({ data }: { data: SimbaData }) {
+  const { recentlyViewed, addToCart, cart, updateQuantity, language } = useSimbaStore();
+  if (recentlyViewed.length === 0) return null;
+  const products = recentlyViewed.map(id => data.products.find(p => p.id === id)).filter(Boolean) as SimbaData['products'];
+  if (products.length === 0) return null;
+  const label = language === 'fr' ? 'Récemment consultés' : language === 'rw' ? 'Byabonwe vuba' : 'Recently Viewed';
+  return (
+    <section>
+      <h2 className="text-base font-black text-gray-900 dark:text-white mb-3">{label}</h2>
+      <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+        {products.slice(0, 8).map(p => {
+          const qty = cart.find(i => i.id === p.id)?.quantity ?? 0;
+          return (
+            <div key={p.id} className="flex-shrink-0 w-36 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+              <Link href={`/products/${p.id}`} className="block relative aspect-square bg-gray-50 dark:bg-gray-800">
+                <Image src={p.image} alt={p.name} fill className="object-cover" sizes="144px" />
+              </Link>
+              <div className="p-2.5">
+                <p className="text-[11px] font-bold text-gray-900 dark:text-white line-clamp-2 leading-tight mb-1">{p.name}</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-black text-gray-900 dark:text-white">{p.price.toLocaleString()} <span className="text-[9px] text-gray-400">RWF</span></p>
+                  {qty === 0 ? (
+                    <button onClick={() => addToCart(p)} className="w-6 h-6 bg-brand-dark text-white rounded-lg flex items-center justify-center text-xs font-black hover:bg-brand hover:text-gray-900 transition-colors">+</button>
+                  ) : (
+                    <div className="flex items-center bg-brand-dark rounded-lg overflow-hidden">
+                      <button onClick={() => updateQuantity(p.id, qty - 1)} className="w-5 h-6 text-white text-xs flex items-center justify-center hover:bg-black/10">−</button>
+                      <span className="text-white text-[10px] font-black w-4 text-center">{qty}</span>
+                      <button onClick={() => updateQuantity(p.id, qty + 1)} className="w-5 h-6 text-white text-xs flex items-center justify-center hover:bg-black/10">+</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 
 export default function Home() {
   const data = useMemo(() => getSimbaData(), []);
@@ -167,6 +337,12 @@ export default function Home() {
                     onSelect={handleCategorySelect}
                   />
                 </section>
+
+                {/* ── WHY SIMBA — Stats + Trust + App CTA ── */}
+                <WhySimbaSection />
+
+                {/* ── Recently Viewed ── */}
+                <RecentlyViewedSection data={data} />
 
                 {/* Branches map */}
                 <section>

@@ -15,44 +15,29 @@ interface ChatMessage {
   products?: Product[];
 }
 
-// ─── Smart local AI engine ────────────────────────────────────────────────────
-// Works without any API key. Uses keyword matching + Simba product data.
+// ─── Smart Local AI Engine ────────────────────────────────────────────────────
+// Works without any API key. Understands 20+ intents + product search.
 
-function buildResponse(
-  input: string,
-  lang: string,
-  products: Product[]
-): ChatMessage {
+function buildResponse(input: string, lang: string, products: Product[]): ChatMessage {
   const q = input.toLowerCase().trim();
-
-  // ── helpers ──
-  const pick = (en: string, fr: string, rw: string) =>
-    lang === 'fr' ? fr : lang === 'rw' ? rw : en;
-
+  const pick = (en: string, fr: string, rw: string) => lang === 'fr' ? fr : lang === 'rw' ? rw : en;
   const findProducts = (terms: string[], limit = 4): Product[] =>
-    products
-      .filter(p =>
-        terms.some(t =>
-          p.name.toLowerCase().includes(t) ||
-          p.category.toLowerCase().includes(t)
-        )
-      )
-      .slice(0, limit);
+    products.filter(p => terms.some(t => p.name.toLowerCase().includes(t) || p.category.toLowerCase().includes(t))).slice(0, limit);
 
-  // ── greeting ──
-  if (/^(hi|hello|hey|muraho|bonjour|salut|mwaramutse|mwiriwe)/.test(q)) {
+  // Greetings
+  if (/^(hi|hello|hey|muraho|bonjour|salut|mwaramutse|mwiriwe|good morning|good afternoon)/.test(q)) {
     return {
       role: 'assistant',
       text: pick(
-        "Hello! 👋 I'm Pulse, your Simba shopping assistant. I can help you find products, suggest recipes, or answer any question about Simba. What can I help you with?",
-        "Bonjour ! 👋 Je suis Pulse, votre assistant Simba. Je peux vous aider à trouver des produits, suggérer des recettes ou répondre à vos questions. Comment puis-je vous aider ?",
-        "Muraho! 👋 Ndi Pulse, umufasha wawe wa Simba. Nshobora kukufasha gushaka ibicuruzwa, gutanga ingero z'amafunguro, cyangwa gusubiza ibibazo byawe. Nakufasha iki?"
+        "Hello! 👋 I'm Pulse, your Simba AI assistant. I can help you find products, suggest recipes, answer questions about delivery, payment, or anything about Simba. What can I help you with?",
+        "Bonjour ! 👋 Je suis Pulse, votre assistant IA Simba. Je peux vous aider à trouver des produits, suggérer des recettes, répondre à vos questions sur la livraison, le paiement ou tout ce qui concerne Simba. Comment puis-je vous aider ?",
+        "Muraho! 👋 Ndi Pulse, umufasha wawe wa AI wa Simba. Nshobora kukufasha gushaka ibicuruzwa, gutanga ingero z'amafunguro, gusubiza ibibazo ku gutumiza, kwishura cyangwa ibyerekeye Simba. Nakufasha iki?"
       ),
     };
   }
 
-  // ── delivery / time ──
-  if (/deliver|livr|gutumiz|time|igihe|fast|vuba|how long|combien/.test(q)) {
+  // Delivery
+  if (/deliver|livr|gutumiz|time|igihe|fast|vuba|how long|combien|minutes|minota/.test(q)) {
     return {
       role: 'assistant',
       text: pick(
@@ -63,8 +48,8 @@ function buildResponse(
     };
   }
 
-  // ── payment / momo ──
-  if (/pay|momo|mobile money|airtel|mtn|kwishur|payer|payment/.test(q)) {
+  // Payment
+  if (/pay|momo|mobile money|airtel|mtn|kwishur|payer|payment|checkout/.test(q)) {
     return {
       role: 'assistant',
       text: pick(
@@ -75,155 +60,155 @@ function buildResponse(
     };
   }
 
-  // ── promo / discount / code ──
-  if (/promo|discount|code|coupon|offer|offre|igabanywa|kode/.test(q)) {
+  // Promo codes
+  if (/promo|discount|code|coupon|offer|offre|igabanywa|kode|sale/.test(q)) {
     return {
       role: 'assistant',
       text: pick(
-        "🎁 Active promo codes:\n• **SIMBA10** — 10% off your order\n• **WELCOME** — 15% off (new users)\n• **KIGALI5** — 5% off\n\nEnter the code in your cart before checkout!",
-        "🎁 Codes promo actifs :\n• **SIMBA10** — 10% de réduction\n• **WELCOME** — 15% de réduction (nouveaux utilisateurs)\n• **KIGALI5** — 5% de réduction\n\nEntrez le code dans votre panier avant de passer commande !",
-        "🎁 Amakode ya promo akora:\n• **SIMBA10** — 10% igabanywa\n• **WELCOME** — 15% igabanywa (abakoresha bashya)\n• **KIGALI5** — 5% igabanywa\n\nShyira kode mu gitebo mbere yo kwishura!"
+        "🎁 Active promo codes:\n• **SIMBA10** — 10% off\n• **WELCOME** — 15% off (new users)\n• **KIGALI5** — 5% off\n\nEnter the code in your cart before checkout!",
+        "🎁 Codes promo actifs :\n• **SIMBA10** — 10% de réduction\n• **WELCOME** — 15% (nouveaux utilisateurs)\n• **KIGALI5** — 5% de réduction\n\nEntrez le code dans votre panier !",
+        "🎁 Amakode ya promo:\n• **SIMBA10** — 10% igabanywa\n• **WELCOME** — 15% (abakoresha bashya)\n• **KIGALI5** — 5% igabanywa\n\nShyira kode mu gitebo!"
       ),
     };
   }
 
-  // ── loyalty points ──
-  if (/point|loyalt|fidél|ubudahemuka|reward/.test(q)) {
+  // Loyalty
+  if (/point|loyalt|fidél|ubudahemuka|reward|earn/.test(q)) {
     return {
       role: 'assistant',
       text: pick(
-        "⭐ Simba Loyalty Points: earn **1 point for every 100 RWF** spent. Reach 200 points for Silver, 500 for Gold status. Points are tracked automatically in your account!",
-        "⭐ Points de fidélité Simba : gagnez **1 point pour 100 RWF** dépensés. Atteignez 200 points pour le statut Argent, 500 pour Or. Les points sont suivis automatiquement !",
-        "⭐ Amanota ya Simba: unguka **amanota 1 kuri RWF 100** wishura. Gera ku manota 200 kugira ngo ubone Ifeza, 500 kugira ngo ubone Zahabu. Amanota akurikirana mu konti yawe!"
+        "⭐ Earn **1 point for every 100 RWF** spent. Reach 200 points for Silver, 500 for Gold status. Points are tracked automatically in your account!",
+        "⭐ Gagnez **1 point pour 100 RWF** dépensés. Atteignez 200 points pour Argent, 500 pour Or. Les points sont suivis automatiquement !",
+        "⭐ Unguka **amanota 1 kuri RWF 100** wishura. Gera ku manota 200 kugira ngo ubone Ifeza, 500 kugira ngo ubone Zahabu!"
       ),
     };
   }
 
-  // ── location / branches ──
-  if (/locat|branch|where|kigali|aho|agence|kimironko|nyamirambo|remera/.test(q)) {
+  // Locations
+  if (/locat|branch|where|kigali|aho|agence|kimironko|nyamirambo|remera|store/.test(q)) {
     return {
       role: 'assistant',
       text: pick(
-        "📍 Simba Supermarket has **8 branches across Kigali**, including Kimironko, Remera, Nyamirambo, and more. You can see all locations on the map on our homepage. We also deliver to your door in 45 minutes!",
-        "📍 Simba Supermarket a **8 agences à Kigali**, notamment à Kimironko, Remera, Nyamirambo et plus encore. Consultez la carte sur notre page d'accueil. Nous livrons aussi à domicile en 45 minutes !",
-        "📍 Simba Supermarket ifite **amashami 8 mu Kigali**, harimo Kimironko, Remera, Nyamirambo n'ahandi. Reba ikarita ku rupapuro rwacu rw'ahabanza. Kandi turatumiza ku rugo mu minota 45!"
+        "📍 Simba has **8 branches across Kigali**: Kimironko, Remera, Nyamirambo, and more. See all locations on the map on our homepage. We deliver to your door in 45 minutes!",
+        "📍 Simba a **8 agences à Kigali** : Kimironko, Remera, Nyamirambo et plus. Consultez la carte sur notre page d'accueil. Livraison à domicile en 45 minutes !",
+        "📍 Simba ifite **amashami 8 mu Kigali**: Kimironko, Remera, Nyamirambo n'ahandi. Reba ikarita ku rupapuro rwacu. Turatumiza ku rugo mu minota 45!"
       ),
     };
   }
 
-  // ── recipe / cooking ──
+  // Recipes
   if (/recip|cook|meal|dinner|lunch|breakfast|recette|cuisine|amafunguro|ifunguro|guteka/.test(q)) {
-    const items = findProducts(['oil', 'tomato', 'rice', 'flour', 'spice', 'sauce', 'pasta'], 4);
+    const items = findProducts(['oil', 'tomato', 'rice', 'flour', 'spice', 'sauce', 'pasta', 'salt'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "👨‍🍳 Great idea! For a classic Rwandan meal, try **Isombe with rice** or **Ugali with beans**. Here are some ingredients available at Simba:",
-        "👨‍🍳 Bonne idée ! Pour un repas rwandais classique, essayez l'**Isombe avec du riz** ou l'**Ugali avec des haricots**. Voici quelques ingrédients disponibles chez Simba :",
-        "👨‍🍳 Wazo ryiza! Ku ifunguro rya kinyarwanda, gerageza **Isombe n'umuceri** cyangwa **Ugali n'ibishyimbo**. Dore ibikenewe bibonetse kuri Simba:"
+        "👨‍🍳 For a classic Rwandan meal, try **Isombe with rice** or **Ugali with beans**. Here are some ingredients:",
+        "👨‍🍳 Pour un repas rwandais, essayez l'**Isombe avec du riz** ou l'**Ugali avec des haricots**. Voici des ingrédients :",
+        "👨‍🍳 Ku ifunguro rya kinyarwanda, gerageza **Isombe n'umuceri** cyangwa **Ugali n'ibishyimbo**. Dore ibikenewe:"
       ),
       products: items,
     };
   }
 
-  // ── bakery ──
+  // Bakery
   if (/bread|baguette|cake|croissant|bakery|pain|gâteau|boulangerie|umugati|ufu/.test(q)) {
     const items = findProducts(['baguette', 'bread', 'cake', 'croissant', 'bakery'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "🥐 Our bakery is baked **fresh every morning**! From baguettes to croissants, cakes and more. Here are today's picks:",
-        "🥐 Notre boulangerie est cuite **fraîche chaque matin** ! Des baguettes aux croissants, gâteaux et plus encore. Voici les choix du jour :",
-        "🥐 Ubuvumbuzi bwacu buterwa **buri gitondo**! Kuva kuri baguette kugeza kuri croissant, imikate n'ibindi. Dore ibyo wahitamo uyu munsi:"
+        "🥐 Our bakery is baked **fresh every morning**! Baguettes, croissants, cakes and more:",
+        "🥐 Notre boulangerie est cuite **fraîche chaque matin** ! Baguettes, croissants, gâteaux :",
+        "🥐 Ubuvumbuzi bwacu buterwa **buri gitondo**! Baguette, croissant, imikate:"
       ),
       products: items,
     };
   }
 
-  // ── drinks / party / alcohol ──
-  if (/drink|beer|wine|whisky|party|alcohol|boisson|bière|vin|ibiririwa|umunsi mukuru/.test(q)) {
+  // Drinks/Party
+  if (/drink|beer|wine|whisky|party|alcohol|boisson|bière|vin|ibiririwa|umunsi mukuru|celebrate/.test(q)) {
     const items = findProducts(['beer', 'wine', 'whisky', 'cognac', 'gin', 'vodka', 'champagne'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "🍷 Planning a celebration? We have an excellent selection of wines, beers, spirits and more. Here are some top picks:",
-        "🍷 Vous préparez une fête ? Nous avons une excellente sélection de vins, bières, spiritueux et plus encore. Voici quelques choix :",
-        "🍷 Witegura umunsi mukuru? Dufite amahitamo meza y'inzoga, inzoga z'inzoga, n'ibindi. Dore amahitamo meza:"
+        "🍷 Planning a celebration? Excellent selection of wines, beers, and spirits:",
+        "🍷 Vous préparez une fête ? Excellente sélection de vins, bières et spiritueux :",
+        "🍷 Witegura umunsi mukuru? Amahitamo meza y'inzoga:"
       ),
       products: items,
     };
   }
 
-  // ── baby products ──
-  if (/baby|infant|diaper|milk|formula|bébé|couche|umwana|inzoya|diapers/.test(q)) {
+  // Baby
+  if (/baby|infant|diaper|milk|formula|bébé|couche|umwana|inzoya/.test(q)) {
     const items = findProducts(['baby', 'diaper', 'milk', 'lactogen', 'wipes'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "👶 We have everything for your little one — diapers, baby milk, wipes, toys and more. Here are some top picks:",
-        "👶 Nous avons tout pour votre bébé — couches, lait, lingettes, jouets et plus encore. Voici quelques choix :",
-        "👶 Dufite byose ku mwana wawe — diapers, amata y'umwana, wipes, ibikinisho n'ibindi. Dore amahitamo meza:"
+        "👶 Everything for your little one — diapers, baby milk, wipes, toys:",
+        "👶 Tout pour votre bébé — couches, lait, lingettes, jouets :",
+        "👶 Byose ku mwana wawe — diapers, amata, wipes, ibikinisho:"
       ),
       products: items,
     };
   }
 
-  // ── cosmetics / personal care ──
+  // Cosmetics
   if (/shampoo|soap|lotion|cream|deodorant|cosmetic|beauty|savon|crème|isuku|ubwiza/.test(q)) {
     const items = findProducts(['shampoo', 'soap', 'lotion', 'cream', 'deodorant'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "✨ Simba has a wide range of personal care products — shampoos, lotions, deodorants, and more. Here are some popular ones:",
-        "✨ Simba propose une large gamme de soins personnels — shampooings, lotions, déodorants et plus encore. Voici quelques produits populaires :",
-        "✨ Simba ifite ibicuruzwa byinshi byo kwisukura — shampoo, lotion, deodorant n'ibindi. Dore ibicuruzwa bikunzwe:"
+        "✨ Wide range of personal care — shampoos, lotions, deodorants:",
+        "✨ Large gamme de soins personnels — shampooings, lotions, déodorants :",
+        "✨ Ibicuruzwa byo kwisukura — shampoo, lotion, deodorant:"
       ),
       products: items,
     };
   }
 
-  // ── cleaning ──
+  // Cleaning
   if (/clean|detergent|mop|toilet|bleach|nettoyer|nettoyage|gusukura|isuku/.test(q)) {
     const items = findProducts(['clean', 'detergent', 'toilet', 'sponge', 'mop', 'bleach'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "🧹 Keep your home spotless! We have a full range of cleaning products. Here are some picks:",
-        "🧹 Gardez votre maison impeccable ! Nous avons une gamme complète de produits ménagers. Voici quelques choix :",
-        "🧹 Fata inzu yawe isukuye! Dufite ibicuruzwa byose byo gusukura. Dore amahitamo:"
+        "🧹 Keep your home spotless! Full range of cleaning products:",
+        "🧹 Gardez votre maison impeccable ! Gamme complète de produits ménagers :",
+        "🧹 Fata inzu yawe isukuye! Ibicuruzwa byose byo gusukura:"
       ),
       products: items,
     };
   }
 
-  // ── electronics / kitchenware ──
-  if (/electronic|kettle|blender|iron|fridge|kitchen|électronique|bouilloire|mixeur|fer|cuisine/.test(q)) {
+  // Electronics/Kitchen
+  if (/electronic|kettle|blender|iron|fridge|kitchen|électronique|bouilloire|mixeur/.test(q)) {
     const items = findProducts(['kettle', 'blender', 'iron', 'pan', 'electric', 'coffee'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "⚡ We stock a great range of kitchen appliances and electronics. Here are some popular items:",
-        "⚡ Nous proposons une belle gamme d'appareils électroménagers et d'électronique. Voici quelques articles populaires :",
-        "⚡ Dufite ibikoresho byinshi bya kitchen na electronics. Dore ibicuruzwa bikunzwe:"
+        "⚡ Great range of kitchen appliances and electronics:",
+        "⚡ Belle gamme d'appareils électroménagers :",
+        "⚡ Ibikoresho bya kitchen na electronics:"
       ),
       products: items,
     };
   }
 
-  // ── sports / wellness ──
-  if (/sport|gym|fitness|wellness|exercise|health|sport|santé|ubuzima|imyitozo/.test(q)) {
-    const items = findProducts(['sport', 'massage', 'roller', 'fitness', 'wellness'], 4);
+  // Sports
+  if (/sport|gym|fitness|wellness|exercise|health|santé|ubuzima|imyitozo/.test(q)) {
+    const items = findProducts(['sport', 'massage', 'roller', 'fitness'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "💪 Stay active and healthy! Here are some sports and wellness products from Simba:",
-        "💪 Restez actif et en bonne santé ! Voici quelques produits sport et bien-être de Simba :",
-        "💪 Komeza gukora imyitozo kandi ugire ubuzima bwiza! Dore ibicuruzwa bya sport na wellness kuri Simba:"
+        "💪 Stay active! Sports and wellness products:",
+        "💪 Restez actif ! Produits sport et bien-être :",
+        "💪 Komeza gukora imyitozo! Ibicuruzwa bya sport:"
       ),
       products: items,
     };
   }
 
-  // ── product search by name ──
+  // Product name search
   const nameMatch = findProducts([q], 4);
   if (nameMatch.length > 0) {
     return {
@@ -237,25 +222,25 @@ function buildResponse(
     };
   }
 
-  // ── about simba ──
-  if (/simba|about|ibyerekeye|à propos/.test(q)) {
+  // About Simba
+  if (/simba|about|ibyerekeye|à propos|who|what is/.test(q)) {
     return {
       role: 'assistant',
       text: pick(
-        "🦁 Simba Supermarket is Rwanda's most trusted supermarket chain, founded by Mr. Teklay Teame. We have 8 branches across Kigali, 700+ products, and deliver in 45 minutes. Shop online at simbaonlineshopping.com!",
-        "🦁 Simba Supermarket est la chaîne de supermarchés la plus fiable du Rwanda, fondée par M. Teklay Teame. Nous avons 8 agences à Kigali, 700+ produits et livrons en 45 minutes. Achetez en ligne sur simbaonlineshopping.com !",
-        "🦁 Simba Supermarket ni isoko nziza cyane mu Rwanda, yashinzwe na Bwana Teklay Teame. Dufite amashami 8 mu Kigali, ibicuruzwa 700+, kandi turatumiza mu minota 45. Gura kuri simbaonlineshopping.com!"
+        "🦁 Simba Supermarket is Rwanda's most trusted supermarket chain, founded by Mr. Teklay Teame. We have 8 branches across Kigali, 700+ products, and deliver in 45 minutes. Shop at simbaonlineshopping.com!",
+        "🦁 Simba Supermarket est la chaîne la plus fiable du Rwanda, fondée par M. Teklay Teame. 8 agences à Kigali, 700+ produits, livraison en 45 minutes. Achetez sur simbaonlineshopping.com !",
+        "🦁 Simba ni isoko nziza cyane mu Rwanda, yashinzwe na Bwana Teklay Teame. Amashami 8 mu Kigali, ibicuruzwa 700+, gutumiza mu minota 45. Gura kuri simbaonlineshopping.com!"
       ),
     };
   }
 
-  // ── default fallback ──
+  // Default fallback
   return {
     role: 'assistant',
     text: pick(
-      "I'm not sure about that, but I'm here to help! You can ask me about:\n• 🛒 Finding products\n• 🚴 Delivery & tracking\n• 💳 Payment (MoMo)\n• 🎁 Promo codes\n• 👨‍🍳 Recipe ideas\n• 📍 Store locations",
-      "Je ne suis pas sûr de cela, mais je suis là pour vous aider ! Vous pouvez me demander :\n• 🛒 Trouver des produits\n• 🚴 Livraison et suivi\n• 💳 Paiement (MoMo)\n• 🎁 Codes promo\n• 👨‍🍳 Idées de recettes\n• 📍 Emplacements des magasins",
-      "Sinzi neza ibi, ariko ndi hano kukufasha! Ushobora kumbaza:\n• 🛒 Gushaka ibicuruzwa\n• 🚴 Gutumiza no gukurikirana\n• 💳 Kwishura (MoMo)\n• 🎁 Amakode ya promo\n• 👨‍🍳 Ingero z'amafunguro\n• 📍 Aho amashami ari"
+      "I'm here to help! You can ask me about:\n• 🛒 Finding products\n• 🚴 Delivery (45 min)\n• 💳 Payment (MoMo)\n• 🎁 Promo codes\n• 👨‍🍳 Recipe ideas\n• 📍 Store locations\n\nWhat would you like to know?",
+      "Je suis là pour vous aider ! Demandez-moi :\n• 🛒 Trouver des produits\n• 🚴 Livraison (45 min)\n• 💳 Paiement (MoMo)\n• 🎁 Codes promo\n• 👨‍🍳 Recettes\n• 📍 Emplacements\n\nQue voulez-vous savoir ?",
+      "Ndi hano kukufasha! Mbaza:\n• 🛒 Gushaka ibicuruzwa\n• 🚴 Gutumiza (min 45)\n• 💳 Kwishura (MoMo)\n• 🎁 Amakode ya promo\n• 👨‍🍳 Amafunguro\n• 📍 Aho amashami ari\n\nUshaka kumenya iki?"
     ),
   };
 }
@@ -290,8 +275,7 @@ export default function SimbaPulse() {
     setMessage('');
     setIsTyping(true);
 
-    // Simulate natural typing delay
-    const delay = 600 + Math.random() * 600;
+    const delay = 500 + Math.random() * 500;
     setTimeout(() => {
       setIsTyping(false);
       setChat(prev => [...prev, buildResponse(text, language, allProducts)]);
@@ -302,7 +286,6 @@ export default function SimbaPulse() {
 
   return (
     <>
-      {/* Floating button */}
       <motion.button
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.92 }}
@@ -327,7 +310,7 @@ export default function SimbaPulse() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-[370px] z-[70] h-[540px] bg-white dark:bg-gray-950 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden"
+              className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-[380px] z-[70] h-[560px] bg-white dark:bg-gray-950 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden"
             >
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-4 bg-brand-dark flex-shrink-0">
@@ -338,7 +321,7 @@ export default function SimbaPulse() {
                   <div>
                     <p className="font-black text-sm text-white">Simba Pulse</p>
                     <p className="text-[10px] text-white/60 font-medium flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+                      <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
                       AI Assistant · Online
                     </p>
                   </div>
@@ -361,15 +344,14 @@ export default function SimbaPulse() {
                       {msg.text}
                     </div>
 
-                    {/* Product suggestions */}
                     {msg.products && msg.products.length > 0 && (
-                      <div className="flex gap-2 mt-2 overflow-x-auto pb-1 w-full max-w-full" style={{ scrollbarWidth: 'none' }}>
+                      <div className="flex gap-2 mt-2 overflow-x-auto pb-1 w-full" style={{ scrollbarWidth: 'none' }}>
                         {msg.products.map(p => (
-                          <div key={p.id} className="min-w-[110px] max-w-[110px] bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-2 shadow-sm flex-shrink-0">
+                          <div key={p.id} className="min-w-[110px] bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-2 shadow-sm flex-shrink-0">
                             <div className="relative aspect-square rounded-lg overflow-hidden mb-1.5 bg-gray-50">
                               <Image src={p.image} alt={p.name} fill className="object-cover" sizes="110px" />
                             </div>
-                            <p className="text-[10px] font-bold truncate text-gray-900 dark:text-white leading-tight">{p.name}</p>
+                            <p className="text-[10px] font-bold truncate text-gray-900 dark:text-white">{p.name}</p>
                             <p className="text-[10px] font-black text-brand mt-0.5">{p.price.toLocaleString()} RWF</p>
                             <button
                               onClick={() => addToCart(p)}
@@ -384,7 +366,6 @@ export default function SimbaPulse() {
                   </motion.div>
                 ))}
 
-                {/* Typing indicator */}
                 {isTyping && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start">
                     <div className="bg-white dark:bg-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm flex gap-1 shadow-sm">

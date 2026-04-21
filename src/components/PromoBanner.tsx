@@ -50,7 +50,7 @@ export default function PromoBanner() {
   const banner = BANNERS[current];
 
   return (
-    <div className="relative h-36 sm:h-44 rounded-2xl overflow-hidden group cursor-pointer"
+    <div className="relative h-48 sm:h-64 rounded-2xl overflow-hidden group cursor-pointer"
       onClick={() => banner.code && applyPromo(banner.code)}>
       <AnimatePresence mode="wait">
         <motion.div
@@ -68,8 +68,8 @@ export default function PromoBanner() {
             <span className="inline-block px-2.5 py-0.5 bg-white/20 text-white text-[9px] font-black uppercase tracking-widest rounded-full mb-2 self-start">
               {banner.badge}
             </span>
-            <h3 className="text-lg sm:text-xl font-black text-white leading-tight mb-1">{banner.title}</h3>
-            <p className="text-white/75 text-xs font-medium">{banner.subtitle}</p>
+            <h3 className="text-xl sm:text-3xl font-black text-white leading-tight mb-1.5">{banner.title}</h3>
+            <p className="text-white/75 text-sm font-medium mb-4">{banner.subtitle}</p>
           </div>
         </motion.div>
       </AnimatePresence>
