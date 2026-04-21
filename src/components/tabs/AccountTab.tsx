@@ -67,7 +67,7 @@ export default function AccountTab() {
                   <Icon className="w-4 h-4 text-brand-dark" />
                 </div>
                 <p className="font-black text-xs text-gray-900 dark:text-white">{label}</p>
-                <p className="text-[10px] text-gray-400 font-medium mt-0.5">{desc}</p>
+                <p className="text-xs text-gray-400 font-medium mt-0.5">{desc}</p>
               </div>
             ))}
           </div>
@@ -123,7 +123,7 @@ export default function AccountTab() {
               <span className="text-white font-black text-sm">{totalPoints.toLocaleString()} pts</span>
             </div>
             <span className={clsx(
-              'px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider',
+              'px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider',
               tier === 'Gold' ? 'bg-yellow-400/20 text-yellow-300' :
               tier === 'Silver' ? 'bg-gray-300/20 text-gray-300' :
               'bg-amber-600/20 text-amber-400'
@@ -141,7 +141,7 @@ export default function AccountTab() {
             />
           </div>
           {tierNext && (
-            <p className="text-white/40 text-[10px] font-medium mt-1.5">
+            <p className="text-white/40 text-xs font-medium mt-1.5">
               {tierNext - totalPoints} pts to {tier === 'Bronze' ? 'Silver' : 'Gold'}
             </p>
           )}
@@ -156,7 +156,7 @@ export default function AccountTab() {
           ].map(({ label, value }) => (
             <div key={label} className="py-4 text-center">
               <p className="font-black text-white text-lg leading-none">{value}</p>
-              <p className="text-white/40 text-[10px] font-medium mt-1 uppercase tracking-wider">{label}</p>
+              <p className="text-white/40 text-xs font-medium mt-1 uppercase tracking-wider">{label}</p>
             </div>
           ))}
         </div>
@@ -208,7 +208,7 @@ export default function AccountTab() {
                 </span>
               )}
             </div>
-            <span className="text-[11px] font-bold text-gray-600 dark:text-gray-300">{label}</span>
+            <span className="text-xs font-bold text-gray-600 dark:text-gray-300">{label}</span>
           </button>
         ))}
       </motion.div>
@@ -256,7 +256,7 @@ export default function AccountTab() {
               <Icon className="w-5 h-5 text-gray-400 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-sm text-gray-900 dark:text-white">{item.label}</p>
-                <p className="text-xs text-gray-400 truncate">{item.sub}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{item.sub}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
             </button>

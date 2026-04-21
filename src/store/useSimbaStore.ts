@@ -49,7 +49,6 @@ interface SimbaState {
   // Search & filter
   searchQuery: string;
   selectedCategory: string | null;
-  selectedHub: string;
 
   // UI
   language: Language;
@@ -90,7 +89,6 @@ interface SimbaState {
   // Actions — Filter
   setSearchQuery: (q: string) => void;
   setSelectedCategory: (cat: string | null) => void;
-  setSelectedHub: (hub: string) => void;
 
   // Actions — UI
   setLanguage: (lang: Language) => void;
@@ -131,7 +129,6 @@ export const useSimbaStore = create<SimbaState>()(
       isAddressModalOpen: false,
       searchQuery: '',
       selectedCategory: null,
-      selectedHub: 'supermarket',
       language: 'en',
       isDarkMode: false,
       activeTab: 'home',
@@ -186,7 +183,6 @@ export const useSimbaStore = create<SimbaState>()(
       // Filter
       setSearchQuery: (searchQuery) => set({ searchQuery }),
       setSelectedCategory: (selectedCategory) => set({ selectedCategory }),
-      setSelectedHub: (selectedHub) => set({ selectedHub, selectedCategory: null }),
 
       // UI
       setLanguage: (language) => set({ language }),

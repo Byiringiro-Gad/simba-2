@@ -40,7 +40,7 @@ export default function BottomNav() {
                 className="flex flex-col items-center gap-1 px-3 py-1"
               >
                 <LogIn className="w-6 h-6 text-brand" />
-                <span className="text-[10px] font-bold text-brand">Sign In</span>
+                <span className="text-xs font-bold text-brand">Sign In</span>
               </button>
             );
           }
@@ -63,7 +63,7 @@ export default function BottomNav() {
                 ) : null}
               </div>
               <span className={clsx(
-                'text-[10px] font-bold transition-colors',
+                'text-xs font-bold transition-colors',
                 isActive ? 'text-brand' : 'text-gray-400'
               )}>
                 {tab.label}

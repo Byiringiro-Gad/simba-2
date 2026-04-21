@@ -116,8 +116,8 @@ export default function CategoryGrid({ categories, onSelect }: Props) {
 
             {/* Label */}
             <span className={clsx(
-              'text-[10px] font-black text-center leading-tight line-clamp-2 w-full',
-              isActive ? 'text-brand' : 'text-gray-700 dark:text-gray-300'
+              'text-xs font-black text-center leading-tight line-clamp-2 w-full',
+              isActive ? 'text-brand' : 'text-gray-800 dark:text-gray-200'
             )}>
               {cat}
             </span>

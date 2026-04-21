@@ -77,7 +77,7 @@ export default function SearchTab() {
             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 space-y-4">
               {/* Sort */}
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{t.sortBy}</p>
+                <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">{t.sortBy}</p>
                 <div className="flex flex-wrap gap-2">
                   {SORT_OPTIONS.map(opt => (
                     <button key={opt.id} onClick={() => setSort(opt.id)}
@@ -89,7 +89,7 @@ export default function SearchTab() {
               </div>
               {/* Category filter */}
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{t.category}</p>
+                <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">{t.category}</p>
                 <div className="flex flex-wrap gap-2">
                   <button onClick={() => setSelectedCategory(null)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${!selectedCategory ? 'bg-brand text-white' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-brand-muted hover:text-brand'}`}>
@@ -109,7 +109,7 @@ export default function SearchTab() {
       </AnimatePresence>
 
       {/* Results count */}
-      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
+      <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">
         {results.length} {t.results}
         {searchQuery ? ` for "${searchQuery}"` : ''}
       </p>

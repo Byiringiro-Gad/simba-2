@@ -83,24 +83,24 @@ export default function ProductCard({ product }: ProductCardProps) {
       <div className="p-3 flex flex-col flex-1">
         {/* Rating row */}
         <div className="flex items-center gap-1 mb-1">
-          <span className="text-brand text-[10px]">{'★'.repeat(Math.round(avg))}</span>
-          <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400">{avg}</span>
+          <span className="text-amber-500 text-[10px]">{'★'.repeat(Math.round(avg))}</span>
+          <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300">{avg}</span>
           <span className="text-[10px] text-gray-400">({count})</span>
         </div>
 
         <Link href={`/products/${product.id}`}>
-          <h3 className="text-xs font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug mb-1 hover:text-brand transition-colors min-h-[2rem]">
+          <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug mb-1 hover:text-brand transition-colors min-h-[2rem]">
             {product.name}
           </h3>
         </Link>
-        <p className="text-[10px] text-gray-400 font-medium mb-2">per {product.unit || 'unit'}</p>
+        <p className="text-xs text-gray-400 font-medium mb-2">per {product.unit || 'unit'}</p>
 
         <div className="mt-auto flex items-center justify-between gap-1">
           <div>
-            <p className="text-sm font-black text-gray-900 dark:text-white leading-none">
+            <p className="text-base font-black text-gray-900 dark:text-white leading-none">
               {product.price.toLocaleString()}
             </p>
-            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">RWF</p>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">RWF</p>
           </div>
 
           {/* Quantity control */}

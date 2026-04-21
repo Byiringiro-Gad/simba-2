@@ -11,7 +11,7 @@ import { translations } from '@/lib/translations';
 import {
   ChevronLeft, Plus, Minus, ShieldCheck, Truck,
   Star, Package, Heart, Clock, Send, CheckCircle2,
-  Share2, Copy, ChevronRight
+  Share2, ChevronRight
 } from 'lucide-react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -264,8 +264,8 @@ export default function ProductDetail() {
                         : 'border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700'
                     )}>
                     <span className="text-base">{slot.icon}</span>
-                    <span className={clsx('text-[10px] font-black', scheduledDelivery === slot.id ? 'text-brand-dark dark:text-brand' : 'text-gray-700 dark:text-gray-300')}>{slot.label}</span>
-                    <span className="text-[9px] text-gray-400 font-medium">{slot.sub}</span>
+                    <span className={clsx('text-xs font-black', scheduledDelivery === slot.id ? 'text-brand-dark dark:text-brand' : 'text-gray-700 dark:text-gray-300')}>{slot.label}</span>
+                    <span className="text-xs text-gray-400 font-medium">{slot.sub}</span>
                   </button>
                 ))}
               </div>
@@ -282,7 +282,7 @@ export default function ProductDetail() {
                   <div className="w-9 h-9 bg-gray-50 dark:bg-gray-800 rounded-xl flex items-center justify-center">
                     <Icon className="w-4.5 h-4.5 text-brand-dark dark:text-brand" />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</span>
+                  <span className="text-xs font-black uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</span>
                 </div>
               ))}
             </div>
@@ -320,7 +320,7 @@ export default function ProductDetail() {
                       { label: 'Status',    value: product.inStock ? 'In Stock' : 'Out of Stock' },
                     ].map(({ label, value }) => (
                       <div key={label}>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{label}</p>
+                        <p className="text-xs font-black uppercase tracking-widest text-gray-400">{label}</p>
                         <p className="text-sm font-bold text-gray-900 dark:text-white mt-0.5">{value}</p>
                       </div>
                     ))}
@@ -344,7 +344,7 @@ export default function ProductDetail() {
                       const pct = star >= Math.round(avg) ? Math.max(20, 100 - (5 - star) * 20) : Math.max(5, (star / 5) * 40);
                       return (
                         <div key={star} className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold text-gray-400 w-3">{star}</span>
+                          <span className="text-xs font-bold text-gray-400 w-3">{star}</span>
                           <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                             <div className="h-full bg-brand rounded-full" style={{ width: `${pct}%` }} />
                           </div>
@@ -408,12 +408,12 @@ export default function ProductDetail() {
                           <div className="flex items-center gap-2">
                             <p className="font-black text-sm text-gray-900 dark:text-white">{r.userName}</p>
                             {r.verified && (
-                              <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-[9px] font-black uppercase tracking-wide">Verified</span>
+                              <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-black uppercase tracking-wide">Verified</span>
                             )}
                           </div>
                           <StarRating value={r.rating} size="sm" />
                         </div>
-                        <p className="text-[10px] text-gray-400 font-medium">{r.date}</p>
+                        <p className="text-xs text-gray-400 font-medium">{r.date}</p>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{r.comment}</p>
                     </div>

@@ -38,16 +38,6 @@ module.exports = {
           'neutral-900':  '#0F172A',
           'neutral-950':  '#020617',
         },
-        simba: {
-          primary:   '#EAB308',
-          secondary: '#1E3A8A',
-          accent:    '#EF4444',
-          dark:      '#0F172A',
-          light:     '#F8FAFC',
-          blue:      '#1E40AF',
-          gold:      '#FACC15',
-          yellow:    '#FEF08A',
-        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],

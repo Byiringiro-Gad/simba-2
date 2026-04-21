@@ -52,9 +52,9 @@ function WhySimbaSection() {
         <div className="relative flex items-center gap-3">
           <span className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse flex-shrink-0" />
           <p className="text-white font-black text-sm">
-            {language === 'fr' ? '🔥 847 commandes livrées aujourd\'hui à Kigali'
-              : language === 'rw' ? '🔥 Itumiziwa 847 ryagezweho uyu munsi i Kigali'
-              : '🔥 847 orders delivered today across Kigali'}
+            {language === 'fr' ? '847 commandes livrées aujourd\'hui à Kigali'
+              : language === 'rw' ? 'Itumiziwa 847 ryagezweho uyu munsi i Kigali'
+              : '847 orders delivered today across Kigali'}
           </p>
         </div>
         <div className="relative flex-shrink-0 text-right">
@@ -72,8 +72,8 @@ function WhySimbaSection() {
             <p className="font-black text-2xl text-brand-dark dark:text-brand leading-none">
               {value}{unit && <span className="text-sm ml-0.5">{unit}</span>}
             </p>
-            <p className="font-black text-xs text-gray-900 dark:text-white mt-1">{label}</p>
-            <p className="text-[10px] text-gray-400 font-medium mt-0.5 leading-tight">{sub}</p>
+            <p className="font-black text-sm text-gray-900 dark:text-white mt-1">{label}</p>
+            <p className="text-xs text-gray-400 font-medium mt-0.5 leading-tight">{sub}</p>
           </div>
         ))}
       </div>
@@ -93,8 +93,8 @@ function WhySimbaSection() {
               <div className="relative z-10 w-10 h-10 bg-brand-dark rounded-full flex items-center justify-center text-lg mb-2 shadow-md">
                 {step.icon}
               </div>
-              <p className="font-black text-xs text-gray-900 dark:text-white">{step.title}</p>
-              <p className="text-[10px] text-gray-400 font-medium mt-0.5 leading-tight px-1">{step.desc}</p>
+              <p className="font-black text-sm text-gray-900 dark:text-white">{step.title}</p>
+              <p className="text-xs text-gray-400 font-medium mt-0.5 leading-tight px-1">{step.desc}</p>
             </div>
           ))}
         </div>
@@ -113,8 +113,8 @@ function WhySimbaSection() {
                 <span key={i} className="text-brand text-xs">★</span>
               ))}
             </div>
-            <p className="text-xs text-gray-600 dark:text-gray-300 font-medium leading-relaxed mb-3">"{text}"</p>
-            <p className="text-[11px] font-black text-gray-900 dark:text-white">{flag} {name}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 font-medium leading-relaxed mb-3">"{text}"</p>
+            <p className="text-sm font-black text-gray-900 dark:text-white">{flag} {name}</p>
           </div>
         ))}
       </div>

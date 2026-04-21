@@ -45,7 +45,7 @@ export default function CategorySidebar({ categories, onSelect }: Props) {
           'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all',
           !selectedCategory
             ? 'bg-brand text-white shadow-sm'
-            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-brand dark:hover:text-brand'
+            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-brand dark:hover:text-brand'
         )}
       >
         <LayoutGrid className="w-4 h-4 flex-shrink-0" />
@@ -64,7 +64,7 @@ export default function CategorySidebar({ categories, onSelect }: Props) {
               'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all text-left',
               isActive
                 ? 'bg-brand text-white shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-brand dark:hover:text-brand'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-brand dark:hover:text-brand'
             )}
           >
             <Icon className="w-4 h-4 flex-shrink-0" />
