@@ -377,7 +377,9 @@ export default function Home() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-7 h-7 bg-brand rounded-lg flex items-center justify-center font-black text-white text-xs">S</div>
+                        <div className="w-7 h-7 rounded-lg overflow-hidden flex-shrink-0 relative">
+                          <img src="/simbaheaderM.png" alt="Simba" style={{ position: 'absolute', height: '100%', width: 'auto', maxWidth: 'none', left: 0, top: 0 }} />
+                        </div>
                         <span className="font-black text-gray-900 dark:text-white">SIMBA</span>
                       </div>
                       <p className="text-xs text-gray-400 leading-relaxed">{t.aboutSimbaDesc}</p>

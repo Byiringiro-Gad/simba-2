@@ -51,10 +51,28 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
           {/* Logo */}
           <Link href="/" onClick={() => setActiveTab('home')} className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center font-black text-gray-900 text-lg">
-              S
+            {/* Show only the circular icon — crop the text side out */}
+            <div
+              className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0"
+              style={{ position: 'relative' }}
+            >
+              <img
+                src="/simbaheaderM.png"
+                alt="Simba"
+                style={{
+                  position: 'absolute',
+                  height: '100%',
+                  width: 'auto',
+                  maxWidth: 'none',
+                  left: 0,
+                  top: 0,
+                }}
+              />
             </div>
-            <span className="hidden sm:block font-black text-xl text-white tracking-tight">SIMBA</span>
+            <span className="hidden sm:block font-black text-xl text-white tracking-tight leading-none">
+              SIMBA
+              <span className="block text-[10px] font-medium text-white/60 tracking-widest uppercase">Online Supermarket</span>
+            </span>
           </Link>
 
           {/* Menu / categories button */}
