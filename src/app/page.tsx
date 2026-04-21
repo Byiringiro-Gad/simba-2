@@ -120,28 +120,28 @@ function WhySimbaSection() {
       </div>
 
       {/* App download CTA */}
-      <div className="bg-gradient-to-r from-brand-dark to-gray-900 rounded-2xl p-5 flex items-center gap-4">
+      <div className="bg-gradient-to-r from-brand-dark to-gray-900 rounded-2xl p-7 sm:p-8 flex items-center gap-6">
         <div className="flex-1">
-          <p className="font-black text-white text-base leading-tight mb-1">
+          <p className="font-black text-white text-xl sm:text-2xl leading-tight mb-2">
             {language === 'fr' ? 'Téléchargez l\'app Simba' : language === 'rw' ? 'Pakurura porogaramu ya Simba' : 'Get the Simba App'}
           </p>
-          <p className="text-white/50 text-xs font-medium mb-3">
-            {language === 'fr' ? 'Commandez encore plus vite' : language === 'rw' ? 'Tumiza vuba kurushaho' : 'Order even faster, track in real time'}
+          <p className="text-white/60 text-sm font-medium mb-5">
+            {language === 'fr' ? 'Commandez encore plus vite, suivez en temps réel' : language === 'rw' ? 'Tumiza vuba kurushaho, kurikirana nzima' : 'Order even faster, track your delivery in real time'}
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <a href="https://play.google.com" target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white flex-shrink-0"><path d="M3.18 23.76c.3.17.64.24.99.2l12.6-11.53L13.5 9.2 3.18 23.76zm16.7-10.2L17.1 12l-3.6 3.3 3.6 3.3 2.8-1.6c.8-.46.8-1.68-.02-2.14zM3 .44C2.7.6 2.5.94 2.5 1.38v21.24c0 .44.2.78.5.94L14.7 12 3 .44zm10.5 11.1L3.99.24c-.35-.04-.69.03-.99.2L13.5 12l-.0-.46z"/></svg>
-              <span className="text-white text-[10px] font-black">Google Play</span>
+              className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl transition-colors border border-white/10">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white flex-shrink-0"><path d="M3.18 23.76c.3.17.64.24.99.2l12.6-11.53L13.5 9.2 3.18 23.76zm16.7-10.2L17.1 12l-3.6 3.3 3.6 3.3 2.8-1.6c.8-.46.8-1.68-.02-2.14zM3 .44C2.7.6 2.5.94 2.5 1.38v21.24c0 .44.2.78.5.94L14.7 12 3 .44zm10.5 11.1L3.99.24c-.35-.04-.69.03-.99.2L13.5 12l-.0-.46z"/></svg>
+              <span className="text-white text-xs font-black">Google Play</span>
             </a>
             <a href="https://apps.apple.com" target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white flex-shrink-0"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-              <span className="text-white text-[10px] font-black">App Store</span>
+              className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl transition-colors border border-white/10">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white flex-shrink-0"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+              <span className="text-white text-xs font-black">App Store</span>
             </a>
           </div>
         </div>
-        <div className="text-5xl flex-shrink-0">📱</div>
+        <div className="text-7xl flex-shrink-0 hidden sm:block">📱</div>
       </div>
 
     </div>
