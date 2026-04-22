@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { getPool } from '@/lib/db';
 
-// PATCH /api/orders/[id] — update order status
+export const dynamic = 'force-dynamic';
+
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const pool = getPool();
+  const conn = await pool.getConnection();
   try {
     const { status } = await req.json();
     const { id } = params;
@@ -11,7 +14,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ ok: false, error: 'Invalid status' }, { status: 400 });
     }
 
-    await query(
+    await conn.execute(
       `UPDATE orders SET status = ?, updated_at = NOW() WHERE id = ?`,
       [status, id]
     );
@@ -20,5 +23,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   } catch (err: any) {
     console.error('[PATCH /api/orders/:id]', err.message);
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
+  } finally {
+    conn.release();
   }
 }

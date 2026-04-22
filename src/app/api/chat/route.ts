@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+export const dynamic = 'force-dynamic';
+
 const SYSTEM_CONTEXT = `You are Pulse, the AI assistant for Simba Supermarket in Kigali, Rwanda.
 You are helpful, friendly, and knowledgeable. You can answer ANY question — general knowledge, recipes, advice, math, science, history, etc.
 
