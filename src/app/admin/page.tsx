@@ -40,12 +40,17 @@ const STATUS = {
   cancelled:  { label: 'Cancelled',  color: 'text-red-600',   bg: 'bg-red-50 dark:bg-red-900/20',      border: 'border-red-200 dark:border-red-800',      icon: XCircle },
 };
 
-// ── Load orders from API ──────────────────────────────────────────────────────
+// ── Load orders from backend API ──────────────────────────────────────────────
+const ADMIN_TOKEN = typeof window !== 'undefined'
+  ? localStorage.getItem('admin_token') ?? ''
+  : '';
+
 async function fetchOrders(): Promise<Order[]> {
   try {
-    const res = await fetch('/api/admin/orders');
-    if (!res.ok) throw new Error('Failed to fetch');
-    return await res.json();
+    const token = localStorage.getItem('admin_token') ?? '';
+    const { adminApi } = await import('@/lib/api');
+    const data = await adminApi.getOrders(token);
+    return Array.isArray(data) ? data : [];
   } catch (err) {
     console.error(err);
     return [];
@@ -87,11 +92,9 @@ export default function AdminDashboard() {
   const handleStatusChange = async (orderId: string, newStatus: Order['status']) => {
     setUpdating(orderId);
     try {
-      const res = await fetch(`/api/admin/orders/${orderId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      });
+      const token = localStorage.getItem('admin_token') ?? '';
+      const { adminApi } = await import('@/lib/api');
+      const res = await adminApi.updateStatus(token, orderId, newStatus);
       if (res.ok) {
         const updated = orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o);
         setOrders(updated);

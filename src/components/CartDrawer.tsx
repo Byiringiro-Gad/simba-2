@@ -69,33 +69,27 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
       const id = `SIMB-${Math.floor(Math.random() * 90000 + 10000)}`;
 
       try {
-        // Save order to database
-        const res = await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id,
-            customerName: fullName.trim(),
-            customerPhone: `+250${momoNumber}`,
-            deliveryAddress: address.trim(),
-            deliverySlot: scheduledDelivery,
-            paymentMethod: carrier,
-            items: cart,
-            subtotal,
-            deliveryFee: DELIVERY_FEE,
-            discount: discountAmount,
-            total,
-            promoCode: appliedPromo ?? null,
-          }),
+        // Save order to backend database
+        const { ordersApi } = await import('@/lib/api');
+        const result = await ordersApi.place({
+          id,
+          userId: user?.id,
+          customerName: fullName.trim(),
+          customerPhone: `+250${momoNumber}`,
+          deliveryAddress: address.trim(),
+          deliverySlot: scheduledDelivery,
+          paymentMethod: carrier,
+          items: cart,
+          subtotal,
+          deliveryFee: DELIVERY_FEE,
+          discount: discountAmount,
+          total,
+          promoCode: appliedPromo ?? null,
         });
 
-        const data = await res.json();
+        if (!result.ok) throw new Error(result.error ?? 'Failed');
 
-        if (!data.ok) {
-          throw new Error(data.error ?? 'Failed to place order');
-        }
-
-        // Also save to local store for order history tab
+        // Save to local store for order history tab
         placeOrder({
           id,
           items: cart,
