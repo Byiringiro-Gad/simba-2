@@ -267,7 +267,7 @@ export default function SimbaPulse() {
     }
   }, [chat, isTyping]);
 
-  const handleSend = (msg?: string) => {
+  const handleSend = async (msg?: string) => {
     const text = (msg || message).trim();
     if (!text || isTyping) return;
 
@@ -275,7 +275,33 @@ export default function SimbaPulse() {
     setMessage('');
     setIsTyping(true);
 
-    const delay = 500 + Math.random() * 500;
+    try {
+      // Try real Gemini API first
+      const history = chat
+        .filter((_, i) => i > 0 || chat[0].role === 'user')
+        .map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
+      history.push({ role: 'user', content: text });
+
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history, language }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.message && !data.message.startsWith('AI service not configured') && !data.message.startsWith('AI Error')) {
+          setIsTyping(false);
+          setChat(prev => [...prev, { role: 'assistant', text: data.message }]);
+          return;
+        }
+      }
+    } catch {
+      // API unavailable — fall through to local engine
+    }
+
+    // Local engine fallback
+    const delay = 400 + Math.random() * 400;
     setTimeout(() => {
       setIsTyping(false);
       setChat(prev => [...prev, buildResponse(text, language, allProducts)]);

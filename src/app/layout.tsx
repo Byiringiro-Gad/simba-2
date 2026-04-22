@@ -5,6 +5,7 @@ import ThemeProvider from "@/components/ThemeProvider";
 import SimbaPulse from "@/components/SimbaPulse";
 import ToastContainer from "@/components/Toast";
 import AuthModal from "@/components/AuthModal";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,7 +20,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} pb-16 sm:pb-0`}>
         <ThemeProvider>
-          {children}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
           <SimbaPulse />
           <AuthModal />
           <ToastContainer />

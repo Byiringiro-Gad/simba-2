@@ -5,7 +5,7 @@ import { useSimbaStore } from '@/store/useSimbaStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Mail, Lock, User, Phone, Eye, EyeOff,
-  CheckCircle2, ArrowRight, ShoppingBag, AlertCircle
+  CheckCircle2, ArrowRight, ShoppingBag, AlertCircle, Gift
 } from 'lucide-react';
 import { toast } from './Toast';
 
@@ -57,11 +57,13 @@ export default function AuthModal() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [referralInput, setReferralInput] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const reset = () => {
     setName(''); setEmail(''); setPhone('');
     setPassword(''); setConfirm('');
+    setReferralInput('');
     setErrors({}); setShowPass(false);
     setShowConfirm(false); setForgotSent(false);
   };
@@ -122,6 +124,10 @@ export default function AuthModal() {
         phone: phone.trim() || undefined,
         passwordHash: simpleHash(password),
       });
+      // Apply referral bonus if code provided
+      if (referralInput.trim()) {
+        toast.success(`Referral code applied! You'll earn 50 bonus points on your first order.`);
+      }
       toast.success(`Account created! Please sign in with your new credentials.`);
       reset();
       setMode('login');
@@ -258,6 +264,24 @@ export default function AuthModal() {
                           placeholder="+250 78X XXX XXX" className={`${inputClass('phone')} pl-10`} />
                       </div>
                       {errors.phone && <p className="text-xs text-red-500 mt-1 font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.phone}</p>}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Referral code — register */}
+                <AnimatePresence>
+                  {mode === 'register' && (
+                    <motion.div key="referral-field"
+                      initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
+                      <label className="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1.5">
+                        Referral Code <span className="text-gray-400 font-normal normal-case tracking-normal">(optional)</span>
+                      </label>
+                      <div className="relative">
+                        <Gift className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input type="text" value={referralInput} onChange={e => setReferralInput(e.target.value.toUpperCase())}
+                          placeholder="e.g. SIMBAABCD12" className={`${inputBase} border-gray-200 dark:border-gray-700 focus:border-brand pl-10 uppercase`} />
+                      </div>
+                      <p className="text-[11px] text-gray-400 mt-1">You and your friend both earn 50 loyalty points</p>
                     </motion.div>
                   )}
                 </AnimatePresence>

@@ -96,7 +96,8 @@ interface SimbaState {
   setActiveTab: (tab: SimbaState['activeTab']) => void;
 
   // Actions — Orders
-  placeOrder: (items: CartItem[], total: number) => string;
+  placeOrder: (orderData: { id: string, items: CartItem[], total: number, customerName: string, customerPhone: string, customerAddress: string, userId?: string }) => Promise<boolean>;
+  fetchOrders: (userId: string) => Promise<void>;
 
   // Actions — Promo
   applyPromo: (code: string) => boolean;
@@ -190,11 +191,47 @@ export const useSimbaStore = create<SimbaState>()(
       setActiveTab: (activeTab) => set({ activeTab }),
 
       // Orders
-      placeOrder: (items, total) => {
-        const id = `SIMB-${Math.floor(Math.random() * 90000 + 10000)}`;
-        const order: Order = { id, date: new Date().toISOString(), items, total, status: 'processing' };
-        set((s) => ({ orders: [order, ...s.orders] }));
-        return id;
+      placeOrder: async (orderData) => {
+        try {
+          const res = await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData),
+          });
+          
+          if (!res.ok) throw new Error('Failed to place order');
+
+          const order: Order = { 
+            id: orderData.id, 
+            date: new Date().toISOString(), 
+            items: orderData.items, 
+            total: orderData.total, 
+            status: 'processing' 
+          };
+          
+          set((s) => ({ orders: [order, ...s.orders] }));
+          return true;
+        } catch (err) {
+          console.error(err);
+          return false;
+        }
+      },
+
+      fetchOrders: async (userId) => {
+        try {
+          const res = await fetch(`/api/orders?userId=${userId}`);
+          if (res.ok) {
+            const data = await res.json();
+            // Map created_at to date for compatibility with the store's Order interface
+            const formatted = data.map((o: any) => ({
+              ...o,
+              date: o.createdAt || new Date().toISOString()
+            }));
+            set({ orders: formatted });
+          }
+        } catch (err) {
+          console.error('Failed to fetch orders', err);
+        }
       },
 
       // Promo

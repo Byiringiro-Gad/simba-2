@@ -125,7 +125,7 @@ export const translations = {
     branches:             "Our Branches",
     branchesDesc:         "Across Kigali for your convenience",
     liveBranches:         "Live Locations",
-    activeBranches:       "8 Active Branches",
+    activeBranches:       "10 Active Branches",
 
     // Address modal
     deliveryAddressTitle: "Delivery Address",
@@ -321,7 +321,7 @@ export const translations = {
     branches:             "Nos agences",
     branchesDesc:         "À travers Kigali pour votre commodité",
     liveBranches:         "Emplacements en direct",
-    activeBranches:       "8 agences actives",
+    activeBranches:       "10 agences actives",
 
     // Adresse
     deliveryAddressTitle: "Adresse de livraison",
@@ -517,7 +517,7 @@ export const translations = {
     branches:             "Amashami Yacu",
     branchesDesc:         "Mu Kigali hose ku bwogosore bwawe",
     liveBranches:         "Aho Bari Ubu",
-    activeBranches:       "Amashami 8 Akora",
+    activeBranches:       "Amashami 10 Akora",
 
     // Aderesi
     deliveryAddressTitle: "Aho Kugezwa",

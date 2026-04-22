@@ -234,13 +234,13 @@ export default function AccountTab() {
             icon: Phone,
             label: t.contactUs,
             sub: t.contactPhone,
-            action: () => {},
+            action: () => window.open('https://wa.me/250788000000', '_blank'),
           },
           {
             icon: Shield,
             label: t.aboutSimba,
             sub: t.aboutSimbaDesc,
-            action: () => {},
+            action: () => window.open('https://www.simbaonlineshopping.com', '_blank'),
           },
         ].map((item, i, arr) => {
           const Icon = item.icon;

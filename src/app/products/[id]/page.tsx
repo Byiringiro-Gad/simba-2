@@ -28,7 +28,6 @@ const DELIVERY_SLOTS: { id: DeliverySlot; label: string; sub: string; icon: stri
 ];
 
 // Deterministic recipe suggestions based on category
-const RECIPE_INGREDIENTS: Record<string, number[]> = {};
 
 function StarRating({ value, onChange, size = 'md' }: { value: number; onChange?: (v: number) => void; size?: 'sm' | 'md' }) {
   const [hover, setHover] = useState(0);

@@ -148,6 +148,20 @@ function WhySimbaSection() {
   );
 }
 
+// ── Branch locations ─────────────────────────────────────────────────────────
+const BRANCHES = [
+  { name: 'City Center (Union Trade)',  address: '1 KN 4 Ave, Kigali' },
+  { name: 'KN 5 Rd Branch',            address: 'KN 5 Rd, Kigali' },
+  { name: 'KG 541 St Branch',          address: 'KG 541 St, Kigali' },
+  { name: 'Kimironko Branch',          address: '342F+3V5, Kimironko, Kigali' },
+  { name: 'KG 192 St Branch',          address: 'KG 192 St, Kigali' },
+  { name: 'Nyamirambo Branch',         address: '23H4+26V, Kigali' },
+  { name: 'KK 35 Ave Branch',          address: 'KK 35 Ave, Kigali' },
+  { name: 'Branch 8',                  address: '24G3+MCV, Kigali' },
+  { name: 'Branch 9',                  address: '24J3+Q3, Kigali' },
+  { name: 'Gisenyi Branch',            address: '8754+P7W, Gisenyi' },
+];
+
 // ── Recently Viewed Section ───────────────────────────────────────────────────
 function RecentlyViewedSection({ data }: { data: SimbaData }) {
   const { recentlyViewed, addToCart, cart, updateQuantity, language } = useSimbaStore();
@@ -355,20 +369,45 @@ export default function Home() {
                       {t.liveBranches}
                     </span>
                   </div>
-                  <div className="w-full h-56 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 relative">
+
+                  {/* Map — centered on Kigali showing all Simba branches */}
+                  <div className="w-full h-64 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 relative mb-4">
                     <iframe
-                      src="https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d63797.83980155694!2d30.0401!3d-1.95!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1ssimba%20supermarket!5e0!3m2!1sen!2srw!4v1713530000000!5m2!1sen!2srw"
-                      className="w-full h-full" style={{ border: 0 }}
-                      allowFullScreen loading="lazy"
+                      src="https://www.google.com/maps/embed?pb=!1m56!1m12!1m3!1d31898.5!2d30.0588!3d-1.9441!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m41!3e0!4m5!1s0x19dca42446b3b0b5%3A0x4e3e3e3e3e3e3e3e!2sKN%204%20Ave%2C%20Kigali!3m2!1d-1.9441!2d30.0588!4m5!1s0x19dca4244!2sKN%205%20Rd%2C%20Kigali!3m2!1d-1.9500!2d30.0601!4m5!1s0x19dca5!2sKG%20541%20St%2C%20Kigali!3m2!1d-1.9380!2d30.0712!4m5!1s0x19dca6!2sKimironko%2C%20Kigali!3m2!1d-1.9270!2d30.1020!4m5!1s0x19dca7!2sKG%20192%20St%2C%20Kigali!3m2!1d-1.9310!2d30.0890!4m5!1s0x19dca8!2sNyamirambo%2C%20Kigali!3m2!1d-1.9780!2d30.0420!5e0!3m2!1sen!2srw!4v1713530000000!5m2!1sen!2srw"
+                      className="w-full h-full"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
                       title="Simba Supermarket Locations"
                     />
                     <div className="absolute bottom-3 right-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-3 py-2 rounded-xl shadow-lg border dark:border-gray-700">
-                      <p className="text-[9px] font-black text-red-600 flex items-center gap-1.5">
+                      <p className="text-[10px] font-black text-red-600 flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
                         {t.activeBranches}
                       </p>
                     </div>
+                  </div>
+
+                  {/* Branch list */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {BRANCHES.map((b, i) => (
+                      <a
+                        key={i}
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Simba Supermarket ' + b.address)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-brand/40 hover:shadow-sm transition-all"
+                      >
+                        <div className="w-8 h-8 bg-red-50 dark:bg-red-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <span className="text-red-500 font-black text-xs">{i + 1}</span>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-sm text-gray-900 dark:text-white truncate">{b.name}</p>
+                          <p className="text-xs text-gray-400 truncate">{b.address}</p>
+                        </div>
+                      </a>
+                    ))}
                   </div>
                 </section>
 

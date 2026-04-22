@@ -5,10 +5,17 @@ import { translations } from '@/lib/translations';
 import { ClipboardList, Package, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useEffect } from 'react';
 
 export default function OrdersTab() {
-  const { orders, addToCart, language } = useSimbaStore();
+  const { orders, addToCart, language, user, fetchOrders } = useSimbaStore();
   const t = translations[language];
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchOrders(user.id);
+    }
+  }, [user?.id, fetchOrders]);
 
   const STATUS_CONFIG = {
     processing: { label: t.processing, icon: Clock,         color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },

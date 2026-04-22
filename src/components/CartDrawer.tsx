@@ -18,9 +18,9 @@ const DELIVERY_FEE = 1000;
 export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const {
     cart, updateQuantity, removeFromCart, clearCart, language,
-    addresses, selectedAddressId,
+    addresses, selectedAddressId, user,
     appliedPromo, promoDiscount, applyPromo, removePromo,
-    placeOrder,
+    placeOrder, scheduledDelivery, setScheduledDelivery,
   } = useSimbaStore();
 
   const [step, setStep] = useState<CheckoutStep>('cart');
@@ -51,7 +51,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step === 'cart') {
       setStep('details');
     } else if (step === 'details') {
@@ -65,10 +65,54 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
         toast.error('Please enter a valid phone number');
         return;
       }
-      const id = placeOrder(cart, total);
-      setOrderId(id);
-      setStep('tracking');
-      setTimeout(() => setStep('success'), 5000);
+
+      const id = `SIMB-${Math.floor(Math.random() * 90000 + 10000)}`;
+
+      try {
+        // Save order to database
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id,
+            customerName: fullName.trim(),
+            customerPhone: `+250${momoNumber}`,
+            deliveryAddress: address.trim(),
+            deliverySlot: scheduledDelivery,
+            paymentMethod: carrier,
+            items: cart,
+            subtotal,
+            deliveryFee: DELIVERY_FEE,
+            discount: discountAmount,
+            total,
+            promoCode: appliedPromo ?? null,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (!data.ok) {
+          throw new Error(data.error ?? 'Failed to place order');
+        }
+
+        // Also save to local store for order history tab
+        placeOrder({
+          id,
+          items: cart,
+          total,
+          customerName: fullName.trim(),
+          customerPhone: `+250${momoNumber}`,
+          customerAddress: address.trim(),
+        });
+
+        setOrderId(id);
+        setStep('tracking');
+        setTimeout(() => setStep('success'), 5000);
+
+      } catch (err: any) {
+        console.error('[Order]', err.message);
+        toast.error('Could not place order. Please check your connection and try again.');
+      }
     }
   };
 
@@ -269,11 +313,35 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                       </div>
                     )}
 
+                    {/* Delivery time */}
                     <div>
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{t.fullName} *</label>
-                      <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder={t.namePlaceholder}
-                        className="w-full px-4 py-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-brand outline-none transition-all font-bold text-sm text-gray-900 dark:text-white placeholder:text-gray-400 placeholder:font-normal" />
+                      <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" /> Delivery Time
+                      </p>
+                      <div className="grid grid-cols-4 gap-2">
+                        {([
+                          { id: 'asap', icon: '⚡', label: 'ASAP', sub: '30–45 min' },
+                          { id: 'morning', icon: '🌅', label: 'Morning', sub: '8–12pm' },
+                          { id: 'afternoon', icon: '☀️', label: 'Afternoon', sub: '12–5pm' },
+                          { id: 'evening', icon: '🌙', label: 'Evening', sub: '5–9pm' },
+                        ] as const).map(slot => (
+                          <button key={slot.id} type="button"
+                            onClick={() => setScheduledDelivery(slot.id)}
+                            className={`flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-xl border-2 text-center transition-all ${
+                              scheduledDelivery === slot.id
+                                ? 'border-brand bg-brand-muted'
+                                : 'border-gray-100 dark:border-gray-800 hover:border-gray-200'
+                            }`}>
+                            <span className="text-base">{slot.icon}</span>
+                            <span className={`text-xs font-black ${scheduledDelivery === slot.id ? 'text-brand-dark' : 'text-gray-700 dark:text-gray-300'}`}>{slot.label}</span>
+                            <span className="text-[10px] text-gray-400">{slot.sub}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
+
+                    <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder={t.namePlaceholder}
+                      className="w-full px-4 py-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-brand outline-none transition-all font-bold text-sm text-gray-900 dark:text-white placeholder:text-gray-400 placeholder:font-normal" />
                     <div>
                       <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{t.address} *</label>
                       <div className="relative">
@@ -354,7 +422,9 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                       </motion.div>
                       <div className="absolute bottom-3 right-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md p-3 rounded-xl shadow-lg border dark:border-gray-700">
                         <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">ETA</p>
-                        <p className="text-sm font-black text-gray-900 dark:text-white">~45 min</p>
+                        <p className="text-sm font-black text-gray-900 dark:text-white">
+                          {scheduledDelivery === 'asap' ? '~45 min' : scheduledDelivery === 'morning' ? '8am–12pm' : scheduledDelivery === 'afternoon' ? '12pm–5pm' : '5pm–9pm'}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl border dark:border-gray-800">
@@ -380,8 +450,8 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                     </div>
                     <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{t.success}</h3>
                     <p className="text-gray-400 font-medium mb-2">Order ID: #{orderId}</p>
-                    <div className="flex items-center gap-2 px-4 py-2 bg-brand-accent/20 rounded-full mb-8">
-                      <span className="text-sm font-black text-amber-700 dark:text-brand-accent">+{totalPoints} loyalty points earned!</span>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-brand/20 rounded-full mb-8">
+                      <span className="text-sm font-black text-amber-700 dark:text-brand">+{totalPoints} loyalty points earned!</span>
                     </div>
                     <button onClick={handleReset} className="w-full py-4 bg-brand hover:bg-brand-dark text-white rounded-2xl font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-brand/20">
                       {t.backToStore}
@@ -431,4 +501,5 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
 
 // Promo preview for toast message
 const PROMO_PREVIEW: Record<string, number> = { 'SIMBA10': 10, 'WELCOME': 15, 'KIGALI5': 5 };
+
 

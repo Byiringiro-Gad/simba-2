@@ -91,7 +91,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
             onClick={() => setAddressModalOpen(true)}
             className="hidden md:flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors flex-shrink-0 max-w-[220px]"
           >
-            <MapPin className="w-4 h-4 text-brand-accent flex-shrink-0" />
+            <MapPin className="w-4 h-4 text-brand flex-shrink-0" />
             <div className="text-left min-w-0">
               <p className="text-[9px] text-white/60 font-bold uppercase tracking-wider leading-none mb-0.5">Deliver to</p>
               <p className="text-xs text-white font-bold truncate leading-none">{selectedAddress?.label ?? 'Select address'}</p>
@@ -101,7 +101,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
           {/* Delivery time badge */}
           <div className="hidden lg:flex items-center gap-1.5 px-3 py-2 bg-white/10 rounded-xl flex-shrink-0">
-            <Clock className="w-3.5 h-3.5 text-brand-accent" />
+            <Clock className="w-3.5 h-3.5 text-brand" />
             <span className="text-xs font-black text-white">45 min</span>
           </div>
 
@@ -109,7 +109,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           <div ref={searchRef} className="flex-1 relative">
             <div className={clsx(
               'flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white transition-all',
-              focused ? 'ring-2 ring-brand-accent' : ''
+              focused ? 'ring-2 ring-brand' : ''
             )}>
               <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
               <input
@@ -186,7 +186,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           <div className="flex items-center gap-1 flex-shrink-0">
             {/* Dark mode */}
             <button onClick={toggleDarkMode} className="p-2 rounded-xl hover:bg-white/10 transition-colors" aria-label="Toggle theme">
-              {isDarkMode ? <Sun className="w-5 h-5 text-brand-accent" /> : <Moon className="w-5 h-5 text-white/80" />}
+              {isDarkMode ? <Sun className="w-5 h-5 text-brand" /> : <Moon className="w-5 h-5 text-white/80" />}
             </button>
 
             {/* Language */}
@@ -268,4 +268,5 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
     </header>
   );
 }
+
 
