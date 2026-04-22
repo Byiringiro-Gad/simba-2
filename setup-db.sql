@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS orders (
   id              VARCHAR(20)   PRIMARY KEY,
   customer_name   VARCHAR(100)  NOT NULL DEFAULT '',
   customer_phone  VARCHAR(20)   NOT NULL DEFAULT '',
-  delivery_address TEXT         NOT NULL DEFAULT '',
+  delivery_address VARCHAR(500) NOT NULL DEFAULT '',
   delivery_slot   VARCHAR(20)   NOT NULL DEFAULT 'asap',
   payment_method  VARCHAR(10)   NOT NULL DEFAULT 'mtn',
   subtotal        INT           NOT NULL DEFAULT 0,
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS order_items (
   price       INT           NOT NULL,
   quantity    INT           NOT NULL,
   unit        VARCHAR(50)   NOT NULL DEFAULT 'Pcs',
-  image       TEXT          NOT NULL DEFAULT '',
+  image       VARCHAR(500)  NOT NULL DEFAULT '',
   category    VARCHAR(100)  NOT NULL DEFAULT '',
   FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
