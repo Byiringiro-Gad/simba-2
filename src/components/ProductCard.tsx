@@ -15,18 +15,24 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { addToCart, updateQuantity, cart, toggleFavorite, favorites, language } = useSimbaStore();
+  const { addToCart, updateQuantity, cart, toggleFavorite, favorites, language, branchInventory } = useSimbaStore();
   const t = translations[language];
 
   const cartItem = cart.find(i => i.id === product.id);
   const quantity = cartItem?.quantity ?? 0;
   const isFav = favorites.includes(product.id);
   const { avg, count } = getProductRating(product.id);
-  const stockLeft = getStockCount(product.id);
+
+  // Use branch inventory if available, fall back to global inStock
+  const branchStock = branchInventory[product.id];
+  const isAvailable = branchStock ? branchStock.isAvailable : product.inStock;
+  const stockLeft = branchStock
+    ? (branchStock.stockCount <= 5 && branchStock.stockCount > 0 ? branchStock.stockCount : null)
+    : getStockCount(product.id);
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault(); e.stopPropagation();
-    if (!product.inStock) return;
+    if (!isAvailable) return;
     addToCart(product);
   };
   const handleInc = (e: React.MouseEvent) => {
@@ -65,14 +71,14 @@ export default function ProductCard({ product }: ProductCardProps) {
         </button>
 
         {/* Low stock badge */}
-        {stockLeft !== null && product.inStock && (
+        {stockLeft !== null && isAvailable && (
           <div className="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white rounded-full text-[9px] font-black uppercase tracking-wide shadow-sm">
             {t.onlyLeft} {stockLeft} {t.leftInStock}
           </div>
         )}
 
         {/* Out of stock */}
-        {!product.inStock && (
+        {!isAvailable && (
           <div className="absolute inset-0 bg-white/70 dark:bg-black/70 backdrop-blur-[2px] flex items-center justify-center">
             <span className="bg-gray-800 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
               {t.outOfStock}
@@ -115,10 +121,10 @@ export default function ProductCard({ product }: ProductCardProps) {
                 exit={{ scale: 0.8, opacity: 0 }}
                 transition={{ duration: 0.12 }}
                 onClick={handleAdd}
-                disabled={!product.inStock}
+                disabled={!isAvailable}
                 className={clsx(
                   'w-8 h-8 rounded-xl flex items-center justify-center transition-all',
-                  product.inStock
+                  isAvailable
                     ? 'bg-brand-dark hover:bg-brand text-white active:scale-95 shadow-sm'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-300 cursor-not-allowed'
                 )}

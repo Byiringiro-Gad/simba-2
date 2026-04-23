@@ -66,6 +66,12 @@ interface SimbaState {
   // Orders
   orders: Order[];
 
+  // Inventory — per-branch stock map: { productId: { stockCount, isAvailable } }
+  branchInventory: Record<number, { stockCount: number; isAvailable: boolean }>;
+
+  // Branch ratings — { branchId: { total, avgRating } }
+  branchRatings: Record<string, { total: number; avgRating: number }>;
+
   // Promo
   appliedPromo: string | null;
   promoDiscount: number;
@@ -110,6 +116,14 @@ interface SimbaState {
   placeOrder: (orderData: { id: string, items: CartItem[], total: number, pickupBranch: string, pickupSlot: PickupSlotId, depositAmount: number }) => void;
   fetchOrders: (userId: string) => Promise<void>;
 
+  // Actions — Inventory
+  fetchBranchInventory: (branchId: string) => Promise<void>;
+  setBranchInventory: (inventory: Record<number, { stockCount: number; isAvailable: boolean }>) => void;
+
+  // Actions — Branch Reviews
+  fetchBranchRatings: () => Promise<void>;
+  submitBranchReview: (review: { branchId: string; branchName: string; orderId: string; rating: number; comment?: string }) => Promise<boolean>;
+
   // Actions — Promo
   applyPromo: (code: string) => boolean;
   removePromo: () => void;
@@ -148,6 +162,8 @@ export const useSimbaStore = create<SimbaState>()(
       isDarkMode: false,
       activeTab: 'home',
       orders: [],
+      branchInventory: {},
+      branchRatings: {},
       appliedPromo: null,
       promoDiscount: 0,
 
@@ -174,7 +190,14 @@ export const useSimbaStore = create<SimbaState>()(
       clearCart: () => set({ cart: [], appliedPromo: null, promoDiscount: 0 }),
       setCartOpen: (open) => set({ isCartOpen: open }),
       setPickupSlot: (pickupSlot) => set({ pickupSlot }),
-      setPickupBranch: (pickupBranchId) => set({ pickupBranchId, isPickupBranchModalOpen: false }),
+      setPickupBranch: (pickupBranchId) => {
+        set({ pickupBranchId, isPickupBranchModalOpen: false });
+        // Fetch inventory for the newly selected branch
+        fetch(`/api/inventory/${pickupBranchId}`)
+          .then(r => r.json())
+          .then(data => { if (data.ok) set({ branchInventory: data.inventory ?? {} }); })
+          .catch(() => {});
+      },
       setPickupBranchModalOpen: (isPickupBranchModalOpen) => set({ isPickupBranchModalOpen }),
 
       // Favorites
@@ -235,6 +258,61 @@ export const useSimbaStore = create<SimbaState>()(
           }
         } catch (err) {
           console.error('Failed to fetch orders', err);
+        }
+      },
+
+      // Inventory
+      fetchBranchInventory: async (branchId) => {
+        try {
+          const res = await fetch(`/api/inventory/${branchId}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.ok && data.inventory) {
+              set({ branchInventory: data.inventory });
+            }
+          }
+        } catch (err) {
+          console.error('Failed to fetch branch inventory', err);
+        }
+      },
+      setBranchInventory: (inventory) => set({ branchInventory: inventory }),
+
+      // Branch Reviews
+      fetchBranchRatings: async () => {
+        try {
+          const res = await fetch('/api/reviews');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.ok) set({ branchRatings: data.ratings ?? {} });
+          }
+        } catch { /* silent */ }
+      },
+      submitBranchReview: async ({ branchId, branchName, orderId, rating, comment }) => {
+        try {
+          const state = (useSimbaStore.getState() as any);
+          const res = await fetch('/api/reviews', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              branchId,
+              branchName,
+              userId: state.user?.id ?? null,
+              userName: state.user?.name ?? 'Anonymous',
+              orderId,
+              rating,
+              comment: comment ?? null,
+            }),
+          });
+          const data = await res.json();
+          if (data.ok) {
+            // Refresh ratings
+            const ratingsRes = await fetch('/api/reviews');
+            const ratingsData = await ratingsRes.json();
+            if (ratingsData.ok) set({ branchRatings: ratingsData.ratings ?? {} });
+          }
+          return data.ok;
+        } catch {
+          return false;
         }
       },
 

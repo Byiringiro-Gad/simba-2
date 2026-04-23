@@ -1,9 +1,10 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { getBranchById, SIMBA_BRANCHES } from '@/lib/branches';
 import { translations } from '@/lib/translations';
-import { MapPin, Check, X, Store } from 'lucide-react';
+import { MapPin, Check, X, Store, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function PickupBranchModal() {
@@ -13,10 +14,19 @@ export default function PickupBranchModal() {
     pickupBranchId,
     setPickupBranch,
     language,
+    branchRatings,
+    fetchBranchRatings,
   } = useSimbaStore();
 
   const t = translations[language];
   const selectedBranch = getBranchById(pickupBranchId);
+
+  // Load branch ratings when modal opens
+  useEffect(() => {
+    if (isPickupBranchModalOpen) {
+      fetchBranchRatings();
+    }
+  }, [isPickupBranchModalOpen]);
 
   return (
     <AnimatePresence>
@@ -43,15 +53,11 @@ export default function PickupBranchModal() {
                 </div>
                 <div>
                   <h2 className="font-black text-gray-900 dark:text-white text-base">{t.chooseBranchTitle}</h2>
-                  <p className="text-xs text-gray-400 font-medium">
-                    {t.chooseBranchSub}
-                  </p>
+                  <p className="text-xs text-gray-400 font-medium">{t.chooseBranchSub}</p>
                 </div>
               </div>
-              <button
-                onClick={() => setPickupBranchModalOpen(false)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
-              >
+              <button onClick={() => setPickupBranchModalOpen(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors">
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
@@ -68,6 +74,10 @@ export default function PickupBranchModal() {
             <div className="p-4 max-h-[60vh] overflow-y-auto space-y-2">
               {SIMBA_BRANCHES.map((branch) => {
                 const isSelected = branch.id === pickupBranchId;
+                const branchRating = branchRatings[branch.id];
+                const avgRating = branchRating?.avgRating ?? null;
+                const reviewCount = branchRating?.total ?? 0;
+
                 return (
                   <button
                     key={branch.id}
@@ -78,17 +88,26 @@ export default function PickupBranchModal() {
                         : 'border-gray-100 dark:border-gray-800 hover:border-brand/30'
                     }`}
                   >
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                        isSelected ? 'bg-brand' : 'bg-gray-100 dark:bg-gray-800'
-                      }`}
-                    >
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      isSelected ? 'bg-brand' : 'bg-gray-100 dark:bg-gray-800'
+                    }`}>
                       <MapPin className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-gray-400'}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`font-black text-sm ${isSelected ? 'text-brand-dark' : 'text-gray-900 dark:text-white'}`}>
-                        {branch.name}
-                      </p>
+                      <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                        <p className={`font-black text-sm ${isSelected ? 'text-brand-dark' : 'text-gray-900 dark:text-white'}`}>
+                          {branch.name}
+                        </p>
+                        {avgRating ? (
+                          <div className="flex items-center gap-1 px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 rounded-full">
+                            <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                            <span className="text-xs font-black text-amber-700 dark:text-amber-400">{avgRating}</span>
+                            <span className="text-[10px] text-gray-400">({reviewCount})</span>
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-gray-400">No reviews yet</span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{branch.area}</p>
                       <p className="text-xs text-gray-400 mt-1">{branch.pickupNote}</p>
                     </div>
@@ -107,4 +126,3 @@ export default function PickupBranchModal() {
     </AnimatePresence>
   );
 }
-

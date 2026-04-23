@@ -5,7 +5,7 @@ import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import {
   X, Plus, Minus, Trash2, CheckCircle2, ChevronLeft, ChevronRight,
-  MapPin, Clock, ShieldCheck, Package, Tag, Gift, Store, Smartphone
+  MapPin, Clock, ShieldCheck, Package, Tag, Gift, Store, Smartphone, Star
 } from 'lucide-react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,6 +14,109 @@ import { toast } from './Toast';
 import { getBranchById, PICKUP_DEPOSIT_RWF, PICKUP_SLOTS } from '@/lib/branches';
 
 const DEPOSIT_AMOUNT = PICKUP_DEPOSIT_RWF;
+
+// ── Success step with branch review ──────────────────────────────────────────
+function SuccessStep({ orderId, selectedBranch, totalPoints, t, onReset, pickupBranchId }: {
+  orderId: string;
+  selectedBranch: ReturnType<typeof getBranchById>;
+  totalPoints: number;
+  t: any;
+  onReset: () => void;
+  pickupBranchId: string;
+}) {
+  const { submitBranchReview } = useSimbaStore();
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [comment, setComment] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmitReview = async () => {
+    if (!rating || !selectedBranch) return;
+    setSubmitting(true);
+    await submitBranchReview({
+      branchId: pickupBranchId,
+      branchName: selectedBranch.name,
+      orderId,
+      rating,
+      comment: comment.trim() || undefined,
+    });
+    setSubmitted(true);
+    setSubmitting(false);
+  };
+
+  return (
+    <motion.div key="success" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+      className="flex flex-col items-center text-center py-8 px-6">
+      {/* Success icon */}
+      <div className="relative mb-5">
+        <div className="absolute inset-0 bg-green-400 blur-3xl opacity-20 rounded-full" />
+        <div className="relative w-20 h-20 bg-green-500 rounded-full flex items-center justify-center shadow-2xl shadow-green-500/30">
+          <CheckCircle2 className="w-10 h-10 text-white" />
+        </div>
+      </div>
+      <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-1">{t.success}</h3>
+      <p className="text-gray-400 font-medium mb-1">{t.orderIdLabel}: #{orderId}</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+        {t.pickupConfirmedAt} {selectedBranch?.name}. {t.depositPaid}: {DEPOSIT_AMOUNT.toLocaleString()} RWF
+      </p>
+      <div className="flex items-center gap-2 px-4 py-2 bg-brand/20 rounded-full mb-6">
+        <span className="text-sm font-black text-amber-700 dark:text-brand">+{totalPoints} {t.loyaltyPointsEarned}</span>
+      </div>
+
+      {/* Branch review */}
+      {!submitted ? (
+        <div className="w-full bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 mb-5 text-left">
+          <p className="font-black text-sm text-gray-900 dark:text-white mb-1">
+            {t.language === 'fr' ? 'Évaluez votre expérience' : t.language === 'rw' ? 'Tanga Igitekerezo' : 'Rate your experience'}
+          </p>
+          <p className="text-xs text-gray-400 mb-3">
+            {selectedBranch?.name}
+          </p>
+          {/* Stars */}
+          <div className="flex gap-1 mb-3 justify-center">
+            {[1,2,3,4,5].map(i => (
+              <button key={i} type="button"
+                onClick={() => setRating(i)}
+                onMouseEnter={() => setHover(i)}
+                onMouseLeave={() => setHover(0)}
+                className="transition-transform hover:scale-110">
+                <Star className={`w-8 h-8 transition-colors ${
+                  (hover || rating) >= i ? 'fill-brand text-brand' : 'text-gray-200 dark:text-gray-700'
+                }`} />
+              </button>
+            ))}
+          </div>
+          {rating > 0 && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+              <textarea
+                value={comment}
+                onChange={e => setComment(e.target.value)}
+                placeholder={t.commentPlaceholder}
+                rows={2}
+                className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-brand transition-colors text-gray-900 dark:text-white placeholder:text-gray-400 resize-none mb-3"
+              />
+              <button onClick={handleSubmitReview} disabled={submitting}
+                className="w-full py-2.5 bg-brand-dark text-white rounded-xl font-black text-sm hover:bg-gray-800 transition-colors disabled:opacity-50">
+                {submitting ? '...' : t.submitReview}
+              </button>
+            </motion.div>
+          )}
+        </div>
+      ) : (
+        <div className="w-full flex items-center gap-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-4 mb-5">
+          <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+          <p className="text-sm font-bold text-green-700 dark:text-green-400">{t.reviewSubmitted}</p>
+        </div>
+      )}
+
+      <button onClick={onReset}
+        className="w-full py-4 bg-brand hover:bg-brand-dark text-white rounded-2xl font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-brand/20">
+        {t.backToStore}
+      </button>
+    </motion.div>
+  );
+}
 
 export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const {
@@ -520,25 +623,14 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                 )}
 
                 {step === 'success' && (
-                  <motion.div key="success" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center justify-center text-center py-12 px-6">
-                    <div className="relative mb-6">
-                      <div className="absolute inset-0 bg-green-400 blur-3xl opacity-20 rounded-full" />
-                      <div className="relative w-24 h-24 bg-green-500 rounded-full flex items-center justify-center shadow-2xl shadow-green-500/30">
-                        <CheckCircle2 className="w-12 h-12 text-white" />
-                      </div>
-                    </div>
-                    <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{t.success}</h3>
-                    <p className="text-gray-400 font-medium mb-2">{t.orderIdLabel}: #{orderId}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                      {t.pickupConfirmedAt} {selectedBranch?.name}. {t.depositPaid}: {DEPOSIT_AMOUNT.toLocaleString()} RWF
-                    </p>
-                    <div className="flex items-center gap-2 px-4 py-2 bg-brand/20 rounded-full mb-8">
-                      <span className="text-sm font-black text-amber-700 dark:text-brand">+{totalPoints} {t.loyaltyPointsEarned}</span>
-                    </div>
-                    <button onClick={handleReset} className="w-full py-4 bg-brand hover:bg-brand-dark text-white rounded-2xl font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-brand/20">
-                      {t.backToStore}
-                    </button>
-                  </motion.div>
+                  <SuccessStep
+                    orderId={orderId}
+                    selectedBranch={selectedBranch}
+                    totalPoints={totalPoints}
+                    t={t}
+                    onReset={handleReset}
+                    pickupBranchId={pickupBranchId}
+                  />
                 )}
               </AnimatePresence>
             </div>
