@@ -1,17 +1,19 @@
 'use client';
 
 import { useSimbaStore } from '@/store/useSimbaStore';
+import { translations } from '@/lib/translations';
 import { Copy, Gift, Users } from 'lucide-react';
 import { toast } from './Toast';
 import { motion } from 'framer-motion';
 
 export default function ReferralCard() {
-  const { user } = useSimbaStore();
+  const { user, language } = useSimbaStore();
+  const t = translations[language];
   if (!user?.referralCode) return null;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(user.referralCode!);
-    toast.success('Referral code copied!');
+    toast.success(t.referralCopied);
   };
 
   return (
@@ -25,9 +27,9 @@ export default function ReferralCard() {
           <Gift className="w-5 h-5 text-gray-900" />
         </div>
         <div>
-          <p className="font-black text-sm">Refer a Friend</p>
+          <p className="font-black text-sm">{t.referAFriend}</p>
           <p className="text-white/60 text-sm font-medium mt-0.5">
-            Share your code — you both earn 50 loyalty points when they place their first order.
+            {t.referralDesc}
           </p>
         </div>
       </div>
@@ -41,7 +43,7 @@ export default function ReferralCard() {
 
       <div className="flex items-center gap-2 mt-3">
         <Users className="w-3.5 h-3.5 text-white/40" />
-        <p className="text-xs text-white/40 font-medium">0 friends referred so far</p>
+        <p className="text-xs text-white/40 font-medium">0 {t.friendsReferred}</p>
       </div>
     </motion.div>
   );

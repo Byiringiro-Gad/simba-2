@@ -2,6 +2,7 @@
 
 import { Product } from '@/types';
 import { useSimbaStore } from '@/store/useSimbaStore';
+import { translations } from '@/lib/translations';
 import { Plus, Minus, Heart } from 'lucide-react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,7 +15,8 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { addToCart, updateQuantity, cart, toggleFavorite, favorites } = useSimbaStore();
+  const { addToCart, updateQuantity, cart, toggleFavorite, favorites, language } = useSimbaStore();
+  const t = translations[language];
 
   const cartItem = cart.find(i => i.id === product.id);
   const quantity = cartItem?.quantity ?? 0;
@@ -65,7 +67,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Low stock badge */}
         {stockLeft !== null && product.inStock && (
           <div className="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white rounded-full text-[9px] font-black uppercase tracking-wide shadow-sm">
-            Only {stockLeft} left!
+            {t.onlyLeft} {stockLeft} {t.leftInStock}
           </div>
         )}
 
@@ -73,7 +75,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         {!product.inStock && (
           <div className="absolute inset-0 bg-white/70 dark:bg-black/70 backdrop-blur-[2px] flex items-center justify-center">
             <span className="bg-gray-800 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
-              Out of Stock
+              {t.outOfStock}
             </span>
           </div>
         )}

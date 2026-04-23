@@ -51,16 +51,16 @@ export default function AccountTab() {
             {t.myAccount}
           </h2>
           <p className="text-gray-400 text-sm font-medium mb-8 leading-relaxed">
-            Sign in to track your orders, save favourites, earn loyalty points and manage your deliveries.
+            {t.signInToTrack}
           </p>
 
           {/* Benefits */}
           <div className="grid grid-cols-2 gap-3 mb-8 text-left">
             {[
-              { icon: Package,    label: 'Track Orders',      desc: 'Real-time delivery updates' },
-              { icon: Heart,      label: 'Saved Items',       desc: 'Your favourite products' },
-              { icon: Star,       label: 'Loyalty Points',    desc: 'Earn on every purchase' },
-              { icon: MapPin,     label: 'Saved Addresses',   desc: 'Faster checkout' },
+              { icon: Package,    label: t.trackOrders,          desc: t.trackOrdersDesc },
+              { icon: Heart,      label: t.savedItemsBenefit,    desc: t.savedItemsBenefitDesc },
+              { icon: Star,       label: t.loyaltyPointsBenefit, desc: t.loyaltyPointsBenefitDesc },
+              { icon: MapPin,     label: t.savedAddresses,       desc: t.savedAddressesDesc },
             ].map(({ icon: Icon, label, desc }) => (
               <div key={label} className="bg-white dark:bg-gray-900 rounded-2xl p-4 border border-gray-100 dark:border-gray-800">
                 <div className="w-8 h-8 bg-brand/10 rounded-xl flex items-center justify-center mb-2">
@@ -77,7 +77,7 @@ export default function AccountTab() {
             className="w-full py-4 bg-brand-dark text-white rounded-2xl font-black text-sm hover:bg-gray-800 transition-colors shadow-lg flex items-center justify-center gap-2"
           >
             <LogIn className="w-4 h-4" />
-            Sign In or Create Account
+            {t.signInOrCreate}
           </button>
         </motion.div>
       </div>
@@ -152,7 +152,7 @@ export default function AccountTab() {
           {[
             { label: t.orders,      value: orders.length },
             { label: t.savedItems,  value: favorites.length },
-            { label: 'Spent',       value: `${Math.round(totalSpent / 1000)}K` },
+            { label: t.spent,       value: `${Math.round(totalSpent / 1000)}K` },
           ].map(({ label, value }) => (
             <div key={label} className="py-4 text-center">
               <p className="font-black text-white text-lg leading-none">{value}</p>
@@ -175,9 +175,9 @@ export default function AccountTab() {
           </div>
           <div className="flex-1">
             <p className="font-black text-sm text-green-800 dark:text-green-300">
-              {processingOrders} order{processingOrders > 1 ? 's' : ''} on the way
+              {processingOrders} {t.ordersOnTheWay}
             </p>
-            <p className="text-xs text-green-600 dark:text-green-400 font-medium">Tap to track</p>
+            <p className="text-xs text-green-600 dark:text-green-400 font-medium">{t.tapToTrack}</p>
           </div>
           <ChevronRight className="w-4 h-4 text-green-500" />
         </motion.button>

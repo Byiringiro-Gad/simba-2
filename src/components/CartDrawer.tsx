@@ -154,9 +154,9 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
 
   const stepLabels: Record<CheckoutStep, string> = {
     cart: t.cart,
-    details: 'Pickup Details',
-    payment: 'MoMo Deposit',
-    tracking: 'Branch Prep',
+    details: t.pickupDetails,
+    payment: t.momoDeposit,
+    tracking: t.branchPrep,
     success: t.success,
   };
 
@@ -198,7 +198,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                   <button
                     onClick={() => {
                       clearCart();
-                      toast.info('Cart cleared');
+                      toast.info(t.cartCleared);
                     }}
                     className="p-2 hover:bg-white/10 rounded-xl transition-colors"
                   >
@@ -242,7 +242,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                           <Package className="w-10 h-10 text-brand/30" />
                         </div>
                         <p className="font-black text-gray-900 dark:text-white mb-1">{t.emptyCart}</p>
-                        <p className="text-sm text-gray-400">Add items to get started</p>
+                        <p className="text-sm text-gray-400">{t.emptyCartSub}</p>
                       </div>
                     ) : (
                       <>
@@ -280,7 +280,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                         <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4">
                           <div className="flex items-center gap-2 mb-3">
                             <Gift className="w-4 h-4 text-brand" />
-                            <p className="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Promo Code</p>
+                            <p className="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">{t.promoCodeLabel}</p>
                           </div>
                           {appliedPromo ? (
                             <div className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl px-4 py-3">
@@ -300,15 +300,15 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                                 value={promoInput}
                                 onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
                                 onKeyDown={(e) => e.key === 'Enter' && handleApplyPromo()}
-                                placeholder="Enter code (e.g. SIMBA10)"
+                                placeholder={t.enterPromoCode}
                                 className="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-bold outline-none focus:border-brand transition-colors text-gray-900 dark:text-white placeholder:text-gray-400 placeholder:font-normal uppercase"
                               />
                               <button onClick={handleApplyPromo} className="px-4 py-2.5 bg-brand text-white rounded-xl text-sm font-black hover:bg-brand-dark transition-colors">
-                                Apply
+                                {t.applyBtn}
                               </button>
                             </div>
                           )}
-                          <p className="text-[10px] text-gray-400 mt-2 font-medium">Try: SIMBA10 · WELCOME · KIGALI5</p>
+                          <p className="text-[10px] text-gray-400 mt-2 font-medium">{t.promoTryHint}</p>
                         </div>
                       </>
                     )}
@@ -320,14 +320,14 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                     <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-100 dark:border-green-800">
                       <Clock className="w-5 h-5 text-green-600 flex-shrink-0" />
                       <div>
-                        <p className="text-xs font-black text-green-700 dark:text-green-400 uppercase tracking-wide">Branch Preparation Time</p>
-                        <p className="text-sm font-bold text-green-800 dark:text-green-300">Pickup usually ready in 20-45 min</p>
+                        <p className="text-xs font-black text-green-700 dark:text-green-400 uppercase tracking-wide">{t.branchPrepTime}</p>
+                        <p className="text-sm font-bold text-green-800 dark:text-green-300">{t.pickupReadyIn}</p>
                       </div>
                     </div>
 
                     <div>
                       <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5">
-                        <Store className="w-3.5 h-3.5" /> Pickup Branch
+                        <Store className="w-3.5 h-3.5" /> {t.pickupBranch}
                       </p>
                       <button
                         type="button"
@@ -337,10 +337,10 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                         <MapPin className="w-5 h-5 text-brand flex-shrink-0 mt-0.5" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-black text-gray-900 dark:text-white">
-                            {selectedBranch?.name ?? 'Select a Simba branch'}
+                            {selectedBranch?.name ?? t.selectBranch}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            {selectedBranch?.area ?? 'Choose the branch that should prepare this order'}
+                            {selectedBranch?.area ?? t.chooseBranchDesc}
                           </p>
                         </div>
                         <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
@@ -349,7 +349,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
 
                     <div>
                       <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5" /> Pickup Time
+                        <Clock className="w-3.5 h-3.5" /> {t.pickupTime}
                       </p>
                       <div className="grid grid-cols-4 gap-2">
                         {PICKUP_SLOTS.map((slot) => (
@@ -374,7 +374,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Pickup Name *</label>
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{t.pickupName} *</label>
                       <input
                         type="text"
                         value={fullName}
@@ -387,11 +387,11 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                     <div className="grid grid-cols-2 gap-2">
                       <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
                         <ShieldCheck className="w-4 h-4 text-brand flex-shrink-0" />
-                        <span className="text-[10px] font-bold text-gray-600 dark:text-gray-400">Deposit protects branch prep time</span>
+                        <span className="text-[10px] font-bold text-gray-600 dark:text-gray-400">{t.depositProtects}</span>
                       </div>
                       <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
                         <Store className="w-4 h-4 text-brand flex-shrink-0" />
-                        <span className="text-[10px] font-bold text-gray-600 dark:text-gray-400">Branch receives the order instantly</span>
+                        <span className="text-[10px] font-bold text-gray-600 dark:text-gray-400">{t.branchReceivesOrder}</span>
                       </div>
                     </div>
                   </motion.div>
@@ -400,12 +400,12 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                 {step === 'payment' && (
                   <motion.div key="payment" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} className="p-4 space-y-4">
                     <div className="p-4 rounded-2xl bg-brand-muted border border-brand/20">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">Deposit Due Now</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{t.depositDueNow}</p>
                       <div className="flex items-end justify-between gap-4">
                         <div>
                           <p className="text-2xl font-black text-gray-900 dark:text-white">{DEPOSIT_AMOUNT.toLocaleString()} RWF</p>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            The rest of the basket is settled at pickup.
+                            {t.depositNote}
                           </p>
                         </div>
                         <div className="text-right">
@@ -416,7 +416,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                     </div>
 
                     <div className="space-y-3">
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400">Select Provider</label>
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400">{t.selectProvider}</label>
                       {[
                         { id: 'mtn', label: 'MTN MoMo', sub: 'Mobile Money Rwanda', activeBg: 'bg-[#FFCC00]', activeText: 'text-black', activeBorder: 'border-[#FFCC00]' },
                         { id: 'airtel', label: 'Airtel Money', sub: 'Airtel Rwanda', activeBg: 'bg-[#ED1C24]', activeText: 'text-white', activeBorder: 'border-[#ED1C24]' },
@@ -460,7 +460,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                         />
                       </div>
                       <p className="text-[11px] text-gray-400 font-medium mt-2 text-center">
-                        You&apos;ll receive a {carrier.toUpperCase()} push notification to confirm {DEPOSIT_AMOUNT.toLocaleString()} RWF
+                        {t.momoNotification.replace('push notification', `${carrier.toUpperCase()} push notification`).replace('your payment', `${DEPOSIT_AMOUNT.toLocaleString()} RWF`)}
                       </p>
                     </div>
                   </motion.div>
@@ -470,7 +470,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                   <motion.div key="tracking" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 space-y-4">
                     <div className="flex items-center gap-3 p-4 bg-brand-muted rounded-2xl">
                       <div className="w-2.5 h-2.5 bg-brand rounded-full animate-ping" />
-                      <span className="text-sm font-black text-brand uppercase tracking-wide">Order Confirmed — Sending To Branch</span>
+                      <span className="text-sm font-black text-brand uppercase tracking-wide">{t.orderConfirmedSending}</span>
                     </div>
 
                     <div className="relative h-56 bg-gray-100 dark:bg-gray-900 rounded-2xl overflow-hidden border dark:border-gray-800 p-5">
@@ -484,22 +484,22 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                             <Store className="w-6 h-6 text-brand" />
                           </div>
                           <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Preparing At</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t.preparingAt}</p>
                             <p className="text-sm font-black text-gray-900 dark:text-white">{selectedBranch?.name}</p>
                           </div>
                         </div>
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300">
                             <span className="w-2 h-2 rounded-full bg-green-500" />
-                            Deposit confirmed
+                            {t.depositConfirmed}
                           </div>
                           <div className="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300">
                             <span className="w-2 h-2 rounded-full bg-brand animate-pulse" />
-                            Branch team preparing your basket
+                            {t.branchPreparing}
                           </div>
                           <div className="flex items-center gap-2 text-sm font-bold text-gray-500 dark:text-gray-400">
                             <span className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-700" />
-                            Pickup slot: {selectedPickupSlot.label} ({selectedPickupSlot.window})
+                            {t.pickupTime}: {selectedPickupSlot.label} ({selectedPickupSlot.window})
                           </div>
                         </div>
                       </div>
@@ -510,7 +510,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                         <Smartphone className="w-6 h-6 text-brand" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Pickup Window</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t.pickupWindow}</p>
                         <p className="text-sm font-bold text-gray-900 dark:text-white">
                           {selectedPickupSlot.label} • {selectedPickupSlot.window}
                         </p>
@@ -528,12 +528,12 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                       </div>
                     </div>
                     <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{t.success}</h3>
-                    <p className="text-gray-400 font-medium mb-2">Order ID: #{orderId}</p>
+                    <p className="text-gray-400 font-medium mb-2">{t.orderIdLabel}: #{orderId}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                      Pickup confirmed at {selectedBranch?.name}. Deposit paid: {DEPOSIT_AMOUNT.toLocaleString()} RWF
+                      {t.pickupConfirmedAt} {selectedBranch?.name}. {t.depositPaid}: {DEPOSIT_AMOUNT.toLocaleString()} RWF
                     </p>
                     <div className="flex items-center gap-2 px-4 py-2 bg-brand/20 rounded-full mb-8">
-                      <span className="text-sm font-black text-amber-700 dark:text-brand">+{totalPoints} loyalty points earned!</span>
+                      <span className="text-sm font-black text-amber-700 dark:text-brand">+{totalPoints} {t.loyaltyPointsEarned}</span>
                     </div>
                     <button onClick={handleReset} className="w-full py-4 bg-brand hover:bg-brand-dark text-white rounded-2xl font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-brand/20">
                       {t.backToStore}

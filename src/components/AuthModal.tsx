@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { toast } from './Toast';
 import { authApi } from '@/lib/api';
+import { translations } from '@/lib/translations';
 
 type Mode = 'login' | 'register' | 'forgot';
 
@@ -25,7 +26,8 @@ function validatePhone(phone: string) {
 }
 
 export default function AuthModal() {
-  const { isAuthOpen, setAuthOpen, login } = useSimbaStore();
+  const { isAuthOpen, setAuthOpen, login, language } = useSimbaStore();
+  const t = translations[language];
   const [mode, setMode] = useState<Mode>('login');
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -63,16 +65,16 @@ export default function AuthModal() {
 
   const validate = () => {
     const nextErrors: Record<string, string> = {};
-    if (!validateEmail(email)) nextErrors.email = 'Enter a valid email address';
+    if (!validateEmail(email)) nextErrors.email = t.emailAddress + ' — ' + t.emailPlaceholder;
 
     if (mode !== 'forgot' && !validatePassword(password)) {
-      nextErrors.password = 'Password must be at least 6 characters';
+      nextErrors.password = t.minChars;
     }
 
     if (mode === 'register') {
-      if (!name.trim()) nextErrors.name = 'Full name is required';
-      if (phone && !validatePhone(phone)) nextErrors.phone = 'Enter a valid Rwandan phone number (+250...)';
-      if (password !== confirm) nextErrors.confirm = 'Passwords do not match';
+      if (!name.trim()) nextErrors.name = t.fullNameLabel + ' ' + t.optional.replace('(', '').replace(')', '') + ' required';
+      if (phone && !validatePhone(phone)) nextErrors.phone = t.phonePlaceholder;
+      if (password !== confirm) nextErrors.confirm = t.confirmPassword;
     }
 
     setErrors(nextErrors);
@@ -147,7 +149,13 @@ export default function AuthModal() {
     `${inputBase} ${errors[field] ? 'border-red-400 focus:border-red-500' : 'border-gray-200 dark:border-gray-700 focus:border-brand'}`;
 
   const strengthLevel = password.length === 0 ? 0 : password.length < 4 ? 1 : password.length < 6 ? 2 : password.length < 10 ? 3 : 4;
-  const strengthLabel = ['', 'Weak', 'Fair', 'Good', 'Strong'][strengthLevel];
+  const strengthLabel = [
+    '',
+    t.passwordWeak,
+    t.passwordFair,
+    t.passwordGood,
+    t.passwordStrong,
+  ][strengthLevel];
   const strengthColor = ['', 'bg-red-400', 'bg-amber-400', 'bg-yellow-400', 'bg-green-500'][strengthLevel];
 
   return (
@@ -178,14 +186,14 @@ export default function AuthModal() {
                 </div>
                 <div>
                   <h2 className="font-black text-gray-900 dark:text-white text-lg leading-tight">
-                    {mode === 'login' ? 'Welcome back' : mode === 'register' ? 'Create account' : 'Reset password'}
+                    {mode === 'login' ? t.welcomeBack : mode === 'register' ? t.createAccount : t.resetPassword}
                   </h2>
                   <p className="text-xs text-gray-400 font-medium">
                     {mode === 'login'
-                      ? 'Sign in to your Simba account'
+                      ? t.signInToAccount
                       : mode === 'register'
-                        ? 'Create a real Simba account'
-                        : 'Enter your email to receive a reset link'}
+                        ? t.createRealAccount
+                        : t.enterEmailForReset}
                   </p>
                 </div>
               </div>
@@ -199,20 +207,20 @@ export default function AuthModal() {
                 <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
                   <CheckCircle2 className="w-8 h-8 text-green-500" />
                 </div>
-                <h3 className="font-black text-gray-900 dark:text-white mb-2">Reset link ready</h3>
+                <h3 className="font-black text-gray-900 dark:text-white mb-2">{t.resetLinkReady}</h3>
                 <p className="text-sm text-gray-500 mb-4">
-                  We prepared a password reset link for <span className="font-bold text-gray-800 dark:text-gray-200">{email}</span>.
+                  {t.resetLinkSentTo} <span className="font-bold text-gray-800 dark:text-gray-200">{email}</span>.
                 </p>
                 {resetLink && (
                   <div className="w-full mb-5 p-3 rounded-2xl bg-brand-muted border border-brand/20 text-left">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Demo Reset Link</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{t.demoResetLink}</p>
                     <a href={resetLink} className="text-xs font-bold text-brand-dark break-all hover:underline">
                       {resetLink}
                     </a>
                   </div>
                 )}
                 <button onClick={() => switchMode('login')} className="w-full py-3.5 bg-brand-dark text-white rounded-2xl font-black text-sm hover:bg-brand hover:text-gray-900 transition-colors">
-                  Back to Sign In
+                  {t.backToSignIn}
                 </button>
               </div>
             ) : (
@@ -220,10 +228,10 @@ export default function AuthModal() {
                 <AnimatePresence>
                   {mode === 'register' && (
                     <motion.div key="name-field" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-                      <label className="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1.5">Full Name *</label>
+                      <label className="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1.5">{t.fullNameLabel} *</label>
                       <div className="relative">
                         <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Jean Pierre" className={`${inputClass('name')} pl-10`} />
+                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t.namePlaceholderFull} className={`${inputClass('name')} pl-10`} />
                       </div>
                       {errors.name && <p className="text-xs text-red-500 mt-1 font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.name}</p>}
                     </motion.div>
@@ -231,10 +239,10 @@ export default function AuthModal() {
                 </AnimatePresence>
 
                 <div>
-                  <label className="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1.5">Email Address *</label>
+                  <label className="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1.5">{t.emailAddress} *</label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className={`${inputClass('email')} pl-10`} autoComplete="email" />
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t.emailPlaceholder} className={`${inputClass('email')} pl-10`} autoComplete="email" />
                   </div>
                   {errors.email && <p className="text-xs text-red-500 mt-1 font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.email}</p>}
                 </div>
@@ -243,11 +251,11 @@ export default function AuthModal() {
                   {mode === 'register' && (
                     <motion.div key="phone-field" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
                       <label className="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1.5">
-                        Phone <span className="text-gray-400 font-normal normal-case tracking-normal">(optional)</span>
+                        {t.phoneOptional} <span className="text-gray-400 font-normal normal-case tracking-normal">{t.optional}</span>
                       </label>
                       <div className="relative">
                         <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+250 78X XXX XXX" className={`${inputClass('phone')} pl-10`} />
+                        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t.phonePlaceholder} className={`${inputClass('phone')} pl-10`} />
                       </div>
                       {errors.phone && <p className="text-xs text-red-500 mt-1 font-medium flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.phone}</p>}
                     </motion.div>
@@ -258,11 +266,11 @@ export default function AuthModal() {
                   {mode === 'register' && (
                     <motion.div key="referral-field" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
                       <label className="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1.5">
-                        Referral Code <span className="text-gray-400 font-normal normal-case tracking-normal">(optional)</span>
+                        {t.referralCode} <span className="text-gray-400 font-normal normal-case tracking-normal">{t.optional}</span>
                       </label>
                       <div className="relative">
                         <Gift className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input type="text" value={referralInput} onChange={(e) => setReferralInput(e.target.value.toUpperCase())} placeholder="e.g. SIMBAABCD12" className={`${inputBase} border-gray-200 dark:border-gray-700 focus:border-brand pl-10 uppercase`} />
+                        <input type="text" value={referralInput} onChange={(e) => setReferralInput(e.target.value.toUpperCase())} placeholder={t.referralPlaceholder} className={`${inputBase} border-gray-200 dark:border-gray-700 focus:border-brand pl-10 uppercase`} />
                       </div>
                     </motion.div>
                   )}
@@ -271,10 +279,10 @@ export default function AuthModal() {
                 {mode !== 'forgot' && (
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Password *</label>
+                      <label className="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">{t.passwordLabel} *</label>
                       {mode === 'login' && (
                         <button type="button" onClick={() => switchMode('forgot')} className="text-xs font-bold text-brand-dark dark:text-brand hover:underline">
-                          Forgot password?
+                          {t.forgotPassword}
                         </button>
                       )}
                     </div>
@@ -284,7 +292,7 @@ export default function AuthModal() {
                         type={showPass ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder={mode === 'register' ? 'Min. 6 characters' : 'Enter your password'}
+                        placeholder={mode === 'register' ? t.minChars : t.enterYourPassword}
                         className={`${inputClass('password')} pl-10 pr-10`}
                         autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                       />
@@ -308,10 +316,10 @@ export default function AuthModal() {
                 <AnimatePresence>
                   {mode === 'register' && (
                     <motion.div key="confirm-field" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-                      <label className="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1.5">Confirm Password *</label>
+                      <label className="block text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1.5">{t.confirmPassword} *</label>
                       <div className="relative">
                         <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input type={showConfirm ? 'text' : 'password'} value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Repeat your password" className={`${inputClass('confirm')} pl-10 pr-10`} autoComplete="new-password" />
+                        <input type={showConfirm ? 'text' : 'password'} value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder={t.repeatPassword} className={`${inputClass('confirm')} pl-10 pr-10`} autoComplete="new-password" />
                         <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors">
                           {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
@@ -326,7 +334,7 @@ export default function AuthModal() {
                     <motion.div animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }} className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" />
                   ) : (
                     <>
-                      {mode === 'login' ? 'Sign In' : mode === 'register' ? 'Create Account' : 'Send Reset Link'}
+                          {mode === 'login' ? t.signIn : mode === 'register' ? t.createAccountBtn : t.sendResetLink}
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
@@ -350,23 +358,23 @@ export default function AuthModal() {
                         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                       </svg>
-                      Continue with Google
+                      {t.continueWithGoogle}
                     </a>
                   </>
                 )}
 
                 <p className="text-center text-sm text-gray-500 dark:text-gray-400">
                   {mode === 'login' ? (
-                    <>Don&apos;t have an account?{' '}
-                      <button type="button" onClick={() => switchMode('register')} className="font-black text-brand-dark dark:text-brand hover:underline">Sign up</button>
+                    <>{t.noAccount}{' '}
+                      <button type="button" onClick={() => switchMode('register')} className="font-black text-brand-dark dark:text-brand hover:underline">{t.signUp}</button>
                     </>
                   ) : mode === 'register' ? (
-                    <>Already have an account?{' '}
-                      <button type="button" onClick={() => switchMode('login')} className="font-black text-brand-dark dark:text-brand hover:underline">Sign in</button>
+                    <>{t.alreadyHaveAccount}{' '}
+                      <button type="button" onClick={() => switchMode('login')} className="font-black text-brand-dark dark:text-brand hover:underline">{t.signIn}</button>
                     </>
                   ) : (
-                    <>Remember your password?{' '}
-                      <button type="button" onClick={() => switchMode('login')} className="font-black text-brand-dark dark:text-brand hover:underline">Sign in</button>
+                    <>{t.rememberPassword}{' '}
+                      <button type="button" onClick={() => switchMode('login')} className="font-black text-brand-dark dark:text-brand hover:underline">{t.signIn}</button>
                     </>
                   )}
                 </p>

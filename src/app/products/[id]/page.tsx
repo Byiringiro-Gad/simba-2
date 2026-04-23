@@ -97,7 +97,7 @@ export default function ProductDetail() {
         <Navbar />
         <div className="flex flex-col items-center justify-center py-32 text-center px-4">
           <Package className="w-16 h-16 text-gray-300 mb-4" />
-          <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2">Product not found</h2>
+          <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2">{t.productNotFound}</h2>
           <button onClick={() => router.back()} className="text-brand font-bold hover:underline">{t.backToStore}</button>
         </div>
       </div>
@@ -124,7 +124,7 @@ export default function ProductDetail() {
     setNewRating(5);
     setShowReviewForm(false);
     setSubmitting(false);
-    toast.success('Review submitted! Thank you.');
+    toast.success(t.reviewSubmitted);
   };
 
   const handleShare = () => {
@@ -164,7 +164,7 @@ export default function ProductDetail() {
             {/* Low stock */}
             {stockLeft !== null && product.inStock && (
               <div className="absolute top-4 left-4 px-3 py-1.5 bg-red-500 text-white rounded-full text-xs font-black shadow-lg animate-pulse">
-                🔥 Only {stockLeft} left!
+                🔥 {t.onlyLeft} {stockLeft} {t.leftInStock}
               </div>
             )}
 
@@ -206,9 +206,9 @@ export default function ProductDetail() {
             <div className="flex items-center gap-2 mb-4">
               <StarRating value={Math.round(avg)} size="sm" />
               <span className="text-sm font-black text-gray-900 dark:text-white">{avg}</span>
-              <span className="text-sm text-gray-400">({count} {count === 1 ? 'review' : 'reviews'})</span>
+              <span className="text-sm text-gray-400">({count} {count === 1 ? t.review : t.reviews})</span>
               <button onClick={() => { setActiveTab('reviews'); document.getElementById('tabs')?.scrollIntoView({ behavior: 'smooth' }); }}
-                className="text-xs text-brand font-bold hover:underline ml-1">Write a review</button>
+                className="text-xs text-brand font-bold hover:underline ml-1">{t.writeReview}</button>
             </div>
 
             {/* Price */}
@@ -242,7 +242,7 @@ export default function ProductDetail() {
                     </button>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400">Subtotal</p>
+                    <p className="text-xs text-gray-400">{t.subtotalLabel2}</p>
                     <p className="font-black text-gray-900 dark:text-white">{(product.price * quantity).toLocaleString()} RWF</p>
                   </div>
                 </div>
@@ -252,7 +252,7 @@ export default function ProductDetail() {
             {/* ── Scheduled Delivery ── */}
             <div className="mb-5">
               <p className="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5" /> Choose Pickup Time
+                <Clock className="w-3.5 h-3.5" /> {t.choosePickupTime}
               </p>
               <div className="grid grid-cols-4 gap-2">
                 {PICKUP_SLOTS.map(slot => (
@@ -300,7 +300,7 @@ export default function ProductDetail() {
                     ? 'border-brand-dark text-brand-dark dark:text-brand dark:border-brand'
                     : 'border-transparent text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                 )}>
-                {tab === 'reviews' ? `Reviews (${reviews.length + count})` : tab}
+                {tab === 'reviews' ? `${t.reviewsTab} (${reviews.length + count})` : t.detailsTab}
               </button>
             ))}
           </div>
@@ -310,14 +310,14 @@ export default function ProductDetail() {
               <motion.div key="details" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                 <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-3">
                   <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                    {product.name} is a high-quality product available at Simba Supermarket, sourced to meet the highest standards. Sold per {product.unit}. Order now for fast delivery across Kigali in 45 minutes.
+                    {product.name} {t.productDescription} {product.unit}. {t.orderNowDesc}
                   </p>
                   <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
                     {[
-                      { label: 'Category',  value: product.category },
-                      { label: 'Unit',      value: product.unit },
-                      { label: 'SKU',       value: `#${product.id}` },
-                      { label: 'Status',    value: product.inStock ? 'In Stock' : 'Out of Stock' },
+                      { label: t.categoryLabel, value: product.category },
+                      { label: t.unitLabel,      value: product.unit },
+                      { label: t.skuLabel,       value: `#${product.id}` },
+                      { label: t.statusLabel,    value: product.inStock ? t.inStock : t.outOfStock },
                     ].map(({ label, value }) => (
                       <div key={label}>
                         <p className="text-xs font-black uppercase tracking-widest text-gray-400">{label}</p>
@@ -358,7 +358,7 @@ export default function ProductDetail() {
                 {!showReviewForm && (
                   <button onClick={() => setShowReviewForm(true)}
                     className="w-full py-3 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl text-sm font-bold text-gray-500 hover:border-brand-dark hover:text-brand-dark dark:hover:text-brand transition-colors flex items-center justify-center gap-2">
-                    <Star className="w-4 h-4" /> Write a Review
+                    <Star className="w-4 h-4" /> {t.writeReview}
                   </button>
                 )}
 
@@ -368,26 +368,26 @@ export default function ProductDetail() {
                     <motion.form initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
                       onSubmit={handleSubmitReview}
                       className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-4 overflow-hidden">
-                      <h3 className="font-black text-gray-900 dark:text-white">Your Review</h3>
+                      <h3 className="font-black text-gray-900 dark:text-white">{t.yourReview}</h3>
                       <div>
-                        <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Rating</p>
+                        <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">{t.ratingLabel}</p>
                         <StarRating value={newRating} onChange={setNewRating} />
                       </div>
                       <div>
-                        <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Comment</p>
+                        <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">{t.commentLabel}</p>
                         <textarea value={newComment} onChange={e => setNewComment(e.target.value)}
-                          placeholder="Share your experience with this product..."
+                          placeholder={t.commentPlaceholder}
                           rows={3}
                           className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-brand-dark transition-colors text-gray-900 dark:text-white placeholder:text-gray-400 resize-none" />
                       </div>
                       <div className="flex gap-2">
                         <button type="button" onClick={() => setShowReviewForm(false)}
                           className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-bold text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                          Cancel
+                          {t.cancel}
                         </button>
                         <button type="submit" disabled={submitting || !newComment.trim()}
                           className="flex-1 py-2.5 rounded-xl bg-brand-dark text-white text-sm font-black hover:bg-gray-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
-                          {submitting ? <motion.div animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }} className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : <><Send className="w-4 h-4" /> Submit</>}
+                          {submitting ? <motion.div animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }} className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full" /> : <><Send className="w-4 h-4" /> {t.submitReview}</>}
                         </button>
                       </div>
                     </motion.form>
@@ -398,7 +398,7 @@ export default function ProductDetail() {
                 {reviews.length === 0 ? (
                   <div className="text-center py-8 text-gray-400">
                     <Star className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                    <p className="text-sm font-medium">No reviews yet. Be the first!</p>
+                    <p className="text-sm font-medium">{t.noReviewsYet}</p>
                   </div>
                 ) : (
                   reviews.map(r => (
@@ -408,7 +408,7 @@ export default function ProductDetail() {
                           <div className="flex items-center gap-2">
                             <p className="font-black text-sm text-gray-900 dark:text-white">{r.userName}</p>
                             {r.verified && (
-                              <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-black uppercase tracking-wide">Verified</span>
+                              <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-black uppercase tracking-wide">{t.verified}</span>
                             )}
                           </div>
                           <StarRating value={r.rating} size="sm" />

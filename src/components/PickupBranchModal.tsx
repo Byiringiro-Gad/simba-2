@@ -2,6 +2,7 @@
 
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { getBranchById, SIMBA_BRANCHES } from '@/lib/branches';
+import { translations } from '@/lib/translations';
 import { MapPin, Check, X, Store } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -11,8 +12,10 @@ export default function PickupBranchModal() {
     setPickupBranchModalOpen,
     pickupBranchId,
     setPickupBranch,
+    language,
   } = useSimbaStore();
 
+  const t = translations[language];
   const selectedBranch = getBranchById(pickupBranchId);
 
   return (
@@ -39,9 +42,9 @@ export default function PickupBranchModal() {
                   <Store className="w-5 h-5 text-brand" />
                 </div>
                 <div>
-                  <h2 className="font-black text-gray-900 dark:text-white text-base">Choose Pickup Branch</h2>
+                  <h2 className="font-black text-gray-900 dark:text-white text-base">{t.chooseBranchTitle}</h2>
                   <p className="text-xs text-gray-400 font-medium">
-                    Select the Simba branch that will prepare this order.
+                    {t.chooseBranchSub}
                   </p>
                 </div>
               </div>
@@ -55,10 +58,10 @@ export default function PickupBranchModal() {
 
             <div className="px-6 py-4 bg-brand-muted/60 dark:bg-brand/10 border-b border-brand/10">
               <p className="text-[11px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-1">
-                Selected Branch
+                {t.selectedBranch}
               </p>
               <p className="text-sm font-black text-gray-900 dark:text-white">
-                {selectedBranch?.name ?? 'Select a branch'}
+                {selectedBranch?.name ?? t.selectABranch}
               </p>
             </div>
 

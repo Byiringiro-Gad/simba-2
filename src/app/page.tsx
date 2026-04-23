@@ -27,35 +27,18 @@ import HeroSection from '@/components/HeroSection';
 // ── Why Simba Section — How it works only (stats are in hero) ────────────────
 function HowItWorksSection() {
   const { language } = useSimbaStore();
+  const t = translations[language];
 
   const steps = [
-    {
-      icon: '🛒',
-      title: language === 'fr' ? 'Choisissez' : language === 'rw' ? 'Hitamo' : 'Browse',
-      desc: language === 'fr' ? 'Parcourez 700+ produits' : language === 'rw' ? 'Reba ibicuruzwa 700+' : 'Browse 700+ products across all categories',
-    },
-    {
-      icon: '🏪',
-      title: language === 'fr' ? 'Choisissez une agence' : language === 'rw' ? 'Hitamo ishami' : 'Pick a Branch',
-      desc: language === 'fr' ? 'Sélectionnez votre agence Simba la plus proche' : language === 'rw' ? 'Hitamo ishami rya Simba riri hafi yawe' : 'Select the Simba branch that will prepare your order',
-    },
-    {
-      icon: '💳',
-      title: language === 'fr' ? 'Payez le dépôt' : language === 'rw' ? 'Ishura inguzanyo' : 'Pay Deposit',
-      desc: language === 'fr' ? '500 RWF via MTN MoMo ou Airtel Money' : language === 'rw' ? '500 RWF na MTN MoMo cyangwa Airtel Money' : '500 RWF deposit via MTN MoMo or Airtel Money',
-    },
-    {
-      icon: '✅',
-      title: language === 'fr' ? 'Récupérez' : language === 'rw' ? 'Fata' : 'Pick Up',
-      desc: language === 'fr' ? 'Votre commande est prête en 20-45 min' : language === 'rw' ? 'Itumizwa ryawe ritegurwa mu minota 20-45' : 'Your order is ready in 20-45 min at the branch',
-    },
+    { icon: '🛒', title: t.stepBrowse,      desc: t.stepBrowseDesc },
+    { icon: '🏪', title: t.stepPickBranch,  desc: t.stepPickBranchDesc },
+    { icon: '💳', title: t.stepPayDeposit,  desc: t.stepPayDepositDesc },
+    { icon: '✅', title: t.stepPickUp,      desc: t.stepPickUpDesc },
   ];
-
-  const heading = language === 'fr' ? 'Comment ça marche' : language === 'rw' ? 'Uburyo bikora' : 'How it works';
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
-      <h3 className="font-black text-gray-900 dark:text-white text-base mb-5">{heading}</h3>
+      <h3 className="font-black text-gray-900 dark:text-white text-base mb-5">{t.howItWorks}</h3>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {steps.map((step, i) => (
           <div key={i} className="flex flex-col items-center text-center">
@@ -77,13 +60,13 @@ const BRANCHES = SIMBA_BRANCHES;
 // ── Recently Viewed Section ───────────────────────────────────────────────────
 function RecentlyViewedSection({ data }: { data: SimbaData }) {
   const { recentlyViewed, addToCart, cart, updateQuantity, language } = useSimbaStore();
+  const t = translations[language];
   if (recentlyViewed.length === 0) return null;
   const products = recentlyViewed.map(id => data.products.find(p => p.id === id)).filter(Boolean) as SimbaData['products'];
   if (products.length === 0) return null;
-  const label = language === 'fr' ? 'Récemment consultés' : language === 'rw' ? 'Byabonwe vuba' : 'Recently Viewed';
   return (
     <section>
-      <h2 className="text-base font-black text-gray-900 dark:text-white mb-3">{label}</h2>
+      <h2 className="text-base font-black text-gray-900 dark:text-white mb-3">{t.recentlyViewed}</h2>
       <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
         {products.slice(0, 8).map(p => {
           const qty = cart.find(i => i.id === p.id)?.quantity ?? 0;
@@ -299,7 +282,7 @@ export default function Home() {
                     <div className="absolute bottom-3 right-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-3 py-2 rounded-xl shadow-lg border dark:border-gray-700">
                       <p className="text-[10px] font-black text-red-600 flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                        {BRANCHES.length} active pickup branches
+                        {BRANCHES.length} {t.activePickupBranches}
                       </p>
                     </div>
                   </div>
