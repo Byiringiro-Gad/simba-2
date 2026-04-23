@@ -16,7 +16,11 @@ export default function GoogleAuthHandler() {
     const error = params.get('auth_error');
 
     if (error) {
-      toast.error('Google sign-in failed. Please try again.');
+      if (error === 'google_not_configured') {
+        toast.error('Google sign-in is not set up yet. Please use email/password.');
+      } else {
+        toast.error('Google sign-in failed. Please try again.');
+      }
       router.replace('/');
       return;
     }
