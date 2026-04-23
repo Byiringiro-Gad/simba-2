@@ -276,11 +276,11 @@ export default function SimbaPulse() {
     setIsTyping(true);
 
     try {
-      // Try real Gemini API first
-      const history = chat
-        .filter((_, i) => i > 0 || chat[0].role === 'user')
-        .map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
-      history.push({ role: 'user', content: text });
+      // Build message history for Groq
+      const history = [
+        ...chat.map(m => ({ role: m.role, content: m.text })),
+        { role: 'user', content: text },
+      ];
 
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -290,18 +290,19 @@ export default function SimbaPulse() {
 
       if (res.ok) {
         const data = await res.json();
-        if (data.message && !data.message.startsWith('AI service not configured') && !data.message.startsWith('AI Error')) {
+        // __NO_API_KEY__ means fall through to local engine
+        if (data.message && data.message !== '__NO_API_KEY__') {
           setIsTyping(false);
           setChat(prev => [...prev, { role: 'assistant', text: data.message }]);
           return;
         }
       }
     } catch {
-      // API unavailable — fall through to local engine
+      // Network error — fall through to local engine
     }
 
-    // Local engine fallback
-    const delay = 400 + Math.random() * 400;
+    // Local engine fallback (works without any API key)
+    const delay = 400 + Math.random() * 300;
     setTimeout(() => {
       setIsTyping(false);
       setChat(prev => [...prev, buildResponse(text, language, allProducts)]);

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
+import { translations } from '@/lib/translations';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -44,9 +45,9 @@ export default function HeroSection({ onShopNow }: { onShopNow: () => void }) {
 
   const slide = SLIDES[current];
   const content = slide[language as 'en' | 'fr' | 'rw'] ?? slide.en;
-
-  const cta = language === 'fr' ? 'Commencer' : language === 'rw' ? 'Tangira Gucuruza' : 'Start Shopping';
-  const eyebrow = language === 'fr' ? "Le N°1 des supermarchés au Rwanda" : language === 'rw' ? "Isoko #1 mu Rwanda" : "Rwanda's #1 Supermarket";
+  const t = translations[language];
+  const cta = t.heroCta;
+  const eyebrow = t.heroEyebrow;
 
   return (
     <section className="relative overflow-hidden" style={{ minHeight: '420px' }}>

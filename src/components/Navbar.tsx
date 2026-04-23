@@ -94,9 +94,9 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           >
             <MapPin className="w-4 h-4 text-brand flex-shrink-0" />
             <div className="text-left min-w-0">
-              <p className="text-[9px] text-white/60 font-bold uppercase tracking-wider leading-none mb-0.5">Pick up at</p>
+              <p className="text-[9px] text-white/60 font-bold uppercase tracking-wider leading-none mb-0.5">{t.pickUpAt}</p>
               <p className="text-xs text-white font-bold truncate leading-none">
-                {selectedBranch?.name ?? 'Select branch'}
+                {selectedBranch?.name ?? t.selectBranchShort}
               </p>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-white/60 flex-shrink-0" />
@@ -105,7 +105,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           {/* Pickup deposit badge */}
           <div className="hidden lg:flex items-center gap-1.5 px-3 py-2 bg-white/10 rounded-xl flex-shrink-0">
             <Clock className="w-3.5 h-3.5 text-brand" />
-            <span className="text-xs font-black text-white">{PICKUP_DEPOSIT_RWF} RWF deposit</span>
+            <span className="text-xs font-black text-white">{PICKUP_DEPOSIT_RWF} {t.depositBadge}</span>
           </div>
 
           {/* Search */}
@@ -144,7 +144,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                   {results.length > 0 ? (
                     <>
                       <div className="px-4 pt-3 pb-1">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Results</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t.searchResults}</p>
                       </div>
                       {results.map(p => (
                         <button
@@ -165,7 +165,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                     </>
                   ) : searchQuery.length < 2 ? (
                     <div className="p-4">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Popular</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">{t.popularSearches}</p>
                       <div className="flex flex-wrap gap-2">
                         {POPULAR.map(s => (
                           <button key={s} onMouseDown={() => { setSearchQuery(s); setFocused(false); }}
@@ -177,7 +177,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                     </div>
                   ) : (
                     <div className="px-4 py-6 text-center">
-                      <p className="text-sm text-gray-400">No results for "{searchQuery}"</p>
+                      <p className="text-sm text-gray-400">{t.noResultsFor} &quot;{searchQuery}&quot;</p>
                     </div>
                   )}
                 </motion.div>
@@ -227,16 +227,16 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                   </div>
                   <button onClick={() => setActiveTab('account')}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                    <User className="w-4 h-4" /> My Account
+                    <User className="w-4 h-4" /> {t.myAccount}
                   </button>
                   <button onClick={() => setActiveTab('orders')}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                    <ChevronRight className="w-4 h-4" /> My Orders
+                    <ChevronRight className="w-4 h-4" /> {t.myOrders}
                   </button>
                   <div className="border-t border-gray-100 dark:border-gray-800 mt-1 pt-1">
                     <button onClick={logout}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                      <LogOut className="w-4 h-4" /> Sign Out
+                      <LogOut className="w-4 h-4" /> {t.signOut}
                     </button>
                   </div>
                 </div>
@@ -247,7 +247,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                 className="hidden sm:flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white text-xs font-black"
               >
                 <User className="w-4 h-4" />
-                Sign In
+                {t.signIn}
               </button>
             )}
 

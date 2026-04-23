@@ -40,7 +40,7 @@ export default function BottomNav() {
                 className="flex flex-col items-center gap-1 px-3 py-1"
               >
                 <LogIn className="w-6 h-6 text-brand" />
-                <span className="text-xs font-bold text-brand">Sign In</span>
+                <span className="text-xs font-bold text-brand">{t.signInPrompt}</span>
               </button>
             );
           }

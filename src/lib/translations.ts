@@ -332,6 +332,61 @@ export const translations = {
     contactAddress:       "Kigali City Center, Rwanda",
     followUs:             "Follow Us",
     contact:              "Contact",
+
+    // ── Category names ──
+    cat_Groceries:                    "Groceries",
+    cat_Bakery:                       "Bakery",
+    cat_CosmeticsPersonalCare:        "Cosmetics & Personal Care",
+    cat_BabyProducts:                 "Baby Products",
+    cat_KitchenwareElectronics:       "Kitchenware & Electronics",
+    cat_Electronics:                  "Electronics",
+    cat_SportsWellness:               "Sports & Wellness",
+    cat_AlcoholicBeveragesSpirits:    "Alcoholic Beverages & Spirits",
+    cat_CleaningSanitary:             "Cleaning & Sanitary",
+    cat_KitchenStorage:               "Kitchen Storage",
+    cat_PetCare:                      "Pet Care",
+
+    // ── Navbar hardcoded ──
+    pickUpAt:             "Pick up at",
+    selectBranchShort:    "Select branch",
+    depositBadge:         "RWF deposit",
+    signIn:               "Sign In",
+    myAccount:            "My Account",
+    myOrders:             "My Orders",
+    signOut:              "Sign Out",
+    searchResults:        "Results",
+    popularSearches:      "Popular",
+    noResultsFor:         "No results for",
+
+    // ── PromoBanner ──
+    promoFreeDelivery:    "Free Delivery",
+    promoFreeDeliverySub: "On your first 3 orders",
+    promoNewUser:         "NEW USER",
+    promoGroceries:       "15% Off Groceries",
+    promoGroceriesSub:    "Use code SIMBA10 at checkout",
+    promoLimited:         "LIMITED",
+    promoBakery:          "Fresh Bakery Daily",
+    promoBakerySub:       "Baked fresh every morning",
+    promoDaily:           "DAILY",
+
+    // ── HeroSection ──
+    heroEyebrow:          "Rwanda's #1 Supermarket",
+    heroCta:              "Start Shopping",
+
+    // ── BottomNav ──
+    signInPrompt:         "Sign In",
+
+    // ── AI Search ──
+    aiSearchTitle:        "AI Search",
+    aiSearchPowered:      "Powered by Groq",
+    aiSearching:          "Searching...",
+    aiClear:              "Clear",
+    aiSearchPlaceholder:  "e.g. \"Do you have fresh milk?\" or \"I need something for breakfast\"",
+    aiQuick1:             "Fresh milk",
+    aiQuick2:             "Bread",
+    aiQuick3:             "Cooking oil",
+    aiQuick4:             "Drinks",
+    aiQuick5:             "Baby products",
   },
 
   // ── FRANÇAIS ───────────────────────────────────────────────────────────────
@@ -661,6 +716,61 @@ export const translations = {
     contactAddress:       "Centre-ville de Kigali, Rwanda",
     followUs:             "Suivez-nous",
     contact:              "Contact",
+
+    // ── Noms des catégories ──
+    cat_Groceries:                    "Épicerie",
+    cat_Bakery:                       "Boulangerie",
+    cat_CosmeticsPersonalCare:        "Cosmétiques & Soins",
+    cat_BabyProducts:                 "Produits bébé",
+    cat_KitchenwareElectronics:       "Cuisine & Électronique",
+    cat_Electronics:                  "Électronique",
+    cat_SportsWellness:               "Sport & Bien-être",
+    cat_AlcoholicBeveragesSpirits:    "Boissons alcoolisées",
+    cat_CleaningSanitary:             "Nettoyage & Hygiène",
+    cat_KitchenStorage:               "Rangement cuisine",
+    cat_PetCare:                      "Animaux",
+
+    // ── Navbar ──
+    pickUpAt:             "Retrait à",
+    selectBranchShort:    "Choisir une agence",
+    depositBadge:         "RWF de dépôt",
+    signIn:               "Se connecter",
+    myAccount:            "Mon compte",
+    myOrders:             "Mes commandes",
+    signOut:              "Se déconnecter",
+    searchResults:        "Résultats",
+    popularSearches:      "Populaire",
+    noResultsFor:         "Aucun résultat pour",
+
+    // ── PromoBanner ──
+    promoFreeDelivery:    "Livraison gratuite",
+    promoFreeDeliverySub: "Sur vos 3 premières commandes",
+    promoNewUser:         "NOUVEAU",
+    promoGroceries:       "15% sur l'épicerie",
+    promoGroceriesSub:    "Utilisez le code SIMBA10",
+    promoLimited:         "LIMITÉ",
+    promoBakery:          "Boulangerie fraîche",
+    promoBakerySub:       "Cuit frais chaque matin",
+    promoDaily:           "QUOTIDIEN",
+
+    // ── HeroSection ──
+    heroEyebrow:          "Le N°1 des supermarchés au Rwanda",
+    heroCta:              "Commencer",
+
+    // ── BottomNav ──
+    signInPrompt:         "Connexion",
+
+    // ── AI Search ──
+    aiSearchTitle:        "Recherche IA",
+    aiSearchPowered:      "Propulsé par Groq",
+    aiSearching:          "Recherche...",
+    aiClear:              "Effacer",
+    aiSearchPlaceholder:  "Ex: \"Avez-vous du lait frais ?\" ou \"Je cherche quelque chose pour le petit-déjeuner\"",
+    aiQuick1:             "Lait frais",
+    aiQuick2:             "Pain",
+    aiQuick3:             "Huile de cuisine",
+    aiQuick4:             "Boissons",
+    aiQuick5:             "Produits bébé",
   },
 
   // ── IKINYARWANDA ───────────────────────────────────────────────────────────
@@ -990,7 +1100,87 @@ export const translations = {
     contactAddress:       "Hagati ya Kigali, Rwanda",
     followUs:             "Dukurikire",
     contact:              "Twandikire",
+
+    // ── Amazina y'ibyiciro ──
+    cat_Groceries:                    "Ibiribwa",
+    cat_Bakery:                       "Aho Gutera Ufu",
+    cat_CosmeticsPersonalCare:        "Ibicuruzwa byo Kwisukura",
+    cat_BabyProducts:                 "Ibicuruzwa by'Umwana",
+    cat_KitchenwareElectronics:       "Ibikoresho bya Kicheni",
+    cat_Electronics:                  "Ikoranabuhanga",
+    cat_SportsWellness:               "Siporo & Ubuzima",
+    cat_AlcoholicBeveragesSpirits:    "Inzoga",
+    cat_CleaningSanitary:             "Isuku & Gusukura",
+    cat_KitchenStorage:               "Ibigega bya Kicheni",
+    cat_PetCare:                      "Inyamaswa",
+
+    // ── Navbar ──
+    pickUpAt:             "Gufatira mu",
+    selectBranchShort:    "Hitamo ishami",
+    depositBadge:         "RWF inguzanyo",
+    signIn:               "Injira",
+    myAccount:            "Konti Yanjye",
+    myOrders:             "Itumiziwa Ryanjye",
+    signOut:              "Sohoka",
+    searchResults:        "Ibisubizo",
+    popularSearches:      "Bikunzwe",
+    noResultsFor:         "Nta bisubizo bya",
+
+    // ── PromoBanner ──
+    promoFreeDelivery:    "Gutumiza Ubuntu",
+    promoFreeDeliverySub: "Ku itumiziwa ryawe rya mbere 3",
+    promoNewUser:         "MUSHYA",
+    promoGroceries:       "15% Igabanywa ku Biribwa",
+    promoGroceriesSub:    "Koresha kode SIMBA10",
+    promoLimited:         "BIRINGANYE",
+    promoBakery:          "Ufu Bushya Buri Munsi",
+    promoBakerySub:       "Buterwa buri gitondo",
+    promoDaily:           "BURI MUNSI",
+
+    // ── HeroSection ──
+    heroEyebrow:          "Isoko #1 mu Rwanda",
+    heroCta:              "Tangira Gucuruza",
+
+    // ── BottomNav ──
+    signInPrompt:         "Injira",
+
+    // ── AI Search ──
+    aiSearchTitle:        "Gushaka na AI",
+    aiSearchPowered:      "Groq",
+    aiSearching:          "Gushaka...",
+    aiClear:              "Siba",
+    aiSearchPlaceholder:  "Urugero: \"Mufite amata mashya?\" cyangwa \"Ndashaka ibiryo byo mu gitondo\"",
+    aiQuick1:             "Amata mashya",
+    aiQuick2:             "Umugati",
+    aiQuick3:             "Amavuta",
+    aiQuick4:             "Ibiririwa",
+    aiQuick5:             "Ibicuruzwa by'umwana",
   },
 };
 
 export type TranslationKey = keyof typeof translations.en;
+
+// ── Category name translator ──────────────────────────────────────────────────
+// Maps the raw English category name from the DB to a translation key
+const CATEGORY_KEY_MAP: Record<string, TranslationKey> = {
+  'Groceries':                     'cat_Groceries',
+  'Bakery':                        'cat_Bakery',
+  'Cosmetics & Personal Care':     'cat_CosmeticsPersonalCare',
+  'Baby Products':                 'cat_BabyProducts',
+  'Kitchenware & Electronics':     'cat_KitchenwareElectronics',
+  'Electronics':                   'cat_Electronics',
+  'Sports & Wellness':             'cat_SportsWellness',
+  'Alcoholic Beverages & Spirits': 'cat_AlcoholicBeveragesSpirits',
+  'Cleaning & Sanitary':           'cat_CleaningSanitary',
+  'Kitchen Storage':               'cat_KitchenStorage',
+  'Pet Care':                      'cat_PetCare',
+};
+
+export function translateCategory(
+  category: string,
+  lang: 'en' | 'fr' | 'rw'
+): string {
+  const key = CATEGORY_KEY_MAP[category];
+  if (!key) return category;
+  return (translations[lang] as any)[key] ?? category;
+}
