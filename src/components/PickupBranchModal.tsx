@@ -105,7 +105,7 @@ export default function PickupBranchModal() {
                             <span className="text-[10px] text-gray-400">({reviewCount})</span>
                           </div>
                         ) : (
-                          <span className="text-[10px] text-gray-400">No reviews yet</span>
+                          <span className="text-[10px] text-gray-400">{t.noReviewsYetBranch}</span>
                         )}
                       </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{branch.area}</p>

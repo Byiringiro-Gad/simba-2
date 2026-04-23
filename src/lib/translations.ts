@@ -384,6 +384,9 @@ export const translations = {
     aiQuick3:             "Cooking oil",
     aiQuick4:             "Drinks",
     aiQuick5:             "Baby products",
+    // ── Branch review labels ──
+    rateExperience:       "Rate your experience",
+    noReviewsYetBranch:   "No reviews yet",
   },
 
   // ── FRANÇAIS ───────────────────────────────────────────────────────────────
@@ -765,6 +768,9 @@ export const translations = {
     aiQuick3:             "Huile de cuisine",
     aiQuick4:             "Boissons",
     aiQuick5:             "Produits bébé",
+    // ── Avis sur les agences ──
+    rateExperience:       "Évaluez votre expérience",
+    noReviewsYetBranch:   "Aucun avis pour l'instant",
   },
 
   // ── IKINYARWANDA ───────────────────────────────────────────────────────────
@@ -1146,6 +1152,9 @@ export const translations = {
     aiQuick3:             "Amavuta",
     aiQuick4:             "Ibiririwa",
     aiQuick5:             "Ibicuruzwa by'umwana",
+    // ── Ibitekerezo ku mashami ──
+    rateExperience:       "Tanga Igitekerezo",
+    noReviewsYetBranch:   "Nta bitekerezo birabaho",
   },
 };
 

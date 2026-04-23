@@ -16,13 +16,14 @@ import { getBranchById, PICKUP_DEPOSIT_RWF, PICKUP_SLOTS } from '@/lib/branches'
 const DEPOSIT_AMOUNT = PICKUP_DEPOSIT_RWF;
 
 // ── Success step with branch review ──────────────────────────────────────────
-function SuccessStep({ orderId, selectedBranch, totalPoints, t, onReset, pickupBranchId }: {
+function SuccessStep({ orderId, selectedBranch, totalPoints, t, onReset, pickupBranchId, language }: {
   orderId: string;
   selectedBranch: ReturnType<typeof getBranchById>;
   totalPoints: number;
   t: any;
   onReset: () => void;
   pickupBranchId: string;
+  language: string;
 }) {
   const { submitBranchReview } = useSimbaStore();
   const [rating, setRating] = useState(0);
@@ -68,7 +69,7 @@ function SuccessStep({ orderId, selectedBranch, totalPoints, t, onReset, pickupB
       {!submitted ? (
         <div className="w-full bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 mb-5 text-left">
           <p className="font-black text-sm text-gray-900 dark:text-white mb-1">
-            {t.language === 'fr' ? 'Évaluez votre expérience' : t.language === 'rw' ? 'Tanga Igitekerezo' : 'Rate your experience'}
+            {t.rateExperience}
           </p>
           <p className="text-xs text-gray-400 mb-3">
             {selectedBranch?.name}
@@ -164,10 +165,10 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
     if (!promoInput.trim()) return;
     const ok = applyPromo(promoInput.trim());
     if (ok) {
-      toast.success(`Promo applied! ${promoDiscount || PROMO_PREVIEW[promoInput.toUpperCase()]}% off`);
+      toast.success(t.promoApplied);
       setPromoInput('');
     } else {
-      toast.error('Invalid promo code');
+      toast.error(t.promoInvalid);
     }
   };
 
@@ -179,7 +180,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
 
     if (step === 'details') {
       if (!fullName.trim() || !selectedBranch) {
-        toast.error('Please enter your name and choose a pickup branch');
+        toast.error(t.selectBranch);
         return;
       }
       setStep('payment');
@@ -188,7 +189,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
 
     if (step === 'payment') {
       if (momoNumber.length < 8) {
-        toast.error('Please enter a valid phone number');
+        toast.error(t.phoneNumber + ' — ' + t.phonePlaceholder);
         return;
       }
 
@@ -630,6 +631,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                     t={t}
                     onReset={handleReset}
                     pickupBranchId={pickupBranchId}
+                    language={language}
                   />
                 )}
               </AnimatePresence>
@@ -644,21 +646,25 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                   </div>
                   {appliedPromo && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-green-600 font-bold">Promo ({appliedPromo})</span>
+                      <span className="text-green-600 font-bold">{t.promoCode} ({appliedPromo})</span>
                       <span className="font-bold text-green-600">-{discountAmount.toLocaleString()} RWF</span>
                     </div>
                   )}
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500 font-medium">Deposit Due Now</span>
+                    <span className="text-gray-500 font-medium">{t.depositDueNow}</span>
                     <span className="font-bold text-gray-900 dark:text-white">{DEPOSIT_AMOUNT.toLocaleString()} RWF</span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
-                    <span className="font-black text-gray-900 dark:text-white">Order Total</span>
+                    <span className="font-black text-gray-900 dark:text-white">{t.total}</span>
                     <span className="font-black text-lg text-gray-900 dark:text-white">{orderTotal.toLocaleString()} RWF</span>
                   </div>
                 </div>
                 <button onClick={handleNext} disabled={!canProceed()} className="w-full py-4 bg-brand hover:bg-brand-dark disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg shadow-brand/20 disabled:shadow-none flex items-center justify-center gap-2">
-                  {step === 'payment' ? `Pay ${DEPOSIT_AMOUNT} RWF Deposit` : step === 'details' ? 'Continue to Deposit' : t.checkout}
+                  {step === 'payment'
+                    ? `${t.payWithMomo} — ${DEPOSIT_AMOUNT.toLocaleString()} RWF`
+                    : step === 'details'
+                    ? t.checkout
+                    : t.checkout}
                   {canProceed() && <ChevronRight className="w-4 h-4 stroke-[3px]" />}
                 </button>
               </div>
