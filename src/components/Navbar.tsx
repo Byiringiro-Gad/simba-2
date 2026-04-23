@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { clsx } from 'clsx';
+import { getBranchById, PICKUP_DEPOSIT_RWF } from '@/lib/branches';
 
 const POPULAR = ['Fresh Milk', 'Bread', 'Avocado', 'Cooking Oil', 'Rice', 'Eggs', 'Juice', 'Yogurt'];
 
@@ -16,14 +17,14 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const {
     language, setLanguage, isDarkMode, toggleDarkMode,
     cart, searchQuery, setSearchQuery, setCartOpen,
-    addresses, selectedAddressId, setAddressModalOpen,
+    pickupBranchId, setPickupBranchModalOpen,
     activeTab, setActiveTab,
     user, setAuthOpen, logout,
   } = useSimbaStore();
 
   const t = translations[language];
   const cartCount = cart.reduce((a, i) => a + i.quantity, 0);
-  const selectedAddress = addresses.find(a => a.id === selectedAddressId);
+  const selectedBranch = getBranchById(pickupBranchId);
 
   const [focused, setFocused] = useState(false);
   const [results, setResults] = useState<ReturnType<typeof getSimbaData>['products']>([]);
@@ -86,23 +87,25 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
             </button>
           )}
 
-          {/* Address selector */}
+          {/* Pickup branch selector */}
           <button
-            onClick={() => setAddressModalOpen(true)}
+            onClick={() => setPickupBranchModalOpen(true)}
             className="hidden md:flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors flex-shrink-0 max-w-[220px]"
           >
             <MapPin className="w-4 h-4 text-brand flex-shrink-0" />
             <div className="text-left min-w-0">
-              <p className="text-[9px] text-white/60 font-bold uppercase tracking-wider leading-none mb-0.5">Deliver to</p>
-              <p className="text-xs text-white font-bold truncate leading-none">{selectedAddress?.label ?? 'Select address'}</p>
+              <p className="text-[9px] text-white/60 font-bold uppercase tracking-wider leading-none mb-0.5">Pick up at</p>
+              <p className="text-xs text-white font-bold truncate leading-none">
+                {selectedBranch?.name ?? 'Select branch'}
+              </p>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-white/60 flex-shrink-0" />
           </button>
 
-          {/* Delivery time badge */}
+          {/* Pickup deposit badge */}
           <div className="hidden lg:flex items-center gap-1.5 px-3 py-2 bg-white/10 rounded-xl flex-shrink-0">
             <Clock className="w-3.5 h-3.5 text-brand" />
-            <span className="text-xs font-black text-white">45 min</span>
+            <span className="text-xs font-black text-white">{PICKUP_DEPOSIT_RWF} RWF deposit</span>
           </div>
 
           {/* Search */}

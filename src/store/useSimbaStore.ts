@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Product, Language, CartItem } from '@/types';
+import { PickupSlotId, SIMBA_BRANCHES } from '@/lib/branches';
 
 interface Address {
   id: string;
@@ -14,6 +15,9 @@ interface Order {
   items: CartItem[];
   total: number;
   status: 'delivered' | 'processing' | 'cancelled';
+  pickupBranch?: string;
+  pickupSlot?: PickupSlotId;
+  depositAmount?: number;
 }
 
 export interface User {
@@ -23,17 +27,21 @@ export interface User {
   phone?: string;
   avatar?: string;
   referralCode?: string;  // user's unique referral code
+  loyaltyPoints?: number;
 }
 
 interface SimbaState {
   // Auth
   user: User | null;
+  authToken: string | null;
   isAuthOpen: boolean;
 
   // Cart
   cart: CartItem[];
   isCartOpen: boolean;
-  scheduledDelivery: 'asap' | 'morning' | 'afternoon' | 'evening';
+  pickupSlot: PickupSlotId;
+  pickupBranchId: string;
+  isPickupBranchModalOpen: boolean;
 
   // Favorites
   favorites: number[];
@@ -63,7 +71,8 @@ interface SimbaState {
   promoDiscount: number;
 
   // Actions — Auth
-  login: (user: User) => void;
+  login: (user: User, authToken: string) => void;
+  setUser: (user: User | null) => void;
   logout: () => void;
   setAuthOpen: (open: boolean) => void;
 
@@ -73,7 +82,9 @@ interface SimbaState {
   updateQuantity: (productId: number, quantity: number) => void;
   clearCart: () => void;
   setCartOpen: (open: boolean) => void;
-  setScheduledDelivery: (slot: SimbaState['scheduledDelivery']) => void;
+  setPickupSlot: (slot: PickupSlotId) => void;
+  setPickupBranch: (branchId: string) => void;
+  setPickupBranchModalOpen: (open: boolean) => void;
 
   // Actions — Favorites
   toggleFavorite: (productId: number) => void;
@@ -96,7 +107,7 @@ interface SimbaState {
   setActiveTab: (tab: SimbaState['activeTab']) => void;
 
   // Actions — Orders
-  placeOrder: (orderData: { id: string, items: CartItem[], total: number, customerName: string, customerPhone: string, customerAddress: string, userId?: string }) => Promise<boolean>;
+  placeOrder: (orderData: { id: string, items: CartItem[], total: number, pickupBranch: string, pickupSlot: PickupSlotId, depositAmount: number }) => void;
   fetchOrders: (userId: string) => Promise<void>;
 
   // Actions — Promo
@@ -119,10 +130,13 @@ export const useSimbaStore = create<SimbaState>()(
   persist(
     (set) => ({
       user: null,
+      authToken: null,
       isAuthOpen: false,
       cart: [],
       isCartOpen: false,
-      scheduledDelivery: 'asap',
+      pickupSlot: 'asap',
+      pickupBranchId: SIMBA_BRANCHES[0].id,
+      isPickupBranchModalOpen: false,
       favorites: [],
       recentlyViewed: [],
       addresses: DEFAULT_ADDRESSES,
@@ -138,12 +152,11 @@ export const useSimbaStore = create<SimbaState>()(
       promoDiscount: 0,
 
       // Auth
-      login: (user) => {
-        // Generate referral code if not present
-        const code = user.referralCode ?? `SIMBA${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-        set({ user: { ...user, referralCode: code }, isAuthOpen: false });
+      login: (user, authToken) => {
+        set({ user, authToken, isAuthOpen: false });
       },
-      logout: () => set({ user: null }),
+      setUser: (user) => set({ user }),
+      logout: () => set({ user: null, authToken: null }),
       setAuthOpen: (isAuthOpen) => set({ isAuthOpen }),
 
       // Cart
@@ -160,7 +173,9 @@ export const useSimbaStore = create<SimbaState>()(
       })),
       clearCart: () => set({ cart: [], appliedPromo: null, promoDiscount: 0 }),
       setCartOpen: (open) => set({ isCartOpen: open }),
-      setScheduledDelivery: (scheduledDelivery) => set({ scheduledDelivery }),
+      setPickupSlot: (pickupSlot) => set({ pickupSlot }),
+      setPickupBranch: (pickupBranchId) => set({ pickupBranchId, isPickupBranchModalOpen: false }),
+      setPickupBranchModalOpen: (isPickupBranchModalOpen) => set({ isPickupBranchModalOpen }),
 
       // Favorites
       toggleFavorite: (id) => set((s) => ({
@@ -191,30 +206,19 @@ export const useSimbaStore = create<SimbaState>()(
       setActiveTab: (activeTab) => set({ activeTab }),
 
       // Orders
-      placeOrder: async (orderData) => {
-        try {
-          const res = await fetch('/api/orders', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData),
-          });
-          
-          if (!res.ok) throw new Error('Failed to place order');
+      placeOrder: (orderData) => {
+        const order: Order = {
+          id: orderData.id,
+          date: new Date().toISOString(),
+          items: orderData.items,
+          total: orderData.total,
+          status: 'processing',
+          pickupBranch: orderData.pickupBranch,
+          pickupSlot: orderData.pickupSlot,
+          depositAmount: orderData.depositAmount,
+        };
 
-          const order: Order = { 
-            id: orderData.id, 
-            date: new Date().toISOString(), 
-            items: orderData.items, 
-            total: orderData.total, 
-            status: 'processing' 
-          };
-          
-          set((s) => ({ orders: [order, ...s.orders] }));
-          return true;
-        } catch (err) {
-          console.error(err);
-          return false;
-        }
+        set((s) => ({ orders: [order, ...s.orders] }));
       },
 
       fetchOrders: async (userId) => {
@@ -222,10 +226,10 @@ export const useSimbaStore = create<SimbaState>()(
           const res = await fetch(`/api/orders?userId=${userId}`);
           if (res.ok) {
             const data = await res.json();
-            // Map created_at to date for compatibility with the store's Order interface
-            const formatted = data.map((o: any) => ({
+            const orders = Array.isArray(data) ? data : data.orders ?? [];
+            const formatted = orders.map((o: any) => ({
               ...o,
-              date: o.createdAt || new Date().toISOString()
+              date: o.date || o.createdAt || new Date().toISOString()
             }));
             set({ orders: formatted });
           }

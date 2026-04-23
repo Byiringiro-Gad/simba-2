@@ -16,11 +16,12 @@ import {
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMemo, useEffect, useState } from 'react';
-import { Review, DeliverySlot } from '@/types';
+import { Review } from '@/types';
 import { clsx } from 'clsx';
 import { toast } from '@/components/Toast';
+import { PICKUP_SLOTS, PickupSlotId } from '@/lib/branches';
 
-const DELIVERY_SLOTS: { id: DeliverySlot; label: string; sub: string; icon: string }[] = [
+const DELIVERY_SLOTS: { id: PickupSlotId; label: string; sub: string; icon: string }[] = [
   { id: 'asap',      label: 'ASAP',       sub: '30–45 min',    icon: '⚡' },
   { id: 'morning',   label: 'Morning',    sub: '8am – 12pm',   icon: '🌅' },
   { id: 'afternoon', label: 'Afternoon',  sub: '12pm – 5pm',   icon: '☀️' },
@@ -60,7 +61,7 @@ export default function ProductDetail() {
   const {
     language, addToCart, updateQuantity, cart,
     isCartOpen, setCartOpen, toggleFavorite, favorites,
-    addToRecentlyViewed, scheduledDelivery, setScheduledDelivery,
+    addToRecentlyViewed, pickupSlot, setPickupSlot,
     user,
   } = useSimbaStore();
   const t = translations[language];
@@ -251,20 +252,20 @@ export default function ProductDetail() {
             {/* ── Scheduled Delivery ── */}
             <div className="mb-5">
               <p className="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5" /> Choose Delivery Time
+                <Clock className="w-3.5 h-3.5" /> Choose Pickup Time
               </p>
               <div className="grid grid-cols-4 gap-2">
-                {DELIVERY_SLOTS.map(slot => (
-                  <button key={slot.id} onClick={() => setScheduledDelivery(slot.id)}
+                {PICKUP_SLOTS.map(slot => (
+                  <button key={slot.id} onClick={() => setPickupSlot(slot.id)}
                     className={clsx(
                       'flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-xl border-2 text-center transition-all',
-                      scheduledDelivery === slot.id
+                      pickupSlot === slot.id
                         ? 'border-brand-dark bg-brand-dark/5 dark:bg-brand-dark/20'
                         : 'border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700'
                     )}>
                     <span className="text-base">{slot.icon}</span>
-                    <span className={clsx('text-xs font-black', scheduledDelivery === slot.id ? 'text-brand-dark dark:text-brand' : 'text-gray-700 dark:text-gray-300')}>{slot.label}</span>
-                    <span className="text-xs text-gray-400 font-medium">{slot.sub}</span>
+                    <span className={clsx('text-xs font-black', pickupSlot === slot.id ? 'text-brand-dark dark:text-brand' : 'text-gray-700 dark:text-gray-300')}>{slot.label}</span>
+                    <span className="text-xs text-gray-400 font-medium">{slot.window}</span>
                   </button>
                 ))}
               </div>

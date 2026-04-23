@@ -6,6 +6,9 @@ import SimbaPulse from "@/components/SimbaPulse";
 import ToastContainer from "@/components/Toast";
 import AuthModal from "@/components/AuthModal";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import PickupBranchModal from "@/components/PickupBranchModal";
+import AuthBootstrap from "@/components/AuthBootstrap";
+import GoogleAuthHandler from "@/components/GoogleAuthHandler";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,11 +23,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} pb-16 sm:pb-0`}>
         <ThemeProvider>
+          <AuthBootstrap />
+          <GoogleAuthHandler />
           <ErrorBoundary>
             {children}
           </ErrorBoundary>
           <SimbaPulse />
           <AuthModal />
+          <PickupBranchModal />
           <ToastContainer />
         </ThemeProvider>
       </body>

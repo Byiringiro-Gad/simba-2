@@ -96,6 +96,12 @@ export default function OrdersTab() {
                       {order.items.reduce((a, i) => a + i.quantity, 0)} {t.items}
                     </p>
                     <p className="font-black text-gray-900 dark:text-white">{order.total.toLocaleString()} RWF</p>
+                    {'pickupBranch' in order && order.pickupBranch && (
+                      <p className="text-xs text-gray-400 mt-1">
+                        {order.pickupBranch}
+                        {'pickupSlot' in order && order.pickupSlot ? ` • ${order.pickupSlot}` : ''}
+                      </p>
+                    )}
                   </div>
                   <button
                     onClick={() => order.items.forEach(item => addToCart(item))}

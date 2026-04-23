@@ -1,8 +1,34 @@
-// Central API client — points to the Express backend
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+// ── API client ────────────────────────────────────────────────────────────────
+// If NEXT_PUBLIC_API_URL is set → calls the Express backend (Render)
+// If empty → calls Next.js built-in API routes (local XAMPP or Vercel)
+
+const EXTERNAL = process.env.NEXT_PUBLIC_API_URL ?? '';
+
+function url(path: string): string {
+  if (EXTERNAL) return `${EXTERNAL}${path}`;
+  // Map backend paths to Next.js API routes
+  const map: Record<string, string> = {
+    '/auth/register':       '/api/auth/register',
+    '/auth/login':          '/api/auth/login',
+    '/auth/me':             '/api/auth/me',
+    '/auth/forgot-password':'/api/auth/forgot-password',
+    '/auth/reset-password': '/api/auth/reset-password',
+    '/orders':              '/api/orders',
+    '/admin/login':         '/api/admin/login',
+    '/admin/orders':        '/api/admin/orders',
+    '/admin/stats':         '/api/admin/stats',
+  };
+  // Handle dynamic paths like /admin/orders/:id
+  for (const [key, val] of Object.entries(map)) {
+    if (path === key || path.startsWith(key + '/')) {
+      return val + path.slice(key.length);
+    }
+  }
+  return `/api${path}`;
+}
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(url(path), {
     headers: { 'Content-Type': 'application/json' },
     ...options,
   });
@@ -27,17 +53,27 @@ export const authApi = {
     }>('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
 
   me: (token: string) =>
-    request<{ ok: boolean; user?: any }>('/auth/me', {
+    request<{ ok: boolean; error?: string; user?: any }>('/auth/me', {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     }),
+
+  forgotPassword: (body: { email: string }) =>
+    request<{ ok: boolean; error?: string; message?: string; resetLink?: string }>(
+      '/auth/forgot-password', { method: 'POST', body: JSON.stringify(body) }
+    ),
+
+  resetPassword: (body: { token: string; password: string }) =>
+    request<{ ok: boolean; error?: string; message?: string }>(
+      '/auth/reset-password', { method: 'POST', body: JSON.stringify(body) }
+    ),
 };
 
 // ── Orders ────────────────────────────────────────────────────────────────────
 export const ordersApi = {
   place: (body: {
     id: string; userId?: string; customerName: string; customerPhone: string;
-    deliveryAddress: string; deliverySlot: string; paymentMethod: string;
-    items: any[]; subtotal: number; deliveryFee: number;
+    pickupBranch: string; pickupSlot: string; paymentMethod: string;
+    depositAmount: number; items: any[]; subtotal: number; deliveryFee: number;
     discount: number; total: number; promoCode?: string | null;
   }) => request<{ ok: boolean; id?: string; error?: string }>(
     '/orders', { method: 'POST', body: JSON.stringify(body) }
@@ -55,19 +91,19 @@ export const adminApi = {
     ),
 
   getOrders: (token: string) =>
-    fetch(`${BASE}/admin/orders`, {
+    fetch(url('/admin/orders'), {
       headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
     }).then(r => r.json()),
 
   updateStatus: (token: string, orderId: string, status: string) =>
-    fetch(`${BASE}/admin/orders/${orderId}`, {
+    fetch(url(`/admin/orders/${orderId}`), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
       body: JSON.stringify({ status }),
     }).then(r => r.json()),
 
   getStats: (token: string) =>
-    fetch(`${BASE}/admin/stats`, {
+    fetch(url('/admin/stats'), {
       headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
     }).then(r => r.json()),
 };

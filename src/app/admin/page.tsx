@@ -29,6 +29,9 @@ interface Order {
   items: OrderItem[];
   total: number;
   status: 'processing' | 'delivered' | 'cancelled';
+  pickup_branch?: string;
+  pickup_slot?: string;
+  deposit_amount?: number;
 }
 
 type StatusFilter = 'all' | 'processing' | 'delivered' | 'cancelled';
@@ -373,15 +376,23 @@ export default function AdminDashboard() {
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 space-y-2">
                   <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">Order Summary</p>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Subtotal</span>
-                    <span className="font-bold text-gray-900 dark:text-white">{(selectedOrder.total - 1000).toLocaleString()} RWF</span>
+                    <span className="text-gray-500">Pickup Branch</span>
+                    <span className="font-bold text-gray-900 dark:text-white text-right">{selectedOrder.pickup_branch ?? 'Not set'}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Delivery Fee</span>
-                    <span className="font-bold text-gray-900 dark:text-white">1,000 RWF</span>
+                    <span className="text-gray-500">Pickup Slot</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{selectedOrder.pickup_slot ?? 'asap'}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Subtotal</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{selectedOrder.total.toLocaleString()} RWF</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Deposit Paid</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{(selectedOrder.deposit_amount ?? 0).toLocaleString()} RWF</span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-                    <span className="font-black text-gray-900 dark:text-white">Total</span>
+                    <span className="font-black text-gray-900 dark:text-white">Order Total</span>
                     <span className="font-black text-lg text-gray-900 dark:text-white">{selectedOrder.total.toLocaleString()} RWF</span>
                   </div>
                 </div>
@@ -417,14 +428,14 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                {/* Rider assignment (visual) */}
+                {/* Pickup preparation */}
                 {selectedOrder.status === 'processing' && (
                   <div className="bg-brand-muted dark:bg-brand/10 border border-brand/20 rounded-2xl p-4 flex items-center gap-3">
                     <div className="w-10 h-10 bg-brand-dark rounded-xl flex items-center justify-center flex-shrink-0">
                       <Bike className="w-5 h-5 text-brand" />
                     </div>
                     <div>
-                      <p className="font-black text-sm text-gray-900 dark:text-white">Rider: Jean Pierre</p>
+                      <p className="font-black text-sm text-gray-900 dark:text-white">Preparing for branch pickup</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">Assigned · ETA 45 min</p>
                     </div>
                   </div>
