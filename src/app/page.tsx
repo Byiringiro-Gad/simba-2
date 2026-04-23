@@ -21,8 +21,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { SimbaData } from '@/types';
-import { SIMBA_BRANCHES } from '@/lib/branches';
+import { SIMBA_BRANCHES, SimbaBranch } from '@/lib/branches';
 import HeroSection from '@/components/HeroSection';
+import BranchMapModal from '@/components/BranchMapModal';
+import ShopNowPanel from '@/components/ShopNowPanel';
 
 // ── Why Simba Section — How it works only (stats are in hero) ────────────────
 function HowItWorksSection() {
@@ -109,6 +111,10 @@ export default function Home() {
 
   // sidebar drawer state
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // branch map modal
+  const [selectedBranchMap, setSelectedBranchMap] = useState<SimbaBranch | null>(null);
+  // shop now panel
+  const [shopNowOpen, setShopNowOpen] = useState(false);
 
   // products for the selected category
   const categoryProducts = useMemo(() => {
@@ -234,7 +240,7 @@ export default function Home() {
               >
                 {/* ── HERO — first thing user sees ── */}
                 <HeroSection onShopNow={() => {
-                  document.getElementById('categories-section')?.scrollIntoView({ behavior: 'smooth' });
+                  setShopNowOpen(true);
                 }} />
 
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 pb-24 sm:pb-10 space-y-8">
@@ -290,21 +296,22 @@ export default function Home() {
                   {/* Branch list */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {BRANCHES.map((b, i) => (
-                      <a
+                      <button
                         key={b.id}
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b.name)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-brand/40 hover:shadow-sm transition-all"
+                        onClick={() => setSelectedBranchMap(b)}
+                        className="flex items-center gap-3 p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-brand/40 hover:shadow-sm transition-all text-left w-full"
                       >
                         <div className="w-8 h-8 bg-red-50 dark:bg-red-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
                           <span className="text-red-500 font-black text-xs">{i + 1}</span>
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <p className="font-bold text-sm text-gray-900 dark:text-white truncate">{b.name}</p>
                           <p className="text-xs text-gray-400 truncate">{b.area}</p>
                         </div>
-                      </a>
+                        <span className="text-[10px] font-black text-brand-dark dark:text-brand bg-brand/10 px-2 py-1 rounded-lg flex-shrink-0">
+                          {language === 'fr' ? 'Voir' : language === 'rw' ? 'Reba' : 'View'}
+                        </span>
+                      </button>
                     ))}
                   </div>
                 </section>
@@ -405,6 +412,12 @@ export default function Home() {
       <BottomNav />
       <AddressModal />
       <CartDrawer isOpen={isCartOpen} onClose={() => setCartOpen(false)} />
+      <BranchMapModal branch={selectedBranchMap} onClose={() => setSelectedBranchMap(null)} />
+      <ShopNowPanel
+        isOpen={shopNowOpen}
+        onClose={() => setShopNowOpen(false)}
+        onCategorySelect={handleCategorySelect}
+      />
     </div>
   );
 }
