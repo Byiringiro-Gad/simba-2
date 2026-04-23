@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       [user.id, token, expiresAt]
     );
 
-    const frontendUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://simba-2-ebon.vercel.app';
+    const frontendUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://simba2gad.vercel.app';
     const resetLink = `${frontendUrl}/reset-password?token=${token}`;
 
     // Return link directly (email sending requires SMTP config)

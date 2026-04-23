@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://simba-2-ebon.vercel.app';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://simba2gad.vercel.app';
 
   if (!clientId) {
     // Redirect back to home with a friendly error instead of raw JSON

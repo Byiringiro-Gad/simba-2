@@ -10,7 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET ?? 'simba_secret_2026';
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get('code');
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://simba-2-ebon.vercel.app';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://simba2gad.vercel.app';
 
   if (!code) {
     return NextResponse.redirect(`${siteUrl}/?auth_error=no_code`);
