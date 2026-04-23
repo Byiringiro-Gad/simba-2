@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Lock, User, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+
 export default function AdminLogin() {
   const router = useRouter();
   const [username, setUsername] = useState('');
@@ -17,20 +19,36 @@ export default function AdminLogin() {
     setError('');
     setLoading(true);
 
-    const res = await fetch('/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
+    try {
+      // Step 1 — verify credentials against Render and get token
+      const renderRes = await fetch(`${API_URL}/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const renderData = await renderRes.json();
 
-    const data = await res.json();
+      if (!renderData.ok) {
+        setError('Invalid username or password');
+        setPassword('');
+        setLoading(false);
+        return;
+      }
 
-    if (data.ok) {
+      // Step 2 — store token for Render API calls
+      localStorage.setItem('admin_token', renderData.token ?? password);
+
+      // Step 3 — set session cookie via Vercel (for middleware protection)
+      await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
       router.push('/admin');
       router.refresh();
-    } else {
-      setError('Invalid username or password');
-      setPassword('');
+    } catch {
+      setError('Could not reach the server. Please try again.');
     }
 
     setLoading(false);
