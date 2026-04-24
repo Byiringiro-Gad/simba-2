@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Lock, User, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
-
 export default function AdminLogin() {
   const router = useRouter();
   const [username, setUsername] = useState('');
@@ -20,34 +18,30 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      // Step 1 — verify credentials against Render and get token
-      const renderRes = await fetch(`${API_URL}/admin/login`, {
+      // Call Vercel's own admin login route — sets the session cookie
+      // and validates against ADMIN_USERNAME / ADMIN_PASSWORD env vars
+      const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: username.trim(), password }),
       });
-      const renderData = await renderRes.json();
 
-      if (!renderData.ok) {
+      const data = await res.json();
+
+      if (!data.ok) {
         setError('Invalid username or password');
         setPassword('');
         setLoading(false);
         return;
       }
 
-      // Step 2 — store token for Render API calls
-      localStorage.setItem('admin_token', renderData.token ?? password);
-
-      // Step 3 — set session cookie via Vercel (for middleware protection)
-      await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
+      // Store password as token for Render admin API calls
+      localStorage.setItem('admin_token', password);
 
       router.push('/admin');
       router.refresh();
-    } catch {
+    } catch (err) {
+      console.error('[Admin login]', err);
       setError('Could not reach the server. Please try again.');
     }
 
@@ -68,7 +62,7 @@ export default function AdminLogin() {
               <Lock className="w-8 h-8 text-gray-900" />
             </div>
             <h1 className="font-black text-2xl text-white mb-1">Admin Dashboard</h1>
-            <p className="text-white/60 text-sm">Simba Supermarket</p>
+            <p className="text-white/60 text-sm">Simba Supermarket · HQ</p>
           </div>
 
           {/* Form */}
@@ -90,6 +84,7 @@ export default function AdminLogin() {
                   onChange={e => setUsername(e.target.value)}
                   placeholder="admin"
                   required
+                  autoComplete="username"
                   className="w-full pl-10 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-medium outline-none focus:border-brand transition-colors text-gray-900 dark:text-white"
                 />
               </div>
@@ -105,6 +100,7 @@ export default function AdminLogin() {
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
+                  autoComplete="current-password"
                   className="w-full pl-10 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-medium outline-none focus:border-brand transition-colors text-gray-900 dark:text-white"
                 />
               </div>
@@ -117,6 +113,10 @@ export default function AdminLogin() {
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
+
+            <p className="text-center text-xs text-gray-400">
+              Credentials: <span className="font-mono font-bold">admin</span> / <span className="font-mono font-bold">admin123</span>
+            </p>
           </form>
         </div>
       </motion.div>

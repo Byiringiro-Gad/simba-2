@@ -5,17 +5,468 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingBag, Clock, CheckCircle2, XCircle,
-  LogOut, Search, Filter, ChevronDown, Eye,
+  LogOut, Search, Eye, Store,
   TrendingUp, Users, Package, DollarSign,
-  RefreshCw, X, ChevronRight, Bike
+  RefreshCw, X, ChevronRight, Bike, Star
 } from 'lucide-react';
 import Image from 'next/image';
 import { clsx } from 'clsx';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
 interface OrderItem {
-  id: number;
-  name: string;
+  id: number; name: string; price: number; quantity: number;
+  image: string; unit: string; category: string;
+}
+
+interface Order {
+  id: string; date: string; items: OrderItem[]; total: number;
+  status: 'processing' | 'delivered' | 'cancelled';
+  pickup_branch?: string; pickup_slot?: string; deposit_amount?: number;
+  customer_name?: string; customer_phone?: string;
+}
+
+type StatusFilter = 'all' | 'processing' | 'delivered' | 'cancelled';
+
+const STATUS = {
+  processing: { label: 'Processing', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', icon: Clock },
+  delivered:  { label: 'Delivered',  color: 'text-green-600', bg: 'bg-green-50',  border: 'border-green-200',  icon: CheckCircle2 },
+  cancelled:  { label: 'Cancelled',  color: 'text-red-600',   bg: 'bg-red-50',    border: 'border-red-200',    icon: XCircle },
+};
+
+const API = process.env.NEXT_PUBLIC_API_URL ?? '';
+
+async function fetchOrders(): Promise<Order[]> {
+  try {
+    const token = localStorage.getItem('admin_token') ?? '';
+    const res = await fetch(`${API}/admin/orders`, {
+      headers: { 'x-admin-token': token },
+    });
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch { return []; }
+}
+
+async function fetchBranchRatings(): Promise<Record<string, { total: number; avgRating: number }>> {
+  try {
+    const res = await fetch(`${API}/reviews`);
+    const data = await res.json();
+    return data.ok ? data.ratings : {};
+  } catch { return {}; }
+}
+
+export default function AdminDashboard() {
+  const router = useRouter();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [ratings, setRatings] = useState<Record<string, { total: number; avgRating: number }>>({});
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [branchFilter, setBranchFilter] = useState('all');
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [updating, setUpdating] = useState<string | null>(null);
+  const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [loading, setLoading] = useState(true);
+  const [activeView, setActiveView] = useState<'orders' | 'branches'>('orders');
+
+  const loadData = async () => {
+    const [o, r] = await Promise.all([fetchOrders(), fetchBranchRatings()]);
+    setOrders(o);
+    setRatings(r);
+    setLastRefresh(new Date());
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleLogout = async () => {
+    await fetch('/api/admin/logout', { method: 'POST' });
+    router.push('/admin/login');
+    router.refresh();
+  };
+
+  const handleStatusChange = async (orderId: string, newStatus: Order['status']) => {
+    setUpdating(orderId);
+    try {
+      const token = localStorage.getItem('admin_token') ?? '';
+      const res = await fetch(`${API}/admin/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+        if (selectedOrder?.id === orderId) setSelectedOrder({ ...selectedOrder, status: newStatus });
+      }
+    } catch (err) { console.error(err); }
+    setUpdating(null);
+  };
+
+  // Stats
+  const stats = useMemo(() => ({
+    total: orders.length,
+    processing: orders.filter(o => o.status === 'processing').length,
+    delivered: orders.filter(o => o.status === 'delivered').length,
+    cancelled: orders.filter(o => o.status === 'cancelled').length,
+    revenue: orders.filter(o => o.status !== 'cancelled').reduce((a, o) => a + o.total, 0),
+    todayOrders: orders.filter(o => new Date(o.date).toDateString() === new Date().toDateString()).length,
+    deposits: orders.reduce((a, o) => a + (o.deposit_amount ?? 0), 0),
+  }), [orders]);
+
+  // Per-branch breakdown
+  const branchStats = useMemo(() => {
+    const map: Record<string, { name: string; total: number; revenue: number; processing: number; delivered: number }> = {};
+    for (const o of orders) {
+      const b = o.pickup_branch ?? 'Unknown';
+      if (!map[b]) map[b] = { name: b, total: 0, revenue: 0, processing: 0, delivered: 0 };
+      map[b].total++;
+      if (o.status !== 'cancelled') map[b].revenue += o.total;
+      if (o.status === 'processing') map[b].processing++;
+      if (o.status === 'delivered') map[b].delivered++;
+    }
+    return Object.values(map).sort((a, b) => b.total - a.total);
+  }, [orders]);
+
+  const branches = useMemo(() => ['all', ...new Set(orders.map(o => o.pickup_branch ?? 'Unknown'))], [orders]);
+
+  const filtered = useMemo(() =>
+    orders
+      .filter(o => statusFilter === 'all' || o.status === statusFilter)
+      .filter(o => branchFilter === 'all' || o.pickup_branch === branchFilter)
+      .filter(o => {
+        if (!search.trim()) return true;
+        const q = search.toLowerCase();
+        return o.id.toLowerCase().includes(q) ||
+          (o.customer_name ?? '').toLowerCase().includes(q) ||
+          o.items.some(i => i.name.toLowerCase().includes(q));
+      })
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+    [orders, statusFilter, branchFilter, search]
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-brand-dark shadow-lg">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-brand rounded-xl flex items-center justify-center">
+              <ShoppingBag className="w-4 h-4 text-gray-900" />
+            </div>
+            <div>
+              <p className="font-black text-white text-sm leading-none">Simba HQ Admin</p>
+              <p className="text-white/50 text-[10px]">All Branches · Central Operations</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => loadData()} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-xl text-white text-xs font-bold transition-colors">
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span className="hidden sm:block">Refresh</span>
+            </button>
+            <button onClick={handleLogout} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-red-500/30 rounded-xl text-white text-xs font-bold transition-colors">
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:block">Logout</span>
+            </button>
+          </div>
+        </div>
+        {/* View tabs */}
+        <div className="flex px-4 sm:px-6 pb-0">
+          {[
+            { id: 'orders', label: `All Orders (${orders.length})` },
+            { id: 'branches', label: `Branch Overview (${branchStats.length})` },
+          ].map(tab => (
+            <button key={tab.id} onClick={() => setActiveView(tab.id as any)}
+              className={clsx('px-4 py-2.5 text-xs font-black border-b-2 transition-colors',
+                activeView === tab.id ? 'border-brand text-brand' : 'border-transparent text-white/60 hover:text-white/80'
+              )}>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </header>
+
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-5 space-y-5">
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+          {[
+            { label: 'Total Orders',   value: stats.total,                                    icon: Package,     color: 'text-gray-900', bg: 'bg-white' },
+            { label: "Today",          value: stats.todayOrders,                              icon: TrendingUp,  color: 'text-blue-600', bg: 'bg-blue-50' },
+            { label: 'Processing',     value: stats.processing,                               icon: Clock,       color: 'text-amber-600', bg: 'bg-amber-50' },
+            { label: 'Delivered',      value: stats.delivered,                                icon: CheckCircle2,color: 'text-green-600', bg: 'bg-green-50' },
+            { label: 'Cancelled',      value: stats.cancelled,                                icon: XCircle,     color: 'text-red-600', bg: 'bg-red-50' },
+            { label: 'Revenue (RWF)',  value: `${(stats.revenue/1000).toFixed(0)}K`,          icon: DollarSign,  color: 'text-brand-dark', bg: 'bg-brand-muted' },
+            { label: 'Deposits (RWF)', value: `${(stats.deposits/1000).toFixed(0)}K`,         icon: Bike,        color: 'text-purple-600', bg: 'bg-purple-50' },
+          ].map(({ label, value, icon: Icon, color, bg }) => (
+            <div key={label} className={`${bg} rounded-2xl border border-gray-100 p-3`}>
+              <Icon className={`w-4 h-4 ${color} mb-1.5`} />
+              <p className={`font-black text-lg ${color} leading-none`}>{value}</p>
+              <p className="text-[10px] text-gray-500 font-medium mt-1">{label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* ── BRANCH OVERVIEW TAB ── */}
+        {activeView === 'branches' && (
+          <div className="space-y-3">
+            <p className="text-xs font-black uppercase tracking-widest text-gray-400">Performance by Branch</p>
+            {branchStats.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+                <Store className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                <p className="font-black text-gray-900">No orders yet</p>
+              </div>
+            ) : (
+              branchStats.map((b, i) => {
+                // Extract branch ID from name
+                const branchId = b.name.toLowerCase().replace('simba supermarket ', '').replace(/\s+/g, '_');
+                const rating = ratings[branchId];
+                return (
+                  <motion.div key={b.name} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                    className="bg-white rounded-2xl border border-gray-100 p-4">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-brand-muted rounded-xl flex items-center justify-center flex-shrink-0">
+                          <Store className="w-5 h-5 text-brand" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-black text-sm text-gray-900">{b.name}</p>
+                            {rating?.avgRating && (
+                              <div className="flex items-center gap-1 px-2 py-0.5 bg-amber-50 rounded-full">
+                                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                                <span className="text-xs font-black text-amber-700">{rating.avgRating}</span>
+                                <span className="text-[10px] text-gray-400">({rating.total})</span>
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-400">{b.total} orders · {b.revenue.toLocaleString()} RWF revenue</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-center">
+                          <p className="font-black text-amber-600 text-lg leading-none">{b.processing}</p>
+                          <p className="text-[10px] text-gray-400">Active</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="font-black text-green-600 text-lg leading-none">{b.delivered}</p>
+                          <p className="text-[10px] text-gray-400">Done</p>
+                        </div>
+                        <button onClick={() => { setBranchFilter(b.name); setActiveView('orders'); }}
+                          className="px-3 py-1.5 bg-brand-dark text-white rounded-xl text-xs font-black hover:bg-gray-800 transition-colors">
+                          View Orders
+                        </button>
+                      </div>
+                    </div>
+                    {/* Revenue bar */}
+                    <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-brand rounded-full transition-all"
+                        style={{ width: `${Math.min(100, (b.revenue / Math.max(...branchStats.map(x => x.revenue), 1)) * 100)}%` }} />
+                    </div>
+                  </motion.div>
+                );
+              })
+            )}
+          </div>
+        )}
+
+        {/* ── ORDERS TAB ── */}
+        {activeView === 'orders' && (
+          <>
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1 flex items-center gap-2 px-4 py-2.5 bg-white rounded-xl border border-gray-200 focus-within:border-brand transition-colors">
+                <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+                  placeholder="Search by order ID, customer or product..."
+                  className="flex-1 bg-transparent outline-none text-sm text-gray-900 placeholder:text-gray-400" />
+                {search && <button onClick={() => setSearch('')}><X className="w-4 h-4 text-gray-400" /></button>}
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {(['all', 'processing', 'delivered', 'cancelled'] as StatusFilter[]).map(s => (
+                  <button key={s} onClick={() => setStatusFilter(s)}
+                    className={clsx('px-3 py-2 rounded-xl text-xs font-bold capitalize transition-all border',
+                      statusFilter === s ? 'bg-brand-dark text-white border-brand-dark' : 'bg-white text-gray-600 border-gray-200 hover:border-brand-dark'
+                    )}>
+                    {s === 'all' ? `All (${orders.length})` : `${s.charAt(0).toUpperCase() + s.slice(1)} (${orders.filter(o => o.status === s).length})`}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Branch filter */}
+            {branchFilter !== 'all' && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-brand-muted rounded-xl w-fit">
+                <Store className="w-3.5 h-3.5 text-brand" />
+                <span className="text-xs font-bold text-brand-dark">{branchFilter}</span>
+                <button onClick={() => setBranchFilter('all')}><X className="w-3.5 h-3.5 text-brand-dark" /></button>
+              </div>
+            )}
+
+            <p className="text-xs text-gray-400">Last updated: {lastRefresh.toLocaleTimeString()} · Auto-refreshes every 30s</p>
+
+            {/* Orders table */}
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-gray-100 p-16 text-center">
+                <Package className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+                <p className="font-black text-gray-900 mb-1">No orders found</p>
+                <p className="text-sm text-gray-400">{orders.length === 0 ? 'Orders will appear here.' : 'Try a different filter.'}</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                <div className="hidden sm:grid grid-cols-[1fr_160px_120px_120px_160px_80px] gap-4 px-5 py-3 bg-gray-50 border-b border-gray-100">
+                  {['Order', 'Branch', 'Date', 'Total', 'Status', 'Action'].map(h => (
+                    <p key={h} className="text-[10px] font-black uppercase tracking-widest text-gray-400">{h}</p>
+                  ))}
+                </div>
+                <div className="divide-y divide-gray-50">
+                  {filtered.map((order, i) => {
+                    const cfg = STATUS[order.status];
+                    const StatusIcon = cfg.icon;
+                    return (
+                      <motion.div key={order.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
+                        className="grid grid-cols-1 sm:grid-cols-[1fr_160px_120px_120px_160px_80px] gap-3 sm:gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="flex gap-1 flex-shrink-0">
+                            {order.items.slice(0, 2).map(item => (
+                              <div key={item.id} className="relative w-9 h-9 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                                <Image src={item.image} alt={item.name} fill className="object-cover" sizes="36px" />
+                              </div>
+                            ))}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-black text-sm text-gray-900">#{order.id}</p>
+                            <p className="text-xs text-gray-400 truncate">{order.customer_name ?? `${order.items.length} items`}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center">
+                          <p className="text-xs font-bold text-gray-600 truncate">{order.pickup_branch?.replace('Simba Supermarket ', '') ?? '—'}</p>
+                        </div>
+                        <div className="flex items-center">
+                          <div>
+                            <p className="text-sm font-bold text-gray-900">{new Date(order.date).toLocaleDateString('en-RW', { day: 'numeric', month: 'short' })}</p>
+                            <p className="text-xs text-gray-400">{new Date(order.date).toLocaleTimeString('en-RW', { hour: '2-digit', minute: '2-digit' })}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center">
+                          <p className="font-black text-sm text-gray-900">{order.total.toLocaleString()} <span className="text-gray-400 font-medium text-xs">RWF</span></p>
+                        </div>
+                        <div className="flex items-center">
+                          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${cfg.bg} ${cfg.border}`}>
+                            <StatusIcon className={`w-3.5 h-3.5 ${cfg.color}`} />
+                            <span className={`text-xs font-black ${cfg.color}`}>{cfg.label}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center">
+                          <button onClick={() => setSelectedOrder(order)}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-brand-dark text-white rounded-xl text-xs font-black hover:bg-gray-800 transition-colors">
+                            <Eye className="w-3.5 h-3.5" />
+                            View
+                          </button>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Order detail drawer */}
+      <AnimatePresence>
+        {selectedOrder && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]" onClick={() => setSelectedOrder(null)} />
+            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+              className="fixed right-0 top-0 h-full w-full max-w-lg bg-white z-[110] shadow-2xl flex flex-col">
+              <div className="flex items-center justify-between px-6 py-4 bg-brand-dark">
+                <div>
+                  <p className="font-black text-white">Order #{selectedOrder.id}</p>
+                  <p className="text-white/60 text-xs">{new Date(selectedOrder.date).toLocaleString('en-RW', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                </div>
+                <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-white/10 rounded-xl">
+                  <X className="w-5 h-5 text-white" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                {/* Status */}
+                <div className={`flex items-center gap-2 px-4 py-3 rounded-2xl border ${STATUS[selectedOrder.status].bg} ${STATUS[selectedOrder.status].border}`}>
+                  {(() => { const Icon = STATUS[selectedOrder.status].icon; return <Icon className={`w-5 h-5 ${STATUS[selectedOrder.status].color}`} />; })()}
+                  <span className={`font-black text-sm ${STATUS[selectedOrder.status].color}`}>{STATUS[selectedOrder.status].label}</span>
+                  <span className="ml-auto text-xs text-gray-500">{selectedOrder.pickup_branch}</span>
+                </div>
+                {/* Customer */}
+                {selectedOrder.customer_name && (
+                  <div className="bg-gray-50 rounded-2xl p-4">
+                    <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Customer</p>
+                    <p className="font-bold text-gray-900">{selectedOrder.customer_name}</p>
+                    <p className="text-sm text-gray-500">{selectedOrder.customer_phone}</p>
+                  </div>
+                )}
+                {/* Items */}
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Items ({selectedOrder.items.length})</p>
+                  <div className="space-y-2">
+                    {selectedOrder.items.map(item => (
+                      <div key={item.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                          <Image src={item.image} alt={item.name} fill className="object-cover" sizes="40px" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm text-gray-900 truncate">{item.name}</p>
+                          <p className="text-xs text-gray-400">×{item.quantity} · {item.price.toLocaleString()} RWF each</p>
+                        </div>
+                        <p className="font-black text-sm text-gray-900">{(item.price * item.quantity).toLocaleString()} RWF</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Summary */}
+                <div className="bg-gray-50 rounded-2xl p-4 space-y-2">
+                  <div className="flex justify-between text-sm"><span className="text-gray-500">Pickup Slot</span><span className="font-bold">{selectedOrder.pickup_slot ?? 'asap'}</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-gray-500">Deposit Paid</span><span className="font-bold">{(selectedOrder.deposit_amount ?? 0).toLocaleString()} RWF</span></div>
+                  <div className="flex justify-between pt-2 border-t border-gray-200">
+                    <span className="font-black text-gray-900">Total</span>
+                    <span className="font-black text-lg">{selectedOrder.total.toLocaleString()} RWF</span>
+                  </div>
+                </div>
+                {/* Update status */}
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Update Status</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(['processing', 'delivered', 'cancelled'] as Order['status'][]).map(s => {
+                      const cfg = STATUS[s]; const Icon = cfg.icon; const isActive = selectedOrder.status === s;
+                      return (
+                        <button key={s} onClick={() => !isActive && handleStatusChange(selectedOrder.id, s)}
+                          disabled={isActive || updating === selectedOrder.id}
+                          className={clsx('flex flex-col items-center gap-1.5 py-3 rounded-2xl border-2 transition-all',
+                            isActive ? `${cfg.bg} ${cfg.border}` : 'border-gray-200 hover:border-gray-300 bg-white'
+                          )}>
+                          <Icon className={`w-5 h-5 ${isActive ? cfg.color : 'text-gray-400'}`} />
+                          <span className={`text-xs font-black ${isActive ? cfg.color : 'text-gray-500'}`}>{cfg.label}</span>
+                          {isActive && <span className="text-[9px] text-gray-400">Current</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
   price: number;
   quantity: number;
   image: string;
