@@ -337,23 +337,20 @@ export default function Home() {
                       </p>
                     </div>
 
-                    {/* Quick Links */}
+                    {/* Our Branches */}
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">
-                        {language === 'fr' ? 'Liens rapides' : language === 'rw' ? 'Aho Ugana Vuba' : 'Quick Links'}
+                        {language === 'fr' ? 'Nos agences' : language === 'rw' ? 'Amashami Yacu' : 'Our Branches'}
                       </p>
-                      <div className="space-y-2">
-                        {[
-                          { label: language === 'fr' ? 'Accueil' : language === 'rw' ? 'Ahabanza' : 'Home', href: '/' },
-                          { label: language === 'fr' ? 'Nos agences' : language === 'rw' ? 'Amashami' : 'Our Branches', href: '#' },
-                          { label: language === 'fr' ? 'À propos' : language === 'rw' ? 'Ibyerekeye' : 'About Simba', href: 'https://www.simbaonlineshopping.com/AboutUs.aspx' },
-                          { label: language === 'fr' ? 'Tableau de bord agence' : language === 'rw' ? 'Dashboard y\'Ishami' : 'Branch Dashboard', href: '/branch/login' },
-                          { label: language === 'fr' ? 'Administration' : language === 'rw' ? 'Ubuyobozi' : 'Admin', href: '/admin/login' },
-                        ].map(link => (
-                          <a key={link.label} href={link.href} target={link.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer"
-                            className="block text-xs text-gray-600 dark:text-gray-300 hover:text-brand-dark dark:hover:text-brand transition-colors font-medium">
-                            {link.label}
-                          </a>
+                      <div className="space-y-1.5">
+                        {BRANCHES.map(b => (
+                          <button
+                            key={b.id}
+                            onClick={() => setSelectedBranchMap(b)}
+                            className="block text-xs text-gray-600 dark:text-gray-300 hover:text-brand-dark dark:hover:text-brand transition-colors font-medium text-left"
+                          >
+                            {b.name}
+                          </button>
                         ))}
                       </div>
                     </div>
@@ -376,13 +373,6 @@ export default function Home() {
                           <span className="text-sm">✉️</span>
                           <a href={`mailto:${t.contactEmail}`} className="text-xs text-gray-600 dark:text-gray-300 font-medium hover:text-brand-dark transition-colors">
                             {t.contactEmail}
-                          </a>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm">🌐</span>
-                          <a href="https://www.simbaonlineshopping.com" target="_blank" rel="noopener noreferrer"
-                            className="text-xs text-brand-dark dark:text-brand font-bold hover:underline">
-                            simbaonlineshopping.com
                           </a>
                         </div>
                       </div>
@@ -412,11 +402,8 @@ export default function Home() {
                   </div>
 
                   {/* Bottom bar */}
-                  <div className="border-t border-gray-100 dark:border-gray-800 pt-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-                    <p className="text-[10px] text-gray-400">{t.copyright}</p>
-                    <p className="text-[10px] text-gray-400">
-                      {language === 'fr' ? 'Fait avec ❤️ pour le Rwanda' : language === 'rw' ? 'Byakozwe n\'urukundo ku Rwanda' : 'Made with ❤️ for Rwanda'}
-                    </p>
+                  <div className="border-t border-gray-100 dark:border-gray-800 pt-4">
+                    <p className="text-[10px] text-gray-400 text-center">{t.copyright}</p>
                   </div>
                 </footer>
                 </div>{/* end inner wrapper */}

@@ -202,21 +202,19 @@ export default function ProductDetail() {
             <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight mb-2">{product.name}</h1>
             <p className="text-sm text-gray-400 font-medium mb-3">{t.perUnit} {product.unit || 'unit'}</p>
 
-            {/* Rating — only show if real reviews exist */}
+            {/* Rating — always show 5 stars, colored if rated */}
             <div className="flex items-center gap-2 mb-4">
+              <div className="flex gap-0.5">
+                {[1,2,3,4,5].map(i => (
+                  <span key={i} className={`text-sm ${count > 0 && i <= Math.round(avg) ? 'text-amber-500' : 'text-gray-200 dark:text-gray-700'}`}>★</span>
+                ))}
+              </div>
               {count > 0 ? (
-                <>
-                  <StarRating value={Math.round(avg)} size="sm" />
-                  <span className="text-sm font-black text-gray-900 dark:text-white">{avg}</span>
-                  <span className="text-sm text-gray-400">({count} {count === 1 ? t.review : t.reviews})</span>
-                </>
+                <span className="text-sm text-gray-400">({count} {count === 1 ? t.review : t.reviews})</span>
               ) : (
-                <>
-                  <StarRating value={0} size="sm" />
-                  <span className="text-sm text-gray-400">
-                    {language === 'fr' ? 'Pas encore d\'avis' : language === 'rw' ? 'Nta bitekerezo birabaho' : 'No reviews yet'}
-                  </span>
-                </>
+                <span className="text-sm text-gray-400">
+                  {language === 'fr' ? 'Pas encore d\'avis' : language === 'rw' ? 'Nta bitekerezo birabaho' : 'No reviews yet'}
+                </span>
               )}
               <button onClick={() => { setActiveTab('reviews'); document.getElementById('tabs')?.scrollIntoView({ behavior: 'smooth' }); }}
                 className="text-xs text-brand font-bold hover:underline ml-1">{t.writeReview}</button>

@@ -38,14 +38,13 @@ function ShelfCard({ product, onClose }: { product: Product; onClose: () => void
       </Link>
       <div className="p-2.5">
         <p className="text-[11px] font-bold text-gray-900 dark:text-white line-clamp-2 leading-tight mb-1 min-h-[2rem]">{product.name}</p>
-        {count > 0 && (
-          <div className="flex items-center gap-0.5 mb-1">
-            {[1,2,3,4,5].map(i => (
-              <span key={i} className={`text-[9px] ${i <= Math.round(avg) ? 'text-amber-400' : 'text-gray-200 dark:text-gray-700'}`}>★</span>
-            ))}
-            <span className="text-[9px] font-bold text-gray-500 ml-0.5">{avg}</span>
-          </div>
-        )}
+        {/* Always show 5 stars — colored if rated, empty if not */}
+        <div className="flex gap-0.5 mb-1">
+          {[1,2,3,4,5].map(i => (
+            <span key={i} className={`text-[9px] ${count > 0 && i <= Math.round(avg) ? 'text-amber-400' : 'text-gray-200 dark:text-gray-700'}`}>★</span>
+          ))}
+          {count > 0 && <span className="text-[9px] font-bold text-gray-500 ml-0.5">{avg}</span>}
+        </div>
         <div className="flex items-center justify-between gap-1">
           <div>
             <p className="text-xs font-black text-gray-900 dark:text-white leading-none">{product.price.toLocaleString()}</p>
