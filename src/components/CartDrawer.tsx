@@ -687,7 +687,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                 </div>
                 <button onClick={handleNext} disabled={!canProceed()} className="w-full py-4 bg-brand hover:bg-brand-dark disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg shadow-brand/20 disabled:shadow-none flex items-center justify-center gap-2">
                   {step === 'payment'
-                    ? `${t.payWithMomo} — ${DEPOSIT_AMOUNT.toLocaleString()} RWF`
+                    ? `${carrier === 'mtn' ? 'MTN MoMo' : 'Airtel Money'} — ${DEPOSIT_AMOUNT.toLocaleString()} RWF`
                     : step === 'details'
                     ? t.checkout
                     : !user
