@@ -337,20 +337,20 @@ export default function Home() {
                       </p>
                     </div>
 
-                    {/* Our Branches */}
+                    {/* Quick Links */}
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">
-                        {language === 'fr' ? 'Nos agences' : language === 'rw' ? 'Amashami Yacu' : 'Our Branches'}
+                        {language === 'fr' ? 'Liens rapides' : language === 'rw' ? 'Aho Ugana Vuba' : 'Quick Links'}
                       </p>
-                      <div className="space-y-1.5">
-                        {BRANCHES.map(b => (
-                          <button
-                            key={b.id}
-                            onClick={() => setSelectedBranchMap(b)}
-                            className="block text-xs text-gray-600 dark:text-gray-300 hover:text-brand-dark dark:hover:text-brand transition-colors font-medium text-left"
-                          >
-                            {b.name}
-                          </button>
+                      <div className="space-y-2">
+                        {[
+                          { label: language === 'fr' ? 'Accueil' : language === 'rw' ? 'Ahabanza' : 'Home', href: '/' },
+                          { label: language === 'fr' ? 'À propos' : language === 'rw' ? 'Ibyerekeye' : 'About Simba', href: 'https://www.simbaonlineshopping.com/AboutUs.aspx' },
+                        ].map(link => (
+                          <a key={link.label} href={link.href} target={link.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer"
+                            className="block text-xs text-gray-600 dark:text-gray-300 hover:text-brand-dark dark:hover:text-brand transition-colors font-medium">
+                            {link.label}
+                          </a>
                         ))}
                       </div>
                     </div>

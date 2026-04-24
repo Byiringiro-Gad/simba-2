@@ -4,12 +4,12 @@ import { useState, useRef, useEffect } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import { getSimbaData } from '@/lib/data';
-import { Search, ShoppingCart, ChevronDown, MapPin, Clock, X, Sun, Moon, Languages, Menu, User, LogOut, ChevronRight } from 'lucide-react';
+import { Search, ShoppingCart, ChevronDown, MapPin, X, Sun, Moon, Languages, Menu, User, LogOut, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { clsx } from 'clsx';
-import { getBranchById, PICKUP_DEPOSIT_RWF } from '@/lib/branches';
+import { getBranchById } from '@/lib/branches';
 
 const POPULAR = ['Fresh Milk', 'Bread', 'Avocado', 'Cooking Oil', 'Rice', 'Eggs', 'Juice', 'Yogurt'];
 
@@ -101,12 +101,6 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-white/60 flex-shrink-0" />
           </button>
-
-          {/* Pickup deposit badge */}
-          <div className="hidden lg:flex items-center gap-1.5 px-3 py-2 bg-white/10 rounded-xl flex-shrink-0">
-            <Clock className="w-3.5 h-3.5 text-brand" />
-            <span className="text-xs font-black text-white">{PICKUP_DEPOSIT_RWF} {t.depositBadge}</span>
-          </div>
 
           {/* Search */}
           <div ref={searchRef} className="flex-1 relative">
