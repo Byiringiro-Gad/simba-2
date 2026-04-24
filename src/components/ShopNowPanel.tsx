@@ -24,7 +24,7 @@ interface Props {
 function ShelfCard({ product, onClose }: { product: Product; onClose: () => void }) {
   const { addToCart, updateQuantity, cart } = useSimbaStore();
   const qty = cart.find(i => i.id === product.id)?.quantity ?? 0;
-  const { avg } = getProductRating(product.id);
+  const { avg, count } = getProductRating(product.id);
 
   return (
     <div className="flex-shrink-0 w-36 bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
@@ -38,10 +38,12 @@ function ShelfCard({ product, onClose }: { product: Product; onClose: () => void
       </Link>
       <div className="p-2.5">
         <p className="text-[11px] font-bold text-gray-900 dark:text-white line-clamp-2 leading-tight mb-1 min-h-[2rem]">{product.name}</p>
-        {avg > 0 && (
+        {count > 0 && (
           <div className="flex items-center gap-0.5 mb-1">
-            <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
-            <span className="text-[9px] font-bold text-gray-500">{avg}</span>
+            {[1,2,3,4,5].map(i => (
+              <span key={i} className={`text-[9px] ${i <= Math.round(avg) ? 'text-amber-400' : 'text-gray-200 dark:text-gray-700'}`}>★</span>
+            ))}
+            <span className="text-[9px] font-bold text-gray-500 ml-0.5">{avg}</span>
           </div>
         )}
         <div className="flex items-center justify-between gap-1">
@@ -177,22 +179,19 @@ export default function ShopNowPanel({ isOpen, onClose, onCategorySelect }: Prop
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[90] bg-gray-50 dark:bg-gray-950 flex flex-col"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ duration: 0.2 }}
+          className="fixed top-16 left-0 right-0 bottom-0 z-[45] bg-gray-50 dark:bg-gray-950 flex flex-col"
         >
-          {/* Header */}
-          <div className="flex-shrink-0 bg-brand-dark shadow-lg">
-            <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-brand rounded-xl flex items-center justify-center">
-                  <ShoppingBag className="w-4 h-4 text-gray-900" />
-                </div>
-                <div>
-                  <p className="font-black text-white text-sm leading-none">{L.title}</p>
-                  <p className="text-white/50 text-[10px]">{L.sub}</p>
-                </div>
+          {/* Sub-header — sits below main Navbar */}
+          <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shadow-sm">
+            <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="w-4 h-4 text-brand" />
+                <p className="font-black text-gray-900 dark:text-white text-sm">{L.title}</p>
+                <span className="text-xs text-gray-400 font-medium hidden sm:block">· {L.sub}</span>
               </div>
               <div className="flex items-center gap-3">
                 {cartCount > 0 && (
@@ -202,8 +201,10 @@ export default function ShopNowPanel({ isOpen, onClose, onCategorySelect }: Prop
                     {cartCount} {language === 'fr' ? 'article(s)' : language === 'rw' ? 'ibintu' : 'item(s)'}
                   </button>
                 )}
-                <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
-                  <X className="w-5 h-5 text-white" />
+                <button onClick={onClose}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 transition-colors">
+                  <X className="w-3.5 h-3.5" />
+                  {language === 'fr' ? 'Fermer' : language === 'rw' ? 'Funga' : 'Close'}
                 </button>
               </div>
             </div>

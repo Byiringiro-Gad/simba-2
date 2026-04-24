@@ -105,12 +105,18 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* Info */}
       <div className="p-3 flex flex-col flex-1">
-        {/* Rating row */}
-        <div className="flex items-center gap-1 mb-1">
-          <span className="text-amber-500 text-[10px]">{'★'.repeat(Math.round(avg))}</span>
-          <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300">{avg}</span>
-          <span className="text-[10px] text-gray-400">({count})</span>
-        </div>
+        {/* Rating row — only show if product has real reviews */}
+        {count > 0 && (
+          <div className="flex items-center gap-1 mb-1">
+            <div className="flex gap-0.5">
+              {[1,2,3,4,5].map(i => (
+                <span key={i} className={`text-[10px] ${i <= Math.round(avg) ? 'text-amber-500' : 'text-gray-200 dark:text-gray-700'}`}>★</span>
+              ))}
+            </div>
+            <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300">{avg}</span>
+            <span className="text-[10px] text-gray-400">({count})</span>
+          </div>
+        )}
 
         <Link href={`/products/${product.id}`}>
           <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug mb-1 hover:text-brand transition-colors min-h-[2rem]">

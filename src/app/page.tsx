@@ -243,26 +243,6 @@ export default function Home() {
                   setShopNowOpen(true);
                 }} />
 
-                {/* ── VALUE PROPS STRIP — immediately below hero ── */}
-                <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
-                  <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-3">
-                    <div className="flex items-center justify-center gap-4 sm:gap-8 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-                      {[
-                        { icon: '⚡', text: language === 'fr' ? 'Prêt en 20-45 min' : language === 'rw' ? 'Bitegurwa mu min 20-45' : 'Ready in 20-45 min' },
-                        { icon: '🏪', text: language === 'fr' ? '9 agences à Kigali' : language === 'rw' ? 'Amashami 9 i Kigali' : '9 branches in Kigali' },
-                        { icon: '💳', text: language === 'fr' ? 'MTN MoMo & Airtel' : language === 'rw' ? 'MTN MoMo & Airtel' : 'MTN MoMo & Airtel' },
-                        { icon: '🛒', text: language === 'fr' ? '700+ produits' : language === 'rw' ? 'Ibicuruzwa 700+' : '700+ products' },
-                        { icon: '⭐', text: language === 'fr' ? 'Dépôt 500 RWF seulement' : language === 'rw' ? 'Inguzanyo 500 RWF gusa' : '500 RWF deposit only' },
-                      ].map((v, i) => (
-                        <div key={i} className="flex items-center gap-2 flex-shrink-0 py-1">
-                          <span className="text-base">{v.icon}</span>
-                          <span className="text-xs font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap">{v.text}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 pb-24 sm:pb-10 space-y-8">
 
                 {/* Category grid */}
@@ -337,36 +317,106 @@ export default function Home() {
                 </section>
 
                 {/* Footer */}
-                <footer className="border-t border-gray-100 dark:border-gray-800 pt-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-7 h-7 rounded-lg overflow-hidden flex-shrink-0 relative">
+                <footer className="border-t border-gray-100 dark:border-gray-800 pt-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+
+                    {/* Brand */}
+                    <div className="lg:col-span-1">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 relative bg-brand-dark">
                           <img src="/simbaheaderM.png" alt="Simba" style={{ position: 'absolute', height: '100%', width: 'auto', maxWidth: 'none', left: 0, top: 0 }} />
                         </div>
-                        <span className="font-black text-gray-900 dark:text-white">SIMBA</span>
+                        <div>
+                          <p className="font-black text-gray-900 dark:text-white text-base leading-none">SIMBA</p>
+                          <p className="text-[10px] text-gray-400 font-medium">Online Supermarket</p>
+                        </div>
                       </div>
-                      <p className="text-xs text-gray-400 leading-relaxed">{t.aboutSimbaDesc}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-3">{t.aboutSimbaDesc}</p>
+                      <p className="text-[10px] text-gray-400">
+                        {language === 'fr' ? 'Fondé en 2007 · Kigali, Rwanda' : language === 'rw' ? 'Yashinzwe 2007 · Kigali, Rwanda' : 'Founded 2007 · Kigali, Rwanda'}
+                      </p>
                     </div>
+
+                    {/* Quick Links */}
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{t.contact}</p>
-                      <div className="space-y-1">
-                        <p className="text-xs text-gray-600 dark:text-gray-300 font-medium">{t.contactAddress}</p>
-                        <p className="text-xs text-gray-600 dark:text-gray-300 font-medium">{t.contactEmail}</p>
-                        <p className="text-xs text-gray-600 dark:text-gray-300 font-medium">{t.contactPhone}</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">
+                        {language === 'fr' ? 'Liens rapides' : language === 'rw' ? 'Aho Ugana Vuba' : 'Quick Links'}
+                      </p>
+                      <div className="space-y-2">
+                        {[
+                          { label: language === 'fr' ? 'Accueil' : language === 'rw' ? 'Ahabanza' : 'Home', href: '/' },
+                          { label: language === 'fr' ? 'Nos agences' : language === 'rw' ? 'Amashami' : 'Our Branches', href: '#' },
+                          { label: language === 'fr' ? 'À propos' : language === 'rw' ? 'Ibyerekeye' : 'About Simba', href: 'https://www.simbaonlineshopping.com/AboutUs.aspx' },
+                          { label: language === 'fr' ? 'Tableau de bord agence' : language === 'rw' ? 'Dashboard y\'Ishami' : 'Branch Dashboard', href: '/branch/login' },
+                          { label: language === 'fr' ? 'Administration' : language === 'rw' ? 'Ubuyobozi' : 'Admin', href: '/admin/login' },
+                        ].map(link => (
+                          <a key={link.label} href={link.href} target={link.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer"
+                            className="block text-xs text-gray-600 dark:text-gray-300 hover:text-brand-dark dark:hover:text-brand transition-colors font-medium">
+                            {link.label}
+                          </a>
+                        ))}
                       </div>
                     </div>
+
+                    {/* Contact */}
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{t.followUs}</p>
-                      <div className="flex gap-2 mb-3">
-                        {/* Official website */}
-                        <a href="https://www.simbaonlineshopping.com" target="_blank" rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-dark text-white text-xs font-bold hover:opacity-80 transition-opacity" title="Official Website">
-                          🌐 simbaonlineshopping.com
-                        </a>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">{t.contact}</p>
+                      <div className="space-y-2.5">
+                        <div className="flex items-start gap-2">
+                          <span className="text-sm mt-0.5">📍</span>
+                          <p className="text-xs text-gray-600 dark:text-gray-300 font-medium leading-snug">{t.contactAddress}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">📞</span>
+                          <a href={`tel:${t.contactPhone.replace(/\s/g, '')}`} className="text-xs text-gray-600 dark:text-gray-300 font-medium hover:text-brand-dark transition-colors">
+                            {t.contactPhone}
+                          </a>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">✉️</span>
+                          <a href={`mailto:${t.contactEmail}`} className="text-xs text-gray-600 dark:text-gray-300 font-medium hover:text-brand-dark transition-colors">
+                            {t.contactEmail}
+                          </a>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">🌐</span>
+                          <a href="https://www.simbaonlineshopping.com" target="_blank" rel="noopener noreferrer"
+                            className="text-xs text-brand-dark dark:text-brand font-bold hover:underline">
+                            simbaonlineshopping.com
+                          </a>
+                        </div>
                       </div>
-                      <p className="text-[10px] text-gray-400">{t.copyright}</p>
                     </div>
+
+                    {/* Hours & Payment */}
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">
+                        {language === 'fr' ? 'Horaires & Paiement' : language === 'rw' ? 'Amasaha & Kwishura' : 'Hours & Payment'}
+                      </p>
+                      <div className="space-y-2 mb-4">
+                        <p className="text-xs text-gray-600 dark:text-gray-300 font-medium">
+                          {language === 'fr' ? 'Lun–Sam: 8h–21h' : language === 'rw' ? 'Gitu–Gat: 8h–21h' : 'Mon–Sat: 8am–9pm'}
+                        </p>
+                        <p className="text-xs text-gray-600 dark:text-gray-300 font-medium">
+                          {language === 'fr' ? 'Dimanche: 9h–18h' : language === 'rw' ? 'Ku cyumweru: 9h–18h' : 'Sunday: 9am–6pm'}
+                        </p>
+                      </div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
+                        {language === 'fr' ? 'Modes de paiement' : language === 'rw' ? 'Uburyo bwo Kwishura' : 'We Accept'}
+                      </p>
+                      <div className="flex gap-2">
+                        <span className="px-2 py-1 bg-yellow-400 text-black rounded-lg text-[10px] font-black">MTN MoMo</span>
+                        <span className="px-2 py-1 bg-red-500 text-white rounded-lg text-[10px] font-black">Airtel Money</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom bar */}
+                  <div className="border-t border-gray-100 dark:border-gray-800 pt-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+                    <p className="text-[10px] text-gray-400">{t.copyright}</p>
+                    <p className="text-[10px] text-gray-400">
+                      {language === 'fr' ? 'Fait avec ❤️ pour le Rwanda' : language === 'rw' ? 'Byakozwe n\'urukundo ku Rwanda' : 'Made with ❤️ for Rwanda'}
+                    </p>
                   </div>
                 </footer>
                 </div>{/* end inner wrapper */}

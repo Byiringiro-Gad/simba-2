@@ -43,10 +43,7 @@ export function addReview(review: Omit<Review, 'id' | 'date'>): Review {
 export function getProductRating(productId: number): { avg: number; count: number } {
   const reviews = getReviews(productId);
   if (reviews.length === 0) {
-    // Deterministic fake rating based on product ID
-    const avg = 3.5 + (productId % 15) / 10;
-    const count = 3 + (productId % 47);
-    return { avg: Math.min(5, parseFloat(avg.toFixed(1))), count };
+    return { avg: 0, count: 0 }; // no reviews — show empty stars
   }
   const avg = reviews.reduce((a, r) => a + r.rating, 0) / reviews.length;
   return { avg: parseFloat(avg.toFixed(1)), count: reviews.length };

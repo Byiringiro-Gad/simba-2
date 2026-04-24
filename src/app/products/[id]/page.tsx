@@ -202,11 +202,22 @@ export default function ProductDetail() {
             <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight mb-2">{product.name}</h1>
             <p className="text-sm text-gray-400 font-medium mb-3">{t.perUnit} {product.unit || 'unit'}</p>
 
-            {/* Rating */}
+            {/* Rating — only show if real reviews exist */}
             <div className="flex items-center gap-2 mb-4">
-              <StarRating value={Math.round(avg)} size="sm" />
-              <span className="text-sm font-black text-gray-900 dark:text-white">{avg}</span>
-              <span className="text-sm text-gray-400">({count} {count === 1 ? t.review : t.reviews})</span>
+              {count > 0 ? (
+                <>
+                  <StarRating value={Math.round(avg)} size="sm" />
+                  <span className="text-sm font-black text-gray-900 dark:text-white">{avg}</span>
+                  <span className="text-sm text-gray-400">({count} {count === 1 ? t.review : t.reviews})</span>
+                </>
+              ) : (
+                <>
+                  <StarRating value={0} size="sm" />
+                  <span className="text-sm text-gray-400">
+                    {language === 'fr' ? 'Pas encore d\'avis' : language === 'rw' ? 'Nta bitekerezo birabaho' : 'No reviews yet'}
+                  </span>
+                </>
+              )}
               <button onClick={() => { setActiveTab('reviews'); document.getElementById('tabs')?.scrollIntoView({ behavior: 'smooth' }); }}
                 className="text-xs text-brand font-bold hover:underline ml-1">{t.writeReview}</button>
             </div>
@@ -335,13 +346,24 @@ export default function ProductDetail() {
                 {/* Rating summary */}
                 <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 flex items-center gap-6">
                   <div className="text-center flex-shrink-0">
-                    <p className="text-5xl font-black text-gray-900 dark:text-white">{avg}</p>
-                    <StarRating value={Math.round(avg)} size="sm" />
-                    <p className="text-xs text-gray-400 mt-1">{count} reviews</p>
+                    {count > 0 ? (
+                      <>
+                        <p className="text-5xl font-black text-gray-900 dark:text-white">{avg}</p>
+                        <StarRating value={Math.round(avg)} size="sm" />
+                        <p className="text-xs text-gray-400 mt-1">{count} {count === 1 ? t.review : t.reviews}</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-2xl font-black text-gray-400">—</p>
+                        <StarRating value={0} size="sm" />
+                        <p className="text-xs text-gray-400 mt-1">{t.noReviewsYet}</p>
+                      </>
+                    )}
                   </div>
                   <div className="flex-1 space-y-1.5">
                     {[5, 4, 3, 2, 1].map(star => {
-                      const pct = star >= Math.round(avg) ? Math.max(20, 100 - (5 - star) * 20) : Math.max(5, (star / 5) * 40);
+                      const reviewsForStar = reviews.filter(r => r.rating === star).length;
+                      const pct = count > 0 ? Math.round((reviewsForStar / count) * 100) : 0;
                       return (
                         <div key={star} className="flex items-center gap-2">
                           <span className="text-xs font-bold text-gray-400 w-3">{star}</span>
