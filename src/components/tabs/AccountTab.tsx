@@ -234,7 +234,7 @@ export default function AccountTab() {
             icon: Phone,
             label: t.contactUs,
             sub: t.contactPhone,
-            action: () => window.open('https://wa.me/250788000000', '_blank'),
+            action: () => window.open('https://wa.me/250788386386', '_blank'),
           },
           {
             icon: Shield,

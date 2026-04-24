@@ -420,7 +420,7 @@ export default function SimbaPulse() {
 
               {/* WhatsApp */}
               <div className="px-4 py-2 bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
-                <a href="https://wa.me/250788000000" target="_blank" rel="noopener noreferrer"
+                <a href="https://wa.me/250788386386" target="_blank" rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-2 bg-[#25D366] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#22c55e] transition-colors">
                   <Phone className="w-3 h-3" /> {t.aiWhatsapp}
                 </a>

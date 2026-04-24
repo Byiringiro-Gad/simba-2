@@ -5,7 +5,12 @@ let cachedData: SimbaData | null = null;
 
 export const getSimbaData = (): SimbaData => {
   if (!cachedData) {
-    cachedData = productsData as SimbaData;
+    const raw = productsData as SimbaData;
+    // Filter out products with bad data: price < 10 RWF or missing image
+    cachedData = {
+      ...raw,
+      products: raw.products.filter(p => p.price >= 10 && p.image && p.image.length > 0),
+    };
   }
   return cachedData;
 };
