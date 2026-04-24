@@ -65,16 +65,15 @@ function SuccessStep({ orderId, selectedBranch, totalPoints, t, onReset, pickupB
         <span className="text-sm font-black text-amber-700 dark:text-brand">+{totalPoints} {t.loyaltyPointsEarned}</span>
       </div>
 
-      {/* Branch review */}
+      {/* Branch review — pre-pickup rating (optional) */}
       {!submitted ? (
         <div className="w-full bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 mb-5 text-left">
-          <p className="font-black text-sm text-gray-900 dark:text-white mb-1">
+          <p className="font-black text-sm text-gray-900 dark:text-white mb-0.5">
             {t.rateExperience}
           </p>
           <p className="text-xs text-gray-400 mb-3">
-            {selectedBranch?.name}
+            {language === 'fr' ? 'Notez votre expérience après le retrait' : language === 'rw' ? 'Tanga igitekerezo nyuma yo gufata' : 'Rate after you pick up your order'} · {selectedBranch?.name}
           </p>
-          {/* Stars */}
           <div className="flex gap-1 mb-3 justify-center">
             {[1,2,3,4,5].map(i => (
               <button key={i} type="button"

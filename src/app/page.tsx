@@ -243,6 +243,26 @@ export default function Home() {
                   setShopNowOpen(true);
                 }} />
 
+                {/* ── VALUE PROPS STRIP — immediately below hero ── */}
+                <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+                  <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-3">
+                    <div className="flex items-center justify-center gap-4 sm:gap-8 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+                      {[
+                        { icon: '⚡', text: language === 'fr' ? 'Prêt en 20-45 min' : language === 'rw' ? 'Bitegurwa mu min 20-45' : 'Ready in 20-45 min' },
+                        { icon: '🏪', text: language === 'fr' ? '9 agences à Kigali' : language === 'rw' ? 'Amashami 9 i Kigali' : '9 branches in Kigali' },
+                        { icon: '💳', text: language === 'fr' ? 'MTN MoMo & Airtel' : language === 'rw' ? 'MTN MoMo & Airtel' : 'MTN MoMo & Airtel' },
+                        { icon: '🛒', text: language === 'fr' ? '700+ produits' : language === 'rw' ? 'Ibicuruzwa 700+' : '700+ products' },
+                        { icon: '⭐', text: language === 'fr' ? 'Dépôt 500 RWF seulement' : language === 'rw' ? 'Inguzanyo 500 RWF gusa' : '500 RWF deposit only' },
+                      ].map((v, i) => (
+                        <div key={i} className="flex items-center gap-2 flex-shrink-0 py-1">
+                          <span className="text-base">{v.icon}</span>
+                          <span className="text-xs font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap">{v.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 pb-24 sm:pb-10 space-y-8">
 
                 {/* Category grid */}

@@ -137,8 +137,13 @@ export default function AuthModal() {
         setResetLink(res.resetLink ?? '');
         toast.success(res.message ?? 'Reset link sent. Check your inbox.');
       }
-    } catch {
-      setErrors({ email: 'Could not reach the authentication service' });
+    } catch (err: any) {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) {
+        setErrors({ email: 'Configuration error: API URL not set. Contact support.' });
+      } else {
+        setErrors({ email: 'Could not reach the server. Please try again.' });
+      }
     } finally {
       setLoading(false);
     }

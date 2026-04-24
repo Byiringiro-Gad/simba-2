@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import { getProductRating, getStockCount } from '@/lib/reviews';
+import { useState, useEffect } from 'react';
 
 interface ProductCardProps {
   product: Product;
@@ -22,6 +23,21 @@ export default function ProductCard({ product }: ProductCardProps) {
   const quantity = cartItem?.quantity ?? 0;
   const isFav = favorites.includes(product.id);
   const { avg, count } = getProductRating(product.id);
+
+  // Translated product name
+  const [displayName, setDisplayName] = useState(product.name);
+  useEffect(() => {
+    if (language === 'en') { setDisplayName(product.name); return; }
+    // Only translate if Groq is available — silent fallback to English
+    fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: product.name, targetLang: language }),
+    })
+      .then(r => r.json())
+      .then(d => { if (d.ok && d.translated) setDisplayName(d.translated); })
+      .catch(() => {}); // silent fallback
+  }, [product.name, language]);
 
   // Use branch inventory if available, fall back to global inStock
   const branchStock = branchInventory[product.id];
@@ -98,7 +114,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <Link href={`/products/${product.id}`}>
           <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug mb-1 hover:text-brand transition-colors min-h-[2rem]">
-            {product.name}
+            {displayName}
           </h3>
         </Link>
         <p className="text-xs text-gray-400 font-medium mb-2">per {product.unit || 'unit'}</p>
