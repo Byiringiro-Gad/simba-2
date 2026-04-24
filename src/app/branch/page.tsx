@@ -39,6 +39,7 @@ export default function ManagerDashboard() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [assigning, setAssigning] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'pending' | 'preparing' | 'ready'>('all');
+  const [assignMenuOpen, setAssignMenuOpen] = useState<string | null>(null);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('branch_token') ?? '' : '';
 
@@ -241,23 +242,34 @@ export default function ManagerDashboard() {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      {/* Assign dropdown — only for pending/unassigned */}
+                      {/* Assign button — click based, not hover */}
                       {(order.branch_status === 'pending' || !order.assigned_to) && staffList.length > 0 && (
-                        <div className="relative group">
-                          <button className="flex items-center gap-1.5 px-3 py-2 bg-brand-dark text-white rounded-xl text-xs font-black hover:bg-gray-800 transition-colors">
+                        <div className="relative">
+                          <button
+                            onClick={() => setAssignMenuOpen(assignMenuOpen === order.id ? null : order.id)}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-brand-dark text-white rounded-xl text-xs font-black hover:bg-gray-800 transition-colors">
                             <UserCheck className="w-3.5 h-3.5" />
                             Assign
-                            <ChevronDown className="w-3 h-3" />
+                            <ChevronDown className={`w-3 h-3 transition-transform ${assignMenuOpen === order.id ? 'rotate-180' : ''}`} />
                           </button>
-                          <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden py-1">
-                            {staffList.map(s => (
-                              <button key={s.id} onClick={() => assignOrder(order.id, s.id, s.name)}
-                                disabled={assigning === order.id}
-                                className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-brand-muted hover:text-brand-dark transition-colors">
-                                {s.name}
-                              </button>
-                            ))}
-                          </div>
+                          <AnimatePresence>
+                            {assignMenuOpen === order.id && (
+                              <motion.div
+                                initial={{ opacity: 0, y: 4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 4 }}
+                                className="absolute right-0 top-full mt-1 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden py-1">
+                                {staffList.map(s => (
+                                  <button key={s.id}
+                                    onClick={() => { assignOrder(order.id, s.id, s.name); setAssignMenuOpen(null); }}
+                                    disabled={assigning === order.id}
+                                    className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-brand-muted hover:text-brand-dark transition-colors">
+                                    {s.name}
+                                  </button>
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
                       )}
 

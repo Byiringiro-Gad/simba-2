@@ -136,6 +136,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
     applyPromo,
     removePromo,
     placeOrder,
+    setAuthOpen,
   } = useSimbaStore();
 
   const [step, setStep] = useState<CheckoutStep>('cart');
@@ -174,6 +175,11 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
 
   const handleNext = async () => {
     if (step === 'cart') {
+      // Gate: must be logged in to proceed to checkout
+      if (!user) {
+        setAuthOpen(true);
+        return;
+      }
       setStep('details');
       return;
     }
@@ -380,6 +386,26 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                             </div>
                           </div>
                         ))}
+
+                        {/* Sign-in nudge for guests */}
+                        {!user && (
+                          <button
+                            onClick={() => setAuthOpen(true)}
+                            className="w-full flex items-center gap-3 p-3 bg-brand-dark rounded-2xl text-left hover:bg-gray-800 transition-colors"
+                          >
+                            <div className="w-8 h-8 bg-brand rounded-xl flex items-center justify-center flex-shrink-0">
+                              <span className="text-gray-900 font-black text-sm">→</span>
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-black text-sm text-white">
+                                {language === 'fr' ? 'Connectez-vous pour commander' : language === 'rw' ? 'Injira kugira ngo utumize' : 'Sign in to place your order'}
+                              </p>
+                              <p className="text-white/60 text-xs font-medium">
+                                {language === 'fr' ? 'Créez un compte ou connectez-vous' : language === 'rw' ? 'Fungura konti cyangwa injira' : 'Create an account or log in'}
+                              </p>
+                            </div>
+                          </button>
+                        )}
 
                         <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4">
                           <div className="flex items-center gap-2 mb-3">
@@ -664,6 +690,8 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                     ? `${t.payWithMomo} — ${DEPOSIT_AMOUNT.toLocaleString()} RWF`
                     : step === 'details'
                     ? t.checkout
+                    : !user
+                    ? (language === 'fr' ? 'Connexion pour commander' : language === 'rw' ? 'Injira Utumize' : 'Sign in to Checkout')
                     : t.checkout}
                   {canProceed() && <ChevronRight className="w-4 h-4 stroke-[3px]" />}
                 </button>
