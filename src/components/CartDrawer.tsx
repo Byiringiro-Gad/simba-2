@@ -645,6 +645,15 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                         </p>
                       </div>
                     </div>
+
+                    {/* Manual continue button — don't rely only on setTimeout */}
+                    <button
+                      onClick={() => setStep('success')}
+                      className="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg flex items-center justify-center gap-2"
+                    >
+                      <CheckCircle2 className="w-5 h-5" />
+                      {language === 'fr' ? 'Voir la confirmation' : language === 'rw' ? 'Reba Inyandiko' : 'View Order Confirmation'}
+                    </button>
                   </motion.div>
                 )}
 

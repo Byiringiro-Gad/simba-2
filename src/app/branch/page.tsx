@@ -11,7 +11,7 @@ import {
 import Image from 'next/image';
 import { clsx } from 'clsx';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API = '/api';
 
 interface StaffMember { id: string; name: string; username: string; }
 interface OrderItem { id: number; name: string; price: number; quantity: number; image: string; }

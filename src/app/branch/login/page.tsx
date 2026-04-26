@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Store, Lock, User, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? '';
-
 export default function BranchLogin() {
   const router = useRouter();
   const [username, setUsername] = useState('');
@@ -20,7 +18,7 @@ export default function BranchLogin() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API}/branch/login`, {
+      const res = await fetch('/api/branch/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: username.trim(), password }),

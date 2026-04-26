@@ -12,7 +12,7 @@ import Image from 'next/image';
 import { clsx } from 'clsx';
 import { getSimbaData } from '@/lib/data';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API = '/api';
 
 interface OrderItem { id: number; name: string; price: number; quantity: number; image: string; }
 interface Order {

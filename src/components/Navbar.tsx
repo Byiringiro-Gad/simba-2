@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import { getSimbaData } from '@/lib/data';
-import { Search, ShoppingCart, ChevronDown, MapPin, X, Sun, Moon, Languages, Menu, User, LogOut, ChevronRight } from 'lucide-react';
+import { Search, ShoppingCart, ChevronDown, MapPin, X, Sun, Moon, Languages, Menu, User, LogOut, ChevronRight, Store } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -228,6 +228,10 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                     <ChevronRight className="w-4 h-4" /> {t.myOrders}
                   </button>
                   <div className="border-t border-gray-100 dark:border-gray-800 mt-1 pt-1">
+                    <Link href="/branch/login"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-brand-dark dark:text-brand hover:bg-brand-muted dark:hover:bg-brand/10 transition-colors">
+                      <Store className="w-4 h-4" /> Branch Staff Portal
+                    </Link>
                     <button onClick={logout}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                       <LogOut className="w-4 h-4" /> {t.signOut}
