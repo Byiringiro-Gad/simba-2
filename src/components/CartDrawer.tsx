@@ -13,10 +13,10 @@ import { CheckoutStep } from '@/types';
 import { toast } from './Toast';
 import { getBranchById, PICKUP_DEPOSIT_RWF, PICKUP_SLOTS } from '@/lib/branches';
 
-const DEPOSIT_AMOUNT = PICKUP_DEPOSIT_RWF;
+const BASE_DEPOSIT = PICKUP_DEPOSIT_RWF; // 500 RWF base
 
 // ── Success step with branch review ──────────────────────────────────────────
-function SuccessStep({ orderId, selectedBranch, totalPoints, t, onReset, pickupBranchId, language }: {
+function SuccessStep({ orderId, selectedBranch, totalPoints, t, onReset, pickupBranchId, language, depositAmount }: {
   orderId: string;
   selectedBranch: ReturnType<typeof getBranchById>;
   totalPoints: number;
@@ -24,6 +24,7 @@ function SuccessStep({ orderId, selectedBranch, totalPoints, t, onReset, pickupB
   onReset: () => void;
   pickupBranchId: string;
   language: string;
+  depositAmount: number;
 }) {
   const { submitBranchReview } = useSimbaStore();
   const [rating, setRating] = useState(0);
@@ -59,7 +60,7 @@ function SuccessStep({ orderId, selectedBranch, totalPoints, t, onReset, pickupB
       <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-1">{t.success}</h3>
       <p className="text-gray-400 font-medium mb-1">{t.orderIdLabel}: #{orderId}</p>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-        {t.pickupConfirmedAt} {selectedBranch?.name}. {t.depositPaid}: {DEPOSIT_AMOUNT.toLocaleString()} RWF
+        {t.pickupConfirmedAt} {selectedBranch?.name}. {t.depositPaid}: {depositAmount.toLocaleString()} RWF
       </p>
       <div className="flex items-center gap-2 px-4 py-2 bg-brand/20 rounded-full mb-6">
         <span className="text-sm font-black text-amber-700 dark:text-brand">+{totalPoints} {t.loyaltyPointsEarned}</span>
@@ -144,8 +145,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
   const [carrier, setCarrier] = useState<'mtn' | 'airtel'>('mtn');
   const [promoInput, setPromoInput] = useState('');
   const [orderId, setOrderId] = useState('');
-
-  const t = translations[language];
+  const [depositAmount, setDepositAmount] = useState(BASE_DEPOSIT);
   const selectedBranch = getBranchById(pickupBranchId);
   const selectedPickupSlot = PICKUP_SLOTS.find((slot) => slot.id === pickupSlot) ?? PICKUP_SLOTS[0];
 
@@ -154,6 +154,20 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
       setFullName(user.name);
     }
   }, [user?.name]);
+
+  // Dynamic deposit — higher for flagged (no-show) customers
+  useEffect(() => {
+    if (!user?.id) { setDepositAmount(BASE_DEPOSIT); return; }
+    const url = `/api/branch/flag?userId=${user.id}${user.phone ? `&phone=${encodeURIComponent(user.phone)}` : ''}`;
+    fetch(url)
+      .then(r => r.json())
+      .then(d => {
+        if (d.ok && d.flags >= 2) setDepositAmount(1000);
+        else if (d.ok && d.flags === 1) setDepositAmount(750);
+        else setDepositAmount(BASE_DEPOSIT);
+      })
+      .catch(() => setDepositAmount(BASE_DEPOSIT));
+  }, [user?.id]);
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discountAmount = Math.floor(subtotal * (promoDiscount / 100));
@@ -210,8 +224,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
           pickupBranch: selectedBranch?.name ?? '',
           pickupSlot,
           paymentMethod: carrier,
-          depositAmount: DEPOSIT_AMOUNT,
-          items: cart,
+          depositAmount: depositAmount,
           subtotal,
           deliveryFee: 0,
           discount: discountAmount,
@@ -227,7 +240,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
           total: orderTotal,
           pickupBranch: selectedBranch?.name ?? '',
           pickupSlot,
-          depositAmount: DEPOSIT_AMOUNT,
+          depositAmount: depositAmount,
         });
 
         setOrderId(id);
@@ -532,7 +545,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                       <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">{t.depositDueNow}</p>
                       <div className="flex items-end justify-between gap-4">
                         <div>
-                          <p className="text-2xl font-black text-gray-900 dark:text-white">{DEPOSIT_AMOUNT.toLocaleString()} RWF</p>
+                          <p className="text-2xl font-black text-gray-900 dark:text-white">{depositAmount.toLocaleString()} RWF</p>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                             {t.depositNote}
                           </p>
@@ -589,7 +602,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                         />
                       </div>
                       <p className="text-[11px] text-gray-400 font-medium mt-2 text-center">
-                        {t.momoNotification.replace('push notification', `${carrier.toUpperCase()} push notification`).replace('your payment', `${DEPOSIT_AMOUNT.toLocaleString()} RWF`)}
+                        {t.momoNotification.replace('push notification', `${carrier.toUpperCase()} push notification`).replace('your payment', `${depositAmount.toLocaleString()} RWF`)}
                       </p>
                     </div>
                   </motion.div>
@@ -666,6 +679,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                     onReset={handleReset}
                     pickupBranchId={pickupBranchId}
                     language={language}
+                    depositAmount={depositAmount}
                   />
                 )}
               </AnimatePresence>
@@ -686,7 +700,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                   )}
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500 font-medium">{t.depositDueNow}</span>
-                    <span className="font-bold text-gray-900 dark:text-white">{DEPOSIT_AMOUNT.toLocaleString()} RWF</span>
+                    <span className="font-bold text-gray-900 dark:text-white">{depositAmount.toLocaleString()} RWF</span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
                     <span className="font-black text-gray-900 dark:text-white">{t.total}</span>
@@ -695,7 +709,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                 </div>
                 <button onClick={handleNext} disabled={!canProceed()} className="w-full py-4 bg-brand hover:bg-brand-dark disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg shadow-brand/20 disabled:shadow-none flex items-center justify-center gap-2">
                   {step === 'payment'
-                    ? `${carrier === 'mtn' ? 'MTN MoMo' : 'Airtel Money'} — ${DEPOSIT_AMOUNT.toLocaleString()} RWF`
+                    ? `${carrier === 'mtn' ? 'MTN MoMo' : 'Airtel Money'} — ${depositAmount.toLocaleString()} RWF`
                     : step === 'details'
                     ? t.checkout
                     : !user

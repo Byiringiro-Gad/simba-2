@@ -23,6 +23,7 @@ interface Order {
   customer_name: string; customer_phone: string;
   pickup_slot: string; deposit_amount: number;
   assigned_to: string | null; assigned_name: string | null;
+  user_id?: string | null;
 }
 
 const BRANCH_STATUS_CONFIG = {
@@ -385,6 +386,34 @@ export default function ManagerDashboard() {
                     })}
                   </div>
                 </div>
+
+                {/* No-show flag — only visible after order was ready but not picked up */}
+                {(selectedOrder.branch_status === 'ready' || selectedOrder.branch_status === 'picked_up') && (
+                  <div className="pt-2 border-t border-gray-100">
+                    <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Customer No-Show</p>
+                    <button
+                      onClick={async () => {
+                        if (!confirm('Flag this customer as no-show? Their deposit will increase on next order.')) return;
+                        const t = localStorage.getItem('branch_token') ?? '';
+                        await fetch('/api/branch/flag', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+                          body: JSON.stringify({
+                            userId: selectedOrder.user_id ?? null,
+                            phone: selectedOrder.customer_phone ?? null,
+                            orderId: selectedOrder.id,
+                            reason: 'no_show',
+                          }),
+                        });
+                        alert('Customer flagged. Their deposit will be higher on next order.');
+                      }}
+                      className="w-full py-2.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 rounded-xl text-xs font-black transition-colors flex items-center justify-center gap-2"
+                    >
+                      🚩 Flag as No-Show
+                    </button>
+                    <p className="text-[10px] text-gray-400 mt-1.5 text-center">1 flag = 750 RWF deposit · 2+ flags = 1000 RWF deposit</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           </>
