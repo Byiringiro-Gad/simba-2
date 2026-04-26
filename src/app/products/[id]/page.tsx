@@ -258,28 +258,6 @@ export default function ProductDetail() {
               )}
             </div>
 
-            {/* ── Scheduled Delivery ── */}
-            <div className="mb-5">
-              <p className="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5" /> {t.choosePickupTime}
-              </p>
-              <div className="grid grid-cols-4 gap-2">
-                {PICKUP_SLOTS.map(slot => (
-                  <button key={slot.id} onClick={() => setPickupSlot(slot.id)}
-                    className={clsx(
-                      'flex flex-col items-center gap-0.5 py-2.5 px-1 rounded-xl border-2 text-center transition-all',
-                      pickupSlot === slot.id
-                        ? 'border-brand-dark bg-brand-dark/5 dark:bg-brand-dark/20'
-                        : 'border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700'
-                    )}>
-                    <span className="text-base">{slot.icon}</span>
-                    <span className={clsx('text-xs font-black', pickupSlot === slot.id ? 'text-brand-dark dark:text-brand' : 'text-gray-700 dark:text-gray-300')}>{slot.label}</span>
-                    <span className="text-xs text-gray-400 font-medium">{slot.window}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Trust badges */}
             <div className="grid grid-cols-3 gap-3 py-4 border-t border-gray-100 dark:border-gray-800">
               {[
