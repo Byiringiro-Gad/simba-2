@@ -9,7 +9,7 @@ import ProductCard from '@/components/ProductCard';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import {
-  ChevronLeft, Plus, Minus, ShieldCheck, Truck,
+  ChevronLeft, Plus, Minus, ShieldCheck,
   Star, Package, Heart, Clock, Send, CheckCircle2,
   Share2, ChevronRight
 } from 'lucide-react';
@@ -259,15 +259,14 @@ export default function ProductDetail() {
             </div>
 
             {/* Trust badges */}
-            <div className="grid grid-cols-3 gap-3 py-4 border-t border-gray-100 dark:border-gray-800">
+            <div className="grid grid-cols-2 gap-3 py-4 border-t border-gray-100 dark:border-gray-800">
               {[
-                { icon: ShieldCheck, label: t.authentic },
-                { icon: Truck,       label: t.fastDelivery },
-                { icon: CheckCircle2,label: t.easyReturn },
+                { icon: ShieldCheck,  label: t.authentic },
+                { icon: CheckCircle2, label: t.easyReturn },
               ].map(({ icon: Icon, label }) => (
                 <div key={label} className="flex flex-col items-center gap-1.5 text-center">
                   <div className="w-9 h-9 bg-gray-50 dark:bg-gray-800 rounded-xl flex items-center justify-center">
-                    <Icon className="w-4.5 h-4.5 text-brand-dark dark:text-brand" />
+                    <Icon className="w-4 h-4 text-brand-dark dark:text-brand" />
                   </div>
                   <span className="text-xs font-black uppercase tracking-wide text-gray-500 dark:text-gray-400">{label}</span>
                 </div>

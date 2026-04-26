@@ -10,9 +10,9 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { clsx } from 'clsx';
-import { useSimbaStore } from '@/store/useSimbaStore';
-import { translations } from '@/lib/translations';
+import { dt, DashLang } from '@/lib/dashboardTranslations';
 import DashboardSettingsBar from '@/components/DashboardSettingsBar';
+import { useSimbaStore } from '@/store/useSimbaStore';
 
 const API = '/api';
 
@@ -30,13 +30,13 @@ interface Order {
 export default function ManagerDashboard() {
   const router = useRouter();
   const { language } = useSimbaStore();
-  const t = translations[language];
+  const d = dt(language as DashLang);
 
   const BRANCH_STATUS_CONFIG = {
-    pending:   { label: language === 'fr' ? 'En attente'      : language === 'rw' ? 'Bitegerejwe' : 'Pending',    color: 'text-gray-600',   bg: 'bg-gray-100',   icon: Clock },
-    preparing: { label: language === 'fr' ? 'En préparation'  : language === 'rw' ? 'Bitegurwa'   : 'Preparing',  color: 'text-amber-600',  bg: 'bg-amber-50',   icon: Bike },
-    ready:     { label: language === 'fr' ? 'Prêt'            : language === 'rw' ? 'Biteguye'    : 'Ready',      color: 'text-green-600',  bg: 'bg-green-50',   icon: CheckCircle2 },
-    picked_up: { label: language === 'fr' ? 'Récupéré'        : language === 'rw' ? 'Byafashwe'   : 'Picked Up',  color: 'text-blue-600',   bg: 'bg-blue-50',    icon: ShoppingBag },
+    pending:   { label: d.pending,   color: 'text-gray-600',  bg: 'bg-gray-100',  icon: Clock },
+    preparing: { label: d.preparing, color: 'text-amber-600', bg: 'bg-amber-50',  icon: Bike },
+    ready:     { label: d.ready,     color: 'text-green-600', bg: 'bg-green-50',  icon: CheckCircle2 },
+    picked_up: { label: d.pickedUp,  color: 'text-blue-600',  bg: 'bg-blue-50',   icon: ShoppingBag },
   };
   const [staff, setStaff] = useState<any>(null);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -148,7 +148,7 @@ export default function ManagerDashboard() {
             </button>
             <button onClick={logout} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-red-500/30 rounded-xl text-white text-xs font-bold transition-colors">
               <LogOut className="w-3.5 h-3.5" />
-              Logout
+              {d.logout}
             </button>
           </div>
         </div>
@@ -158,10 +158,10 @@ export default function ManagerDashboard() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Orders', value: stats.total, icon: Package, color: 'text-gray-900', bg: 'bg-white' },
-            { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-gray-600', bg: 'bg-gray-50' },
-            { label: 'Preparing', value: stats.preparing, icon: Bike, color: 'text-amber-600', bg: 'bg-amber-50' },
-            { label: 'Ready', value: stats.ready, icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-50' },
+            { label: d.totalOrders,     value: stats.total,     icon: Package,      color: 'text-gray-900',  bg: 'bg-white' },
+            { label: d.pendingOrders,   value: stats.pending,   icon: Clock,        color: 'text-gray-600',  bg: 'bg-gray-50' },
+            { label: d.preparingOrders, value: stats.preparing, icon: Bike,         color: 'text-amber-600', bg: 'bg-amber-50' },
+            { label: d.readyOrders,     value: stats.ready,     icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-50' },
           ].map(({ label, value, icon: Icon, color, bg }) => (
             <div key={label} className={`${bg} rounded-2xl border border-gray-100 p-4`}>
               <Icon className={`w-5 h-5 ${color} mb-2`} />
@@ -172,9 +172,9 @@ export default function ManagerDashboard() {
         </div>
 
         {/* Staff count */}
-        <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-2xl border border-gray-100">
+        <div className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800">
           <Users className="w-4 h-4 text-brand" />
-          <p className="text-sm font-bold text-gray-900">{staffList.length} staff member{staffList.length !== 1 ? 's' : ''} at this branch</p>
+          <p className="text-sm font-bold text-gray-900 dark:text-white">{d.staffMembers(staffList.length)}</p>
           <div className="flex gap-2 ml-2">
             {staffList.map(s => (
               <span key={s.id} className="px-2 py-0.5 bg-brand-muted text-brand-dark rounded-full text-xs font-bold">{s.name.replace('Staff ', '')}</span>
@@ -185,19 +185,14 @@ export default function ManagerDashboard() {
         {/* Filter tabs */}
         <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
           {(['all', 'pending', 'preparing', 'ready'] as const).map(f => {
-            const labels: Record<string, string> = {
-              all:       language === 'fr' ? `Tout (${orders.length})` : language === 'rw' ? `Byose (${orders.length})` : `All (${orders.length})`,
-              pending:   language === 'fr' ? `En attente (${orders.filter(o => o.branch_status === 'pending').length})` : language === 'rw' ? `Bitegerejwe (${orders.filter(o => o.branch_status === 'pending').length})` : `Pending (${orders.filter(o => o.branch_status === 'pending').length})`,
-              preparing: language === 'fr' ? `En préparation (${orders.filter(o => o.branch_status === 'preparing').length})` : language === 'rw' ? `Bitegurwa (${orders.filter(o => o.branch_status === 'preparing').length})` : `Preparing (${orders.filter(o => o.branch_status === 'preparing').length})`,
-              ready:     language === 'fr' ? `Prêt (${orders.filter(o => o.branch_status === 'ready').length})` : language === 'rw' ? `Biteguye (${orders.filter(o => o.branch_status === 'ready').length})` : `Ready (${orders.filter(o => o.branch_status === 'ready').length})`,
-            };
+            const cnt = f === 'all' ? orders.length : orders.filter(o => o.branch_status === f).length;
+            const label = f === 'all' ? `${d.all} (${cnt})` : f === 'pending' ? `${d.pending} (${cnt})` : f === 'preparing' ? `${d.preparing} (${cnt})` : `${d.ready} (${cnt})`;
             return (
               <button key={f} onClick={() => setFilter(f)}
-                className={clsx(
-                  'flex-shrink-0 px-4 py-2 rounded-xl text-sm font-bold capitalize transition-all border',
-                  filter === f ? 'bg-brand-dark text-white border-brand-dark' : 'bg-white text-gray-600 border-gray-200 hover:border-brand-dark'
+                className={clsx('flex-shrink-0 px-4 py-2 rounded-xl text-sm font-bold transition-all border',
+                  filter === f ? 'bg-brand-dark text-white border-brand-dark' : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-brand-dark'
                 )}>
-                {labels[f]}
+                {label}
               </button>
             );
           })}

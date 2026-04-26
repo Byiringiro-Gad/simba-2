@@ -13,7 +13,7 @@ import { clsx } from 'clsx';
 import { getSimbaData } from '@/lib/data';
 import DashboardSettingsBar from '@/components/DashboardSettingsBar';
 import { useSimbaStore } from '@/store/useSimbaStore';
-import { translations } from '@/lib/translations';
+import { dt, DashLang } from '@/lib/dashboardTranslations';
 
 const API = '/api';
 
@@ -32,7 +32,7 @@ interface InventoryItem {
 export default function StaffDashboard() {
   const router = useRouter();
   const { language } = useSimbaStore();
-  const t = translations[language];
+  const d = dt(language as DashLang);
 
   // Status config — inside component so it reacts to language changes
   const STATUS_CONFIG = {
@@ -149,7 +149,7 @@ export default function StaffDashboard() {
             </div>
             <div>
               <p className="font-black text-white text-sm leading-none">{staff.branchName}</p>
-              <p className="text-white/50 text-[10px]">Staff · {staff.name}</p>
+              <p className="text-white/50 text-[10px]">{d.staffRole} · {staff.name}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -159,7 +159,7 @@ export default function StaffDashboard() {
             </button>
             <button onClick={logout} className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-red-500/30 rounded-xl text-white text-xs font-bold transition-colors">
               <LogOut className="w-3.5 h-3.5" />
-              Logout
+              {d.logout}
             </button>
           </div>
         </div>
@@ -167,8 +167,8 @@ export default function StaffDashboard() {
         {/* Tab bar */}
         <div className="flex px-4 pb-0">
           {[
-            { id: 'orders',    label: `${language === 'fr' ? 'Commandes' : language === 'rw' ? 'Itumiziwa' : 'Orders'} (${active.length})` },
-            { id: 'inventory', label: `${language === 'fr' ? 'Stock' : language === 'rw' ? 'Ibicuruzwa' : 'Inventory'}${outOfStock > 0 ? ` (${outOfStock} ${language === 'fr' ? 'rupture' : language === 'rw' ? 'ntibiraboneka' : 'low'})` : ''}` },
+            { id: 'orders',    label: `${d.ordersTab} (${active.length})` },
+            { id: 'inventory', label: `${d.inventoryTab}${outOfStock > 0 ? ` (${outOfStock})` : ''}` },
           ].map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
               className={clsx(
@@ -192,7 +192,7 @@ export default function StaffDashboard() {
               <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-2xl">
                 <div className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-pulse" />
                 <p className="font-black text-amber-800 text-sm">
-                  {active.length} active order{active.length !== 1 ? 's' : ''} assigned to you
+                  {active.length} {d.activeOrders(active.length)}
                 </p>
               </div>
             )}
@@ -204,8 +204,8 @@ export default function StaffDashboard() {
             ) : orders.length === 0 ? (
               <div className="bg-white rounded-2xl border border-gray-100 p-16 text-center">
                 <Package className="w-12 h-12 text-gray-200 mx-auto mb-3" />
-                <p className="font-black text-gray-900 mb-1">No orders assigned</p>
-                <p className="text-sm text-gray-400">Your manager will assign orders to you.</p>
+                <p className="font-black text-gray-900 dark:text-white mb-1">{d.noOrdersAssigned}</p>
+                <p className="text-sm text-gray-400">{d.managerWillAssign}</p>
               </div>
             ) : (
               <>
@@ -247,7 +247,7 @@ export default function StaffDashboard() {
                             {updating === order.id ? (
                               <span className="flex items-center justify-center gap-2">
                                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                Updating...
+                                {d.updating}
                               </span>
                             ) : cfg.nextLabel}
                           </button>
@@ -259,7 +259,7 @@ export default function StaffDashboard() {
 
                 {done.length > 0 && (
                   <div>
-                    <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Completed ({done.length})</p>
+                    <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">{d.completed} ({done.length})</p>
                     {done.map(order => (
                       <div key={order.id} className="flex items-center gap-3 px-4 py-3 bg-white rounded-xl border border-gray-100 opacity-60 mb-2">
                         <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -282,7 +282,7 @@ export default function StaffDashboard() {
             <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-2xl border border-gray-200 focus-within:border-brand transition-colors">
               <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
               <input type="text" value={invSearch} onChange={e => setInvSearch(e.target.value)}
-                placeholder="Search products..."
+                placeholder={d.searchProducts}
                 className="flex-1 bg-transparent outline-none text-sm text-gray-900 placeholder:text-gray-400" />
               {invSearch && <button onClick={() => setInvSearch('')}><X className="w-4 h-4 text-gray-400" /></button>}
             </div>
@@ -291,7 +291,7 @@ export default function StaffDashboard() {
             {outOfStock > 0 && (
               <div className="flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-200 rounded-2xl">
                 <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
-                <p className="text-sm font-bold text-red-700">{outOfStock} product{outOfStock !== 1 ? 's' : ''} out of stock at this branch</p>
+                <p className="text-sm font-bold text-red-700">{d.outOfStockAlert(outOfStock)}</p>
               </div>
             )}
 
@@ -338,7 +338,7 @@ export default function StaffDashboard() {
                         onClick={() => updateInventory(item.productId, item.stockCount, !item.isAvailable)}
                         disabled={savingInv === item.productId}
                         className="transition-colors"
-                        title={item.isAvailable ? 'Mark out of stock' : 'Mark available'}
+                        title={item.isAvailable ? d.markOutOfStock : d.markAvailable}
                       >
                         {item.isAvailable ? (
                           <ToggleRight className="w-8 h-8 text-green-500" />
@@ -354,7 +354,7 @@ export default function StaffDashboard() {
                     <div className="px-3 pb-2">
                       <p className="text-[10px] font-bold text-amber-600 flex items-center gap-1">
                         <AlertTriangle className="w-3 h-3" />
-                        Only {item.stockCount} left — consider restocking
+                        {d.lowStock(item.stockCount)}
                       </p>
                     </div>
                   )}

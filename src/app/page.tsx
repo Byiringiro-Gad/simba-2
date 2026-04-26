@@ -378,14 +378,13 @@ export default function Home() {
                             {link.label}
                           </a>
                         ))}
-                        <Link href="/staff"
-                          className="flex items-center gap-1.5 text-xs text-brand-dark dark:text-brand hover:underline transition-colors font-black">
-                          🏪 {language === 'fr' ? 'Portail Personnel Agence' : language === 'rw' ? 'Injira nk\'Umukozi w\'Ishami' : 'Branch Staff Portal'}
-                        </Link>
-                        <Link href="/staff"
-                          className="flex items-center gap-1.5 text-xs text-brand-dark dark:text-brand hover:underline transition-colors font-black">
-                          🔐 {language === 'fr' ? 'Portail Administrateur' : language === 'rw' ? 'Injira nk\'Umuyobozi' : 'Admin Portal'}
-                        </Link>
+                        <Link href="/" className="block text-xs text-gray-600 dark:text-gray-300 hover:text-brand-dark dark:hover:text-brand transition-colors font-medium">
+                            {language === 'fr' ? 'Accueil' : language === 'rw' ? 'Ahabanza' : 'Home'}
+                          </Link>
+                          <a href="https://www.simbaonlineshopping.com/AboutUs.aspx" target="_blank" rel="noopener noreferrer"
+                            className="block text-xs text-gray-600 dark:text-gray-300 hover:text-brand-dark dark:hover:text-brand transition-colors font-medium">
+                            {language === 'fr' ? 'À propos' : language === 'rw' ? 'Ibyerekeye' : 'About Simba'}
+                          </a>
                       </div>
                     </div>
 
