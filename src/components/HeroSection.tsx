@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, ChevronLeft, ChevronRight, Zap, Users } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, ChevronRight, ShoppingCart, MapPin } from 'lucide-react';
 
 const SLIDES = [
   {
@@ -37,15 +37,6 @@ const SLIDES = [
   },
 ];
 
-const TICKER_ITEMS = [
-  'Jean Pierre just ordered from Remera',
-  'Marie ordered Fresh Milk × 3',
-  'Someone in Kimironko picked up their order',
-  'Amina ordered Baguette from Kacyiru',
-  'New order at Nyamirambo branch',
-  'Patrick ordered Cooking Oil × 2',
-];
-
 function Particle({ delay, x, size }: { delay: number; x: number; size: number }) {
   return (
     <motion.div
@@ -60,27 +51,20 @@ function Particle({ delay, x, size }: { delay: number; x: number; size: number }
 export default function HeroSection({ onShopNow }: { onShopNow: () => void }) {
   const { language } = useSimbaStore();
   const [current, setCurrent] = useState(0);
-  const [tickerIdx, setTickerIdx] = useState(0);
-  const [showTicker, setShowTicker] = useState(false);
-  const [liveCount, setLiveCount] = useState(247);
+  const [orderCount, setOrderCount] = useState<number | null>(null);
 
+  // Auto-advance slides
   useEffect(() => {
     const t = setInterval(() => setCurrent(c => (c + 1) % SLIDES.length), 5000);
     return () => clearInterval(t);
   }, []);
 
+  // Fetch real order count from DB
   useEffect(() => {
-    const t = setInterval(() => setLiveCount(c => c + Math.floor(Math.random() * 3)), 3000);
-    return () => clearInterval(t);
-  }, []);
-
-  useEffect(() => {
-    setShowTicker(true);
-    const t = setInterval(() => {
-      setShowTicker(false);
-      setTimeout(() => { setTickerIdx(i => (i + 1) % TICKER_ITEMS.length); setShowTicker(true); }, 400);
-    }, 4000);
-    return () => clearInterval(t);
+    fetch('/api/stats')
+      .then(r => r.json())
+      .then(d => { if (d.ok && d.total > 0) setOrderCount(d.total); })
+      .catch(() => {});
   }, []);
 
   const slide = SLIDES[current];
@@ -89,6 +73,7 @@ export default function HeroSection({ onShopNow }: { onShopNow: () => void }) {
 
   return (
     <section className="relative overflow-hidden" style={{ minHeight: '420px' }}>
+      {/* Animated background */}
       <AnimatePresence mode="wait">
         <motion.div
           key={slide.id}
@@ -108,12 +93,16 @@ export default function HeroSection({ onShopNow }: { onShopNow: () => void }) {
         </motion.div>
       </AnimatePresence>
 
+      {/* Floating particles */}
       {[...Array(8)].map((_, i) => (
         <Particle key={i} delay={i * 0.7} x={10 + i * 11} size={6 + (i % 3) * 6} />
       ))}
 
+      {/* Content */}
       <div className="relative max-w-screen-xl mx-auto px-4 sm:px-6 pt-14 pb-12">
         <div className="max-w-xl">
+
+          {/* Eyebrow */}
           <motion.div
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 border border-white/20 rounded-full mb-5"
@@ -122,6 +111,7 @@ export default function HeroSection({ onShopNow }: { onShopNow: () => void }) {
             <span className="text-white/90 text-xs font-black uppercase tracking-widest">{t.heroEyebrow}</span>
           </motion.div>
 
+          {/* Headline */}
           <AnimatePresence mode="wait">
             <motion.h1
               key={slide.id + '-h'}
@@ -135,6 +125,7 @@ export default function HeroSection({ onShopNow }: { onShopNow: () => void }) {
             </motion.h1>
           </AnimatePresence>
 
+          {/* Sub */}
           <AnimatePresence mode="wait">
             <motion.p
               key={slide.id + '-p'}
@@ -146,6 +137,7 @@ export default function HeroSection({ onShopNow }: { onShopNow: () => void }) {
             </motion.p>
           </AnimatePresence>
 
+          {/* CTA */}
           <motion.button
             whileHover={{ scale: 1.04, boxShadow: `0 0 30px ${slide.accent}60` }}
             whileTap={{ scale: 0.97 }}
@@ -156,30 +148,34 @@ export default function HeroSection({ onShopNow }: { onShopNow: () => void }) {
             {t.heroCta}
           </motion.button>
 
-          <div className="flex items-center gap-4 mt-6">
+          {/* Real stats row */}
+          <div className="flex items-center gap-3 mt-6 flex-wrap">
+            {orderCount !== null && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full"
+              >
+                <ShoppingCart className="w-3.5 h-3.5 text-brand" />
+                <span className="text-white text-xs font-black">
+                  {orderCount.toLocaleString()} {language === 'fr' ? 'commandes passées' : language === 'rw' ? 'itumiziwa ryakozwe' : 'orders placed'}
+                </span>
+              </motion.div>
+            )}
             <motion.div
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
               className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full"
-              animate={{ scale: [1, 1.03, 1] }} transition={{ duration: 2, repeat: Infinity }}
             >
-              <Zap className="w-3.5 h-3.5 text-brand" />
+              <MapPin className="w-3.5 h-3.5 text-green-400" />
               <span className="text-white text-xs font-black">
-                <motion.span
-                  key={liveCount}
-                  initial={{ y: -8, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.3 }} className="inline-block"
-                >
-                  {liveCount.toLocaleString()}
-                </motion.span>
-                {' '}orders today
+                {language === 'fr' ? '9 agences à Kigali' : language === 'rw' ? 'Amashami 9 i Kigali' : '9 branches in Kigali'}
               </span>
             </motion.div>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full">
-              <Users className="w-3.5 h-3.5 text-green-400" />
-              <span className="text-white text-xs font-black">9 branches open</span>
-            </div>
           </div>
         </div>
 
+        {/* Slide controls */}
         <div className="absolute bottom-6 right-4 sm:right-6 flex items-center gap-3">
           <button onClick={() => setCurrent(c => (c - 1 + SLIDES.length) % SLIDES.length)}
             className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors">
@@ -196,22 +192,6 @@ export default function HeroSection({ onShopNow }: { onShopNow: () => void }) {
             <ChevronRight className="w-4 h-4 text-white" />
           </button>
         </div>
-      </div>
-
-      <div className="absolute bottom-4 left-4 sm:left-6 max-w-[260px]">
-        <AnimatePresence mode="wait">
-          {showTicker && (
-            <motion.div
-              key={tickerIdx}
-              initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.35 }}
-              className="flex items-center gap-2 px-3 py-2 bg-black/40 backdrop-blur-md rounded-xl border border-white/10"
-            >
-              <span className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0 animate-pulse" />
-              <span className="text-white/90 text-xs font-medium truncate">{TICKER_ITEMS[tickerIdx]}</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </section>
   );

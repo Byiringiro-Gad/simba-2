@@ -14,9 +14,10 @@ import { useState, useEffect, useRef } from 'react';
 
 interface ProductCardProps {
   product: Product;
+  index?: number;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, index = 0 }: ProductCardProps) {
   const { addToCart, updateQuantity, cart, toggleFavorite, favorites, language, branchInventory } = useSimbaStore();
   const t = translations[language];
 
@@ -72,10 +73,10 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.3 }}
+      viewport={{ once: true, margin: '-30px' }}
+      transition={{ duration: 0.35, delay: Math.min(index * 0.06, 0.4), ease: [0.25, 0.1, 0.25, 1] }}
       className="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-xl hover:border-gray-200 dark:hover:border-gray-700 hover:-translate-y-1 transition-all duration-200 flex flex-col"
     >
       {/* Floating +1 */}

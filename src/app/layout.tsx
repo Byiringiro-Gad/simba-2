@@ -9,6 +9,8 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import PickupBranchModal from "@/components/PickupBranchModal";
 import AuthBootstrap from "@/components/AuthBootstrap";
 import GoogleAuthHandler from "@/components/GoogleAuthHandler";
+import PageLoader from "@/components/PageLoader";
+import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,6 +27,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <AuthBootstrap />
           <GoogleAuthHandler />
+          <Suspense fallback={null}>
+            <PageLoader />
+          </Suspense>
           <ErrorBoundary>
             {children}
           </ErrorBoundary>
