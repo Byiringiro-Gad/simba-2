@@ -22,6 +22,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SimbaData } from '@/types';
 import { SIMBA_BRANCHES, SimbaBranch } from '@/lib/branches';
+import ScrollReveal, { StaggerReveal, StaggerItem } from '@/components/ScrollReveal';
 import HeroSection from '@/components/HeroSection';
 import BranchMapModal from '@/components/BranchMapModal';
 import ShopNowPanel from '@/components/ShopNowPanel';
@@ -40,18 +41,22 @@ function HowItWorksSection() {
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
-      <h3 className="font-black text-gray-900 dark:text-white text-base mb-5">{t.howItWorks}</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <ScrollReveal direction="up">
+        <h3 className="font-black text-gray-900 dark:text-white text-base mb-5">{t.howItWorks}</h3>
+      </ScrollReveal>
+      <StaggerReveal className="grid grid-cols-2 sm:grid-cols-4 gap-4" staggerDelay={0.1}>
         {steps.map((step, i) => (
-          <div key={i} className="flex flex-col items-center text-center">
-            <div className="w-12 h-12 bg-brand-muted rounded-2xl flex items-center justify-center text-2xl mb-3">
-              {step.icon}
+          <StaggerItem key={i} direction="up">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 bg-brand-muted rounded-2xl flex items-center justify-center text-2xl mb-3">
+                {step.icon}
+              </div>
+              <p className="font-black text-sm text-gray-900 dark:text-white mb-1">{step.title}</p>
+              <p className="text-xs text-gray-400 font-medium leading-snug">{step.desc}</p>
             </div>
-            <p className="font-black text-sm text-gray-900 dark:text-white mb-1">{step.title}</p>
-            <p className="text-xs text-gray-400 font-medium leading-snug">{step.desc}</p>
-          </div>
+          </StaggerItem>
         ))}
-      </div>
+      </StaggerReveal>
     </div>
   );
 }
@@ -248,6 +253,7 @@ export default function Home() {
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 pb-24 sm:pb-10 space-y-8">
 
                 {/* Category grid */}
+                <ScrollReveal direction="up">
                 <section id="categories-section">
                   <h2 className="text-base font-black text-gray-900 dark:text-white mb-4">
                     {t.shopByCategory}
@@ -257,14 +263,20 @@ export default function Home() {
                     onSelect={handleCategorySelect}
                   />
                 </section>
+                </ScrollReveal>
 
                 {/* ── HOW IT WORKS ── */}
+                <ScrollReveal direction="up" delay={0.05}>
                 <HowItWorksSection />
+                </ScrollReveal>
 
                 {/* ── Recently Viewed ── */}
+                <ScrollReveal direction="up" delay={0.05}>
                 <RecentlyViewedSection data={data} />
+                </ScrollReveal>
 
                 {/* Branches map */}
+                <ScrollReveal direction="up">
                 <section>
                   <div className="flex items-center justify-between mb-3">
                     <div>
@@ -296,8 +308,9 @@ export default function Home() {
                   </div>
 
                   {/* Branch list */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <StaggerReveal className="grid grid-cols-1 sm:grid-cols-2 gap-2" staggerDelay={0.06}>
                     {BRANCHES.map((b, i) => (
+                      <StaggerItem key={b.id} direction="up">
                       <button
                         key={b.id}
                         onClick={() => setSelectedBranchMap(b)}
@@ -314,11 +327,14 @@ export default function Home() {
                           {language === 'fr' ? 'Voir' : language === 'rw' ? 'Reba' : 'View'}
                         </span>
                       </button>
+                      </StaggerItem>
                     ))}
-                  </div>
+                  </StaggerReveal>
                 </section>
+                </ScrollReveal>
 
                 {/* Footer */}
+                <ScrollReveal direction="up" delay={0.05}>
                 <footer className="border-t border-gray-100 dark:border-gray-800 pt-8">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
 
@@ -416,6 +432,7 @@ export default function Home() {
                     <p className="text-[10px] text-gray-400 text-center">{t.copyright}</p>
                   </div>
                 </footer>
+                </ScrollReveal>
                 </div>{/* end inner wrapper */}
               </motion.div>
             )}

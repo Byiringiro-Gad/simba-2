@@ -14,6 +14,7 @@ import Image from 'next/image';
 import { clsx } from 'clsx';
 import DashboardSettingsBar from '@/components/DashboardSettingsBar';
 import { useSimbaStore } from '@/store/useSimbaStore';
+import { translations } from '@/lib/translations';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 interface OrderItem { id: number; name: string; price: number; quantity: number; image: string; unit: string; category: string; }
@@ -32,12 +33,6 @@ interface Product {
 type AdminView = 'orders' | 'products' | 'branches';
 type StatusFilter = 'all' | 'processing' | 'delivered' | 'cancelled';
 
-const STATUS = {
-  processing: { label: 'Processing', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', icon: Clock },
-  delivered:  { label: 'Delivered',  color: 'text-green-600', bg: 'bg-green-50',  border: 'border-green-200', icon: CheckCircle2 },
-  cancelled:  { label: 'Cancelled',  color: 'text-red-600',   bg: 'bg-red-50',    border: 'border-red-200',   icon: XCircle },
-};
-
 const CATEGORIES = [
   'Groceries','Bakery','Cosmetics & Personal Care','Baby Products',
   'Kitchenware & Electronics','Electronics','Sports & Wellness',
@@ -48,12 +43,13 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 /* ─── Product Form Modal ─────────────────────────────────────────────────── */
 function ProductModal({
-  product, categories, onSave, onClose,
+  product, categories, onSave, onClose, language,
 }: {
   product: Product | null;
   categories: string[];
   onSave: (data: Partial<Product>) => Promise<void>;
   onClose: () => void;
+  language: string;
 }) {
   const isNew = !product;
   const [form, setForm] = useState({
@@ -186,7 +182,9 @@ function ProductModal({
                     form.inStock ? 'border-green-500 bg-green-50 text-green-700' : 'border-red-300 bg-red-50 text-red-600'
                   )}>
                   {form.inStock ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
-                  {form.inStock ? 'In Stock' : 'Out of Stock'}
+                  {form.inStock
+                    ? (language === 'fr' ? 'En stock' : language === 'rw' ? 'Biraboneka' : 'In Stock')
+                    : (language === 'fr' ? 'Rupture' : language === 'rw' ? 'Ntibiraboneka' : 'Out of Stock')}
                 </button>
               </div>
             </div>
@@ -250,7 +248,13 @@ export default function AdminDashboard() {
   const [activeView, setActiveView] = useState<AdminView>('orders');
 
   const adminToken = typeof window !== 'undefined' ? localStorage.getItem('admin_token') ?? '' : '';
-  const { isDarkMode } = useSimbaStore();
+  const { isDarkMode, language } = useSimbaStore();
+
+  const STATUS = {
+    processing: { label: language === 'fr' ? 'En cours'    : language === 'rw' ? 'Ritegurwa'      : 'Processing', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', icon: Clock },
+    delivered:  { label: language === 'fr' ? 'Livré'       : language === 'rw' ? 'Ryagezweho'     : 'Delivered',  color: 'text-green-600', bg: 'bg-green-50',  border: 'border-green-200', icon: CheckCircle2 },
+    cancelled:  { label: language === 'fr' ? 'Annulé'      : language === 'rw' ? 'Ryahagaritswe'  : 'Cancelled',  color: 'text-red-600',   bg: 'bg-red-50',    border: 'border-red-200',   icon: XCircle },
+  };
 
   /* ── Load orders ── */
   const loadOrders = async () => {
@@ -439,9 +443,9 @@ export default function AdminDashboard() {
         {/* Tab bar */}
         <div className="flex px-4 sm:px-6 pb-0 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
           {([
-            { id: 'orders',   label: `Orders (${orders.length})` },
-            { id: 'products', label: `Products (${products.length})` },
-            { id: 'branches', label: `Branches (${branchStats.length})` },
+            { id: 'orders',   label: `${language === 'fr' ? 'Commandes' : language === 'rw' ? 'Itumiziwa' : 'Orders'} (${orders.length})` },
+            { id: 'products', label: `${language === 'fr' ? 'Produits' : language === 'rw' ? 'Ibicuruzwa' : 'Products'} (${products.length})` },
+            { id: 'branches', label: `${language === 'fr' ? 'Agences' : language === 'rw' ? 'Amashami' : 'Branches'} (${branchStats.length})` },
           ] as { id: AdminView; label: string }[]).map(tab => (
             <button key={tab.id} onClick={() => setActiveView(tab.id)}
               className={clsx('flex-shrink-0 px-4 py-2.5 text-xs font-black border-b-2 transition-colors',
@@ -458,13 +462,13 @@ export default function AdminDashboard() {
         {/* ── Stats row ── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           {[
-            { label: 'Total Orders',   value: stats.total,                            icon: Package,      color: 'text-gray-900',   bg: 'bg-white' },
-            { label: 'Today',          value: stats.todayOrders,                      icon: TrendingUp,   color: 'text-blue-600',   bg: 'bg-blue-50' },
-            { label: 'Processing',     value: stats.processing,                       icon: Clock,        color: 'text-amber-600',  bg: 'bg-amber-50' },
-            { label: 'Delivered',      value: stats.delivered,                        icon: CheckCircle2, color: 'text-green-600',  bg: 'bg-green-50' },
-            { label: 'Cancelled',      value: stats.cancelled,                        icon: XCircle,      color: 'text-red-600',    bg: 'bg-red-50' },
-            { label: 'Revenue (RWF)',  value: `${(stats.revenue/1000).toFixed(0)}K`,  icon: DollarSign,   color: 'text-brand-dark', bg: 'bg-brand-muted' },
-            { label: 'Deposits (RWF)', value: `${(stats.deposits/1000).toFixed(0)}K`, icon: Bike,         color: 'text-purple-600', bg: 'bg-purple-50' },
+            { label: language === 'fr' ? 'Total commandes' : language === 'rw' ? 'Itumiziwa ryose' : 'Total Orders',   value: stats.total,                            icon: Package,      color: 'text-gray-900',   bg: 'bg-white' },
+            { label: language === 'fr' ? "Aujourd'hui"     : language === 'rw' ? 'Uyu munsi'       : 'Today',          value: stats.todayOrders,                      icon: TrendingUp,   color: 'text-blue-600',   bg: 'bg-blue-50' },
+            { label: language === 'fr' ? 'En cours'        : language === 'rw' ? 'Ritegurwa'        : 'Processing',     value: stats.processing,                       icon: Clock,        color: 'text-amber-600',  bg: 'bg-amber-50' },
+            { label: language === 'fr' ? 'Livré'           : language === 'rw' ? 'Ryagezweho'       : 'Delivered',      value: stats.delivered,                        icon: CheckCircle2, color: 'text-green-600',  bg: 'bg-green-50' },
+            { label: language === 'fr' ? 'Annulé'          : language === 'rw' ? 'Ryahagaritswe'    : 'Cancelled',      value: stats.cancelled,                        icon: XCircle,      color: 'text-red-600',    bg: 'bg-red-50' },
+            { label: language === 'fr' ? 'Revenus (RWF)'   : language === 'rw' ? 'Amafaranga (RWF)' : 'Revenue (RWF)',  value: `${(stats.revenue/1000).toFixed(0)}K`,  icon: DollarSign,   color: 'text-brand-dark', bg: 'bg-brand-muted' },
+            { label: language === 'fr' ? 'Dépôts (RWF)'    : language === 'rw' ? 'Inguzanyo (RWF)'  : 'Deposits (RWF)', value: `${(stats.deposits/1000).toFixed(0)}K`, icon: Bike,         color: 'text-purple-600', bg: 'bg-purple-50' },
           ].map(({ label, value, icon: Icon, color, bg }) => (
             <div key={label} className={`${bg} rounded-2xl border border-gray-100 p-3`}>
               <Icon className={`w-4 h-4 ${color} mb-1.5`} />
@@ -875,6 +879,7 @@ export default function AdminDashboard() {
             categories={CATEGORIES}
             onSave={handleSaveProduct}
             onClose={() => { setShowProductModal(false); setEditProduct(null); setIsNewProduct(false); }}
+            language={language}
           />
         )}
       </AnimatePresence>

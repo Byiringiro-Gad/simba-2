@@ -10,8 +10,9 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { clsx } from 'clsx';
-import DashboardSettingsBar from '@/components/DashboardSettingsBar';
 import { useSimbaStore } from '@/store/useSimbaStore';
+import { translations } from '@/lib/translations';
+import DashboardSettingsBar from '@/components/DashboardSettingsBar';
 
 const API = '/api';
 
@@ -26,15 +27,17 @@ interface Order {
   user_id?: string | null;
 }
 
-const BRANCH_STATUS_CONFIG = {
-  pending:    { label: 'Pending',    color: 'text-gray-600',   bg: 'bg-gray-100',   icon: Clock },
-  preparing:  { label: 'Preparing', color: 'text-amber-600',  bg: 'bg-amber-50',   icon: Bike },
-  ready:      { label: 'Ready',     color: 'text-green-600',  bg: 'bg-green-50',   icon: CheckCircle2 },
-  picked_up:  { label: 'Picked Up', color: 'text-blue-600',   bg: 'bg-blue-50',    icon: ShoppingBag },
-};
-
 export default function ManagerDashboard() {
   const router = useRouter();
+  const { language } = useSimbaStore();
+  const t = translations[language];
+
+  const BRANCH_STATUS_CONFIG = {
+    pending:   { label: language === 'fr' ? 'En attente'      : language === 'rw' ? 'Bitegerejwe' : 'Pending',    color: 'text-gray-600',   bg: 'bg-gray-100',   icon: Clock },
+    preparing: { label: language === 'fr' ? 'En préparation'  : language === 'rw' ? 'Bitegurwa'   : 'Preparing',  color: 'text-amber-600',  bg: 'bg-amber-50',   icon: Bike },
+    ready:     { label: language === 'fr' ? 'Prêt'            : language === 'rw' ? 'Biteguye'    : 'Ready',      color: 'text-green-600',  bg: 'bg-green-50',   icon: CheckCircle2 },
+    picked_up: { label: language === 'fr' ? 'Récupéré'        : language === 'rw' ? 'Byafashwe'   : 'Picked Up',  color: 'text-blue-600',   bg: 'bg-blue-50',    icon: ShoppingBag },
+  };
   const [staff, setStaff] = useState<any>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
@@ -109,7 +112,6 @@ export default function ManagerDashboard() {
   };
 
   const { isDarkMode } = useSimbaStore();
-
   const filtered = useMemo(() =>
     orders.filter(o => filter === 'all' || o.branch_status === filter),
     [orders, filter]
@@ -182,15 +184,23 @@ export default function ManagerDashboard() {
 
         {/* Filter tabs */}
         <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-          {(['all', 'pending', 'preparing', 'ready'] as const).map(f => (
-            <button key={f} onClick={() => setFilter(f)}
-              className={clsx(
-                'flex-shrink-0 px-4 py-2 rounded-xl text-sm font-bold capitalize transition-all border',
-                filter === f ? 'bg-brand-dark text-white border-brand-dark' : 'bg-white text-gray-600 border-gray-200 hover:border-brand-dark'
-              )}>
-              {f === 'all' ? `All (${orders.length})` : `${f.charAt(0).toUpperCase() + f.slice(1)} (${orders.filter(o => o.branch_status === f).length})`}
-            </button>
-          ))}
+          {(['all', 'pending', 'preparing', 'ready'] as const).map(f => {
+            const labels: Record<string, string> = {
+              all:       language === 'fr' ? `Tout (${orders.length})` : language === 'rw' ? `Byose (${orders.length})` : `All (${orders.length})`,
+              pending:   language === 'fr' ? `En attente (${orders.filter(o => o.branch_status === 'pending').length})` : language === 'rw' ? `Bitegerejwe (${orders.filter(o => o.branch_status === 'pending').length})` : `Pending (${orders.filter(o => o.branch_status === 'pending').length})`,
+              preparing: language === 'fr' ? `En préparation (${orders.filter(o => o.branch_status === 'preparing').length})` : language === 'rw' ? `Bitegurwa (${orders.filter(o => o.branch_status === 'preparing').length})` : `Preparing (${orders.filter(o => o.branch_status === 'preparing').length})`,
+              ready:     language === 'fr' ? `Prêt (${orders.filter(o => o.branch_status === 'ready').length})` : language === 'rw' ? `Biteguye (${orders.filter(o => o.branch_status === 'ready').length})` : `Ready (${orders.filter(o => o.branch_status === 'ready').length})`,
+            };
+            return (
+              <button key={f} onClick={() => setFilter(f)}
+                className={clsx(
+                  'flex-shrink-0 px-4 py-2 rounded-xl text-sm font-bold capitalize transition-all border',
+                  filter === f ? 'bg-brand-dark text-white border-brand-dark' : 'bg-white text-gray-600 border-gray-200 hover:border-brand-dark'
+                )}>
+                {labels[f]}
+              </button>
+            );
+          })}
         </div>
 
         {/* Orders */}

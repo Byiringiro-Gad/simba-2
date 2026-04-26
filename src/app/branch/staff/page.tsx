@@ -14,6 +14,9 @@ import { getSimbaData } from '@/lib/data';
 import DashboardSettingsBar from '@/components/DashboardSettingsBar';
 import { useSimbaStore } from '@/store/useSimbaStore';
 
+import { useSimbaStore } from '@/store/useSimbaStore';
+import { translations } from '@/lib/translations';
+
 const API = '/api';
 
 interface OrderItem { id: number; name: string; price: number; quantity: number; image: string; }
@@ -28,15 +31,18 @@ interface InventoryItem {
   stockCount: number; isAvailable: boolean;
 }
 
-const STATUS_CONFIG = {
-  pending:   { label: 'Pending',    color: 'text-gray-600',  bg: 'bg-gray-100', icon: Clock,        next: 'preparing', nextLabel: 'Start Preparing', nextBg: 'bg-brand-dark hover:bg-gray-800 text-white' },
-  preparing: { label: 'Preparing', color: 'text-amber-600', bg: 'bg-amber-50', icon: Bike,         next: 'ready',     nextLabel: 'Mark Ready ✓',    nextBg: 'bg-green-500 hover:bg-green-600 text-white' },
-  ready:     { label: 'Ready ✓',   color: 'text-green-600', bg: 'bg-green-50', icon: CheckCircle2, next: 'picked_up', nextLabel: 'Mark Picked Up',  nextBg: 'bg-blue-500 hover:bg-blue-600 text-white' },
-  picked_up: { label: 'Picked Up', color: 'text-blue-600',  bg: 'bg-blue-50',  icon: ShoppingBag,  next: null,        nextLabel: '',                nextBg: '' },
-};
-
 export default function StaffDashboard() {
   const router = useRouter();
+  const { language } = useSimbaStore();
+  const t = translations[language];
+
+  // Status config — inside component so it reacts to language changes
+  const STATUS_CONFIG = {
+    pending:   { label: language === 'fr' ? 'En attente' : language === 'rw' ? 'Bitegerejwe' : 'Pending',    color: 'text-gray-600',  bg: 'bg-gray-100', icon: Clock,        next: 'preparing', nextLabel: language === 'fr' ? 'Commencer' : language === 'rw' ? 'Tangira' : 'Start Preparing', nextBg: 'bg-brand-dark hover:bg-gray-800 text-white' },
+    preparing: { label: language === 'fr' ? 'En préparation' : language === 'rw' ? 'Bitegurwa' : 'Preparing', color: 'text-amber-600', bg: 'bg-amber-50', icon: Bike,         next: 'ready',     nextLabel: language === 'fr' ? 'Marquer prêt ✓' : language === 'rw' ? 'Biteguye ✓' : 'Mark Ready ✓',    nextBg: 'bg-green-500 hover:bg-green-600 text-white' },
+    ready:     { label: language === 'fr' ? 'Prêt ✓' : language === 'rw' ? 'Biteguye ✓' : 'Ready ✓',        color: 'text-green-600', bg: 'bg-green-50', icon: CheckCircle2, next: 'picked_up', nextLabel: language === 'fr' ? 'Marquer récupéré' : language === 'rw' ? 'Byafashwe' : 'Mark Picked Up',  nextBg: 'bg-blue-500 hover:bg-blue-600 text-white' },
+    picked_up: { label: language === 'fr' ? 'Récupéré' : language === 'rw' ? 'Byafashwe' : 'Picked Up',      color: 'text-blue-600',  bg: 'bg-blue-50',  icon: ShoppingBag,  next: null,        nextLabel: '',                nextBg: '' },
+  };
   const [staff, setStaff] = useState<any>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [inventory, setInventory] = useState<Record<number, { stockCount: number; isAvailable: boolean }>>({});
@@ -163,8 +169,8 @@ export default function StaffDashboard() {
         {/* Tab bar */}
         <div className="flex px-4 pb-0">
           {[
-            { id: 'orders', label: `Orders (${active.length})` },
-            { id: 'inventory', label: `Inventory${outOfStock > 0 ? ` (${outOfStock} low)` : ''}` },
+            { id: 'orders',    label: `${language === 'fr' ? 'Commandes' : language === 'rw' ? 'Itumiziwa' : 'Orders'} (${active.length})` },
+            { id: 'inventory', label: `${language === 'fr' ? 'Stock' : language === 'rw' ? 'Ibicuruzwa' : 'Inventory'}${outOfStock > 0 ? ` (${outOfStock} ${language === 'fr' ? 'rupture' : language === 'rw' ? 'ntibiraboneka' : 'low'})` : ''}` },
           ].map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
               className={clsx(
