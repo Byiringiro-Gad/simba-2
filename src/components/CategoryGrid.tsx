@@ -38,17 +38,18 @@ export default function CategoryGrid({ categories, onSelect }: Props) {
         return (
           <motion.button
             key={cat}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.04, duration: 0.2 }}
-            whileHover={{ y: -3, scale: 1.02 }}
-            whileTap={{ scale: 0.96 }}
+            initial={{ opacity: 0, y: 12, scale: 0.95 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, margin: '-20px' }}
+            transition={{ delay: i * 0.05, duration: 0.25 }}
+            whileHover={{ y: -4, scale: 1.05 }}
+            whileTap={{ scale: 0.94 }}
             onClick={() => onSelect(cat)}
             className={clsx(
-              'flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all',
+              'flex flex-col items-center gap-2 p-3 rounded-2xl border-2 transition-all duration-200',
               isActive
-                ? 'border-brand shadow-brand-sm bg-brand/5 dark:bg-brand/10'
-                : 'border-transparent bg-white dark:bg-gray-900 hover:border-brand/30 hover:shadow-sm'
+                ? 'border-brand shadow-lg shadow-brand/20 bg-brand/5 dark:bg-brand/10'
+                : 'border-transparent bg-white dark:bg-gray-900 hover:border-brand/30 hover:shadow-md hover:shadow-black/5'
             )}
           >
             <div className={clsx('w-14 h-14 rounded-xl overflow-hidden relative flex-shrink-0', meta.bg)}>

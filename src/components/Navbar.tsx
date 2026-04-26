@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import { getSimbaData } from '@/lib/data';
-import { Search, ShoppingCart, ChevronDown, MapPin, X, Sun, Moon, Languages, Menu, User, LogOut, ChevronRight, Store } from 'lucide-react';
+import { Search, ShoppingCart, ChevronDown, MapPin, X, Sun, Moon, Languages, Menu, User, LogOut, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -228,10 +228,6 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                     <ChevronRight className="w-4 h-4" /> {t.myOrders}
                   </button>
                   <div className="border-t border-gray-100 dark:border-gray-800 mt-1 pt-1">
-                    <Link href="/branch/login"
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-brand-dark dark:text-brand hover:bg-brand-muted dark:hover:bg-brand/10 transition-colors">
-                      <Store className="w-4 h-4" /> Branch Staff Portal
-                    </Link>
                     <button onClick={logout}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                       <LogOut className="w-4 h-4" /> {t.signOut}
@@ -250,24 +246,39 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
             )}
 
             {/* Cart */}
-            <button
+            <motion.button
               id="cart-icon"
               onClick={() => setCartOpen(true)}
+              whileTap={{ scale: 0.93 }}
+              animate={cartCount > 0 ? { scale: [1, 1.08, 1] } : {}}
+              transition={{ duration: 0.3 }}
               className="relative flex items-center gap-2 px-3 py-2 bg-brand hover:bg-brand-dark text-gray-900 rounded-xl transition-all font-black text-sm ml-1 shadow-brand-md"
             >
               <ShoppingCart className="w-5 h-5" />
-              <span className="hidden sm:block">{cartCount > 0 ? `${cartCount} item${cartCount > 1 ? 's' : ''}` : t.cart}</span>
+              <span className="hidden sm:block">
+                {cartCount > 0 ? `${cartCount} item${cartCount > 1 ? 's' : ''}` : t.cart}
+              </span>
               {cartCount > 0 && (
-                <span className="sm:hidden absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-brand">
-                  {cartCount}
-                </span>
+                <>
+                  <motion.span
+                    key={cartCount}
+                    initial={{ scale: 1.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="sm:hidden absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-brand"
+                  >
+                    {cartCount}
+                  </motion.span>
+                  {/* Pulse ring */}
+                  <span className="absolute inset-0 rounded-xl animate-ping bg-brand/30 pointer-events-none" style={{ animationDuration: '2s' }} />
+                </>
               )}
-            </button>
+            </motion.button>
           </div>
         </div>
       </div>
     </header>
   );
 }
+
 
 
