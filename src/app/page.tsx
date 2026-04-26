@@ -105,7 +105,7 @@ export default function Home() {
   const categories = useMemo(() => getCategories(), []);
   const {
     language, isCartOpen, setCartOpen,
-    activeTab, selectedCategory, setSelectedCategory, searchQuery,
+    activeTab, setActiveTab, selectedCategory, setSelectedCategory, searchQuery,
   } = useSimbaStore();
   const t = translations[language];
 
