@@ -41,21 +41,21 @@ function buildResponse(input: string, lang: string, products: Product[]): ChatMe
     return {
       role: 'assistant',
       text: pick(
-        "🚴 Simba delivers across Kigali in **45 minutes**! We have 8 branches strategically located for fast delivery. Order now and track your rider in real time.",
-        "🚴 Simba livre partout à Kigali en **45 minutes** ! Nous avons 8 agences pour une livraison rapide. Commandez maintenant et suivez votre livreur en temps réel.",
-        "🚴 Simba itumiza mu Kigali hose mu **minota 45**! Dufite amashami 8 kugira ngo gutumiza bibe vuba. Tumiza ubu ukurikirane uwawe ugeza."
+        "🚴 Simba delivers across Kigali in **45 minutes**! We have 9 branches strategically located for fast pickup. Order now and your order will be ready in 20-45 min.",
+        "🚴 Simba livre partout à Kigali en **45 minutes** ! Nous avons 9 agences pour un retrait rapide. Commandez maintenant, votre commande sera prête en 20-45 min.",
+        "🚴 Simba itumiza mu Kigali hose mu **minota 45**! Dufite amashami 9. Tumiza ubu, itumizwa ryawe rizategurwa mu minota 20-45."
       ),
     };
   }
 
   // Payment
-  if (/pay|momo|mobile money|airtel|mtn|kwishur|payer|payment|checkout/.test(q)) {
+  if (/pay|momo|mobile money|airtel|mtn|kwishur|payer|payment|checkout|deposit|inguzanyo/.test(q)) {
     return {
       role: 'assistant',
       text: pick(
-        "💳 Simba accepts **MTN MoMo** and **Airtel Money**. At checkout, select your provider, enter your phone number, and confirm the push notification. Simple and secure!",
-        "💳 Simba accepte **MTN MoMo** et **Airtel Money**. Lors du paiement, choisissez votre opérateur, entrez votre numéro et confirmez la notification. Simple et sécurisé !",
-        "💳 Simba yemera **MTN MoMo** na **Airtel Money**. Mu kwishura, hitamo umuryango wawe, injiza nimero yawe kandi emeza ubutumwa. Byoroshye kandi biringanye!"
+        "💳 Simba accepts **MTN MoMo** and **Airtel Money**. A **500 RWF deposit** is required at checkout to confirm your order. The rest is paid at pickup. Simple and secure!",
+        "💳 Simba accepte **MTN MoMo** et **Airtel Money**. Un **dépôt de 500 RWF** est requis à la caisse pour confirmer votre commande. Le reste est payé au retrait.",
+        "💳 Simba yemera **MTN MoMo** na **Airtel Money**. **Inguzanyo ya 500 RWF** irasabwa mu kwishura kugira ngo wemeze itumizwa. Isigaye wishurwa igihe ugiye gufata."
       ),
     };
   }
@@ -84,139 +84,139 @@ function buildResponse(input: string, lang: string, products: Product[]): ChatMe
     };
   }
 
-  // Locations
-  if (/locat|branch|where|kigali|aho|agence|kimironko|nyamirambo|remera|store/.test(q)) {
+  // Locations / branches
+  if (/locat|branch|where|kigali|aho|agence|kimironko|nyamirambo|remera|store|ishami/.test(q)) {
     return {
       role: 'assistant',
       text: pick(
-        "📍 Simba has **8 branches across Kigali**: Kimironko, Remera, Nyamirambo, and more. See all locations on the map on our homepage. We deliver to your door in 45 minutes!",
-        "📍 Simba a **8 agences à Kigali** : Kimironko, Remera, Nyamirambo et plus. Consultez la carte sur notre page d'accueil. Livraison à domicile en 45 minutes !",
-        "📍 Simba ifite **amashami 8 mu Kigali**: Kimironko, Remera, Nyamirambo n'ahandi. Reba ikarita ku rupapuro rwacu. Turatumiza ku rugo mu minota 45!"
+        "📍 Simba has **9 branches across Kigali**: Remera, Kimironko, Kacyiru, Nyamirambo, Gikondo, Kanombe, Kinyinya, Kibagabaga, Nyanza. See all on the map on our homepage!",
+        "📍 Simba a **9 agences à Kigali** : Remera, Kimironko, Kacyiru, Nyamirambo, Gikondo, Kanombe, Kinyinya, Kibagabaga, Nyanza. Consultez la carte sur notre page d'accueil !",
+        "📍 Simba ifite **amashami 9 mu Kigali**: Remera, Kimironko, Kacyiru, Nyamirambo, Gikondo, Kanombe, Kinyinya, Kibagabaga, Nyanza. Reba ikarita ku rupapuro rwacu!"
       ),
     };
   }
 
-  // Recipes
+  // Recipes — show ingredients
   if (/recip|cook|meal|dinner|lunch|breakfast|recette|cuisine|amafunguro|ifunguro|guteka/.test(q)) {
     const items = findProducts(['oil', 'tomato', 'rice', 'flour', 'spice', 'sauce', 'pasta', 'salt'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "👨‍🍳 For a classic Rwandan meal, try **Isombe with rice** or **Ugali with beans**. Here are some ingredients:",
-        "👨‍🍳 Pour un repas rwandais, essayez l'**Isombe avec du riz** ou l'**Ugali avec des haricots**. Voici des ingrédients :",
+        "👨‍🍳 For a classic Rwandan meal, try **Isombe with rice** or **Ugali with beans**. Here are some ingredients you can order:",
+        "👨‍🍳 Pour un repas rwandais, essayez l'**Isombe avec du riz** ou l'**Ugali avec des haricots**. Voici des ingrédients à commander :",
         "👨‍🍳 Ku ifunguro rya kinyarwanda, gerageza **Isombe n'umuceri** cyangwa **Ugali n'ibishyimbo**. Dore ibikenewe:"
       ),
-      products: items,
+      products: items.length > 0 ? items : undefined,
     };
   }
 
-  // Bakery
+  // Bakery — show products
   if (/bread|baguette|cake|croissant|bakery|pain|gâteau|boulangerie|umugati|ufu/.test(q)) {
     const items = findProducts(['baguette', 'bread', 'cake', 'croissant', 'bakery'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "🥐 Our bakery is baked **fresh every morning**! Baguettes, croissants, cakes and more:",
-        "🥐 Notre boulangerie est cuite **fraîche chaque matin** ! Baguettes, croissants, gâteaux :",
-        "🥐 Ubuvumbuzi bwacu buterwa **buri gitondo**! Baguette, croissant, imikate:"
+        "🥐 Yes! Our bakery is baked **fresh every morning**. Here's what's available:",
+        "🥐 Oui ! Notre boulangerie est cuite **fraîche chaque matin**. Voici ce qui est disponible :",
+        "🥐 Yego! Ubuvumbuzi bwacu buterwa **buri gitondo**. Dore ibiriho:"
       ),
-      products: items,
+      products: items.length > 0 ? items : undefined,
     };
   }
 
-  // Drinks/Party
+  // Drinks/Party — show products
   if (/drink|beer|wine|whisky|party|alcohol|boisson|bière|vin|ibiririwa|umunsi mukuru|celebrate/.test(q)) {
     const items = findProducts(['beer', 'wine', 'whisky', 'cognac', 'gin', 'vodka', 'champagne'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "🍷 Planning a celebration? Excellent selection of wines, beers, and spirits:",
-        "🍷 Vous préparez une fête ? Excellente sélection de vins, bières et spiritueux :",
-        "🍷 Witegura umunsi mukuru? Amahitamo meza y'inzoga:"
+        "🍷 Yes, we have a great selection of wines, beers, and spirits:",
+        "🍷 Oui, nous avons une excellente sélection de vins, bières et spiritueux :",
+        "🍷 Yego, dufite amahitamo meza y'inzoga:"
       ),
-      products: items,
+      products: items.length > 0 ? items : undefined,
     };
   }
 
-  // Baby
-  if (/baby|infant|diaper|milk|formula|bébé|couche|umwana|inzoya/.test(q)) {
-    const items = findProducts(['baby', 'diaper', 'milk', 'lactogen', 'wipes'], 4);
+  // Baby — show products
+  if (/baby|infant|diaper|formula|bébé|couche|umwana|inzoya/.test(q)) {
+    const items = findProducts(['baby', 'diaper', 'lactogen', 'wipes'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "👶 Everything for your little one — diapers, baby milk, wipes, toys:",
-        "👶 Tout pour votre bébé — couches, lait, lingettes, jouets :",
-        "👶 Byose ku mwana wawe — diapers, amata, wipes, ibikinisho:"
+        "👶 Yes! We have everything for your little one:",
+        "👶 Oui ! Nous avons tout pour votre bébé :",
+        "👶 Yego! Dufite byose ku mwana wawe:"
       ),
-      products: items,
+      products: items.length > 0 ? items : undefined,
     };
   }
 
-  // Cosmetics
+  // Cosmetics — show products
   if (/shampoo|soap|lotion|cream|deodorant|cosmetic|beauty|savon|crème|isuku|ubwiza/.test(q)) {
     const items = findProducts(['shampoo', 'soap', 'lotion', 'cream', 'deodorant'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "✨ Wide range of personal care — shampoos, lotions, deodorants:",
-        "✨ Large gamme de soins personnels — shampooings, lotions, déodorants :",
-        "✨ Ibicuruzwa byo kwisukura — shampoo, lotion, deodorant:"
+        "✨ Yes, we carry a wide range of personal care products:",
+        "✨ Oui, nous proposons une large gamme de soins personnels :",
+        "✨ Yego, dufite ibicuruzwa byo kwisukura:"
       ),
-      products: items,
+      products: items.length > 0 ? items : undefined,
     };
   }
 
-  // Cleaning
-  if (/clean|detergent|mop|toilet|bleach|nettoyer|nettoyage|gusukura|isuku/.test(q)) {
+  // Cleaning — show products
+  if (/clean|detergent|mop|toilet|bleach|nettoyer|nettoyage|gusukura/.test(q)) {
     const items = findProducts(['clean', 'detergent', 'toilet', 'sponge', 'mop', 'bleach'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "🧹 Keep your home spotless! Full range of cleaning products:",
-        "🧹 Gardez votre maison impeccable ! Gamme complète de produits ménagers :",
-        "🧹 Fata inzu yawe isukuye! Ibicuruzwa byose byo gusukura:"
+        "🧹 Yes! Full range of cleaning products available:",
+        "🧹 Oui ! Gamme complète de produits ménagers disponible :",
+        "🧹 Yego! Ibicuruzwa byose byo gusukura biraboneka:"
       ),
-      products: items,
+      products: items.length > 0 ? items : undefined,
     };
   }
 
-  // Electronics/Kitchen
-  if (/electronic|kettle|blender|iron|fridge|kitchen|électronique|bouilloire|mixeur/.test(q)) {
+  // Electronics/Kitchen — show products
+  if (/electronic|kettle|blender|iron|kitchen|électronique|bouilloire|mixeur/.test(q)) {
     const items = findProducts(['kettle', 'blender', 'iron', 'pan', 'electric', 'coffee'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "⚡ Great range of kitchen appliances and electronics:",
-        "⚡ Belle gamme d'appareils électroménagers :",
-        "⚡ Ibikoresho bya kitchen na electronics:"
+        "⚡ Yes, we have kitchen appliances and electronics:",
+        "⚡ Oui, nous avons des appareils électroménagers :",
+        "⚡ Yego, dufite ibikoresho bya kitchen na electronics:"
       ),
-      products: items,
+      products: items.length > 0 ? items : undefined,
     };
   }
 
-  // Sports
+  // Sports — show products
   if (/sport|gym|fitness|wellness|exercise|health|santé|ubuzima|imyitozo/.test(q)) {
     const items = findProducts(['sport', 'massage', 'roller', 'fitness'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "💪 Stay active! Sports and wellness products:",
-        "💪 Restez actif ! Produits sport et bien-être :",
-        "💪 Komeza gukora imyitozo! Ibicuruzwa bya sport:"
+        "💪 Yes! Sports and wellness products available:",
+        "💪 Oui ! Produits sport et bien-être disponibles :",
+        "💪 Yego! Ibicuruzwa bya sport biraboneka:"
       ),
-      products: items,
+      products: items.length > 0 ? items : undefined,
     };
   }
 
-  // Product name search
+  // Direct product name search — only show products, minimal text
   const nameMatch = findProducts([q], 4);
   if (nameMatch.length > 0) {
     return {
       role: 'assistant',
       text: pick(
-        `Found ${nameMatch.length} result${nameMatch.length > 1 ? 's' : ''} for "${input}":`,
-        `${nameMatch.length} résultat${nameMatch.length > 1 ? 's' : ''} pour "${input}" :`,
-        `Ibisubizo ${nameMatch.length} bya "${input}":`
+        `Yes, we have ${nameMatch.length} result${nameMatch.length > 1 ? 's' : ''} for "${input}":`,
+        `Oui, ${nameMatch.length} résultat${nameMatch.length > 1 ? 's' : ''} pour "${input}" :`,
+        `Yego, ibisubizo ${nameMatch.length} bya "${input}":`
       ),
       products: nameMatch,
     };
@@ -290,10 +290,13 @@ export default function SimbaPulse() {
 
       if (res.ok) {
         const data = await res.json();
-        // __NO_API_KEY__ means fall through to local engine
         if (data.message && data.message !== '__NO_API_KEY__') {
           setIsTyping(false);
-          setChat(prev => [...prev, { role: 'assistant', text: data.message }]);
+          // Resolve product IDs to full product objects
+          const products = data.productIds?.length
+            ? allProducts.filter((p: Product) => data.productIds.includes(p.id))
+            : undefined;
+          setChat(prev => [...prev, { role: 'assistant', text: data.message, products }]);
           return;
         }
       }

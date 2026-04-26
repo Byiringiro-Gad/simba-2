@@ -17,14 +17,24 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Simba Supermarket | Rwanda's Modern Online Store",
-  description: "Shop 700+ authentic products from Simba Supermarket. Fast delivery across Kigali in 45 minutes.",
+  description: "Shop 700+ authentic products from Simba Supermarket. Fast pickup across Kigali in 20-45 minutes.",
   keywords: "simba supermarket, rwanda, kigali, online grocery, delivery, momo",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#0F172A' },
+    { media: '(prefers-color-scheme: dark)',  color: '#0F172A' },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} pb-16 sm:pb-0`}>
+      <body className={`${inter.className} pb-16 sm:pb-0`} style={{ paddingBottom: 'max(4rem, env(safe-area-inset-bottom))' }}>
         <ThemeProvider>
           <AuthBootstrap />
           <GoogleAuthHandler />

@@ -252,7 +252,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
               whileTap={{ scale: 0.93 }}
               animate={cartCount > 0 ? { scale: [1, 1.08, 1] } : {}}
               transition={{ duration: 0.3 }}
-              className="relative flex items-center gap-2 px-3 py-2 bg-brand hover:bg-brand-dark text-gray-900 rounded-xl transition-all font-black text-sm ml-1 shadow-brand-md"
+              className="relative flex items-center gap-2 px-3 py-2.5 bg-brand hover:bg-brand-dark text-gray-900 rounded-xl transition-all font-black text-sm ml-1 shadow-brand-md min-h-[44px]"
             >
               <ShoppingCart className="w-5 h-5" />
               <span className="hidden sm:block">
