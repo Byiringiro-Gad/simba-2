@@ -169,10 +169,35 @@ export const useSimbaStore = create<SimbaState>()(
 
       // Auth
       login: (user, authToken) => {
-        set({ user, authToken, isAuthOpen: false });
+        set((s) => ({
+          user,
+          authToken,
+          isAuthOpen: false,
+          // Clear previous user's data when a new user logs in
+          orders: [],
+          cart: s.user && s.user.id !== user.id ? [] : s.cart,
+          favorites: s.user && s.user.id !== user.id ? [] : s.favorites,
+          recentlyViewed: s.user && s.user.id !== user.id ? [] : s.recentlyViewed,
+          appliedPromo: s.user && s.user.id !== user.id ? null : s.appliedPromo,
+          promoDiscount: s.user && s.user.id !== user.id ? 0 : s.promoDiscount,
+        }));
       },
       setUser: (user) => set({ user }),
-      logout: () => set({ user: null, authToken: null }),
+      logout: () => set({
+        user: null,
+        authToken: null,
+        // Clear all user-specific data
+        orders: [],
+        cart: [],
+        favorites: [],
+        recentlyViewed: [],
+        addresses: DEFAULT_ADDRESSES,
+        selectedAddressId: '1',
+        appliedPromo: null,
+        promoDiscount: 0,
+        isCartOpen: false,
+        isAuthOpen: false,
+      }),
       setAuthOpen: (isAuthOpen) => set({ isAuthOpen }),
 
       // Cart
