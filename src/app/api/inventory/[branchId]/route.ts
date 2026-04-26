@@ -58,7 +58,8 @@ export async function PATCH(
       await conn.execute(
         `INSERT INTO branch_inventory (branch_id, product_id, stock_count, is_available)
          VALUES (?, ?, ?, ?)
-         ON DUPLICATE KEY UPDATE stock_count = VALUES(stock_count), is_available = VALUES(is_available), updated_at = NOW()`,
+         ON CONFLICT (branch_id, product_id) DO UPDATE
+           SET stock_count = EXCLUDED.stock_count, is_available = EXCLUDED.is_available, updated_at = NOW()`,
         [params.branchId, productId, stockCount, isAvailable ? 1 : 0]
       );
       return NextResponse.json({ ok: true });

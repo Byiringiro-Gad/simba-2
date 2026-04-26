@@ -11,6 +11,8 @@ import {
 import Image from 'next/image';
 import { clsx } from 'clsx';
 import { getSimbaData } from '@/lib/data';
+import DashboardSettingsBar from '@/components/DashboardSettingsBar';
+import { useSimbaStore } from '@/store/useSimbaStore';
 
 const API = '/api';
 
@@ -105,6 +107,8 @@ export default function StaffDashboard() {
     router.push('/branch/login');
   };
 
+  const { isDarkMode } = useSimbaStore();
+
   // Build inventory list from products + current stock data
   const inventoryList: InventoryItem[] = useMemo(() => {
     return allProducts
@@ -130,7 +134,8 @@ export default function StaffDashboard() {
   if (!staff) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={isDarkMode ? 'dark' : ''}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-brand-dark shadow-lg">
         <div className="max-w-screen-xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -144,6 +149,7 @@ export default function StaffDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <DashboardSettingsBar />
             <button onClick={() => loadAll()} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
               <RefreshCw className="w-4 h-4 text-white" />
             </button>
@@ -354,6 +360,7 @@ export default function StaffDashboard() {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 }

@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { clsx } from 'clsx';
+import DashboardSettingsBar from '@/components/DashboardSettingsBar';
+import { useSimbaStore } from '@/store/useSimbaStore';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 interface OrderItem { id: number; name: string; price: number; quantity: number; image: string; unit: string; category: string; }
@@ -248,6 +250,7 @@ export default function AdminDashboard() {
   const [activeView, setActiveView] = useState<AdminView>('orders');
 
   const adminToken = typeof window !== 'undefined' ? localStorage.getItem('admin_token') ?? '' : '';
+  const { isDarkMode } = useSimbaStore();
 
   /* ── Load orders ── */
   const loadOrders = async () => {
@@ -405,7 +408,8 @@ export default function AdminDashboard() {
   }), [products]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* ── Header ── */}
       <header className="sticky top-0 z-40 bg-brand-dark shadow-lg">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -419,6 +423,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <DashboardSettingsBar />
             <button onClick={() => { loadOrders(); loadProducts(); }}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-xl text-white text-xs font-bold transition-colors">
               <RefreshCw className="w-3.5 h-3.5" />
@@ -873,6 +878,7 @@ export default function AdminDashboard() {
           />
         )}
       </AnimatePresence>
+    </div>
     </div>
   );
 }
