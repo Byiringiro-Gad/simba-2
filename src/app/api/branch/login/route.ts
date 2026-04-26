@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 export const dynamic = 'force-dynamic';
 
 const JWT_SECRET = process.env.JWT_SECRET ?? 'simba_secret_2026';
+const EXPRESS_API = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 async function ensureBranchTables(conn: any) {
   await conn.execute(`
@@ -21,9 +22,9 @@ async function ensureBranchTables(conn: any) {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
   `);
 
-  // Seed default staff if empty
+  // Seed default staff if table is empty
   const [rows] = await conn.execute('SELECT COUNT(*) AS cnt FROM branch_staff') as any[];
-  if (rows[0]?.cnt === 0) {
+  if (Number(rows[0]?.cnt) === 0) {
     const bcryptLib = await import('bcryptjs');
     const { v4: uuidv4 } = await import('uuid');
     const managerHash = await bcryptLib.hash('manager123', 10);
@@ -51,16 +52,23 @@ async function ensureBranchTables(conn: any) {
         [uuidv4(), `Staff ${b.name}`, `staff_${b.id}`, staffHash, b.id, b.name, 'staff']
       );
     }
+    console.log('[branch/login] Branch staff seeded');
   }
 }
 
 export async function POST(req: NextRequest) {
-  try {
-    const { username, password } = await req.json();
-    if (!username || !password) {
-      return NextResponse.json({ ok: false, error: 'Username and password required' }, { status: 400 });
-    }
+  let body: any;
+  try { body = await req.json(); } catch {
+    return NextResponse.json({ ok: false, error: 'Invalid request body' }, { status: 400 });
+  }
 
+  const { username, password } = body;
+  if (!username || !password) {
+    return NextResponse.json({ ok: false, error: 'Username and password required' }, { status: 400 });
+  }
+
+  // ── Try Next.js DB route first ──────────────────────────────────────────
+  try {
     const pool = getPool();
     const conn = await pool.getConnection();
     try {
@@ -71,11 +79,11 @@ export async function POST(req: NextRequest) {
         [username.toLowerCase().trim()]
       ) as any[];
 
-      if (!staff || staff.length === 0) {
+      if (!staff || (staff as any[]).length === 0) {
         return NextResponse.json({ ok: false, error: 'No account found' }, { status: 401 });
       }
 
-      const s = staff[0];
+      const s = (staff as any[])[0];
       const valid = await bcrypt.compare(password, s.password_hash);
       if (!valid) {
         return NextResponse.json({ ok: false, error: 'Incorrect password' }, { status: 401 });
@@ -95,8 +103,24 @@ export async function POST(req: NextRequest) {
     } finally {
       conn.release();
     }
-  } catch (err: any) {
-    console.error('[POST /api/branch/login]', err.message);
-    return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
+  } catch (dbErr: any) {
+    console.warn('[branch/login] DB unavailable, trying Express fallback:', dbErr.message);
+
+    // ── Fallback: proxy to Express backend if configured ────────────────
+    if (EXPRESS_API) {
+      try {
+        const res = await fetch(`${EXPRESS_API}/branch/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+        const data = await res.json();
+        return NextResponse.json(data, { status: res.status });
+      } catch (expressErr: any) {
+        console.error('[branch/login] Express fallback also failed:', expressErr.message);
+      }
+    }
+
+    return NextResponse.json({ ok: false, error: 'Service temporarily unavailable. Please try again.' }, { status: 503 });
   }
 }

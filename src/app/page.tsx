@@ -245,22 +245,6 @@ export default function Home() {
 
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 pb-24 sm:pb-10 space-y-8">
 
-                {/* ── Branch Staff Portal Banner ── */}
-                <Link href="/branch/login" className="flex items-center gap-4 p-4 bg-brand-dark rounded-2xl hover:bg-gray-800 transition-colors group">
-                  <div className="w-10 h-10 bg-brand rounded-xl flex items-center justify-center flex-shrink-0">
-                    <span className="text-xl">🏪</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-black text-white text-sm">
-                      {language === 'fr' ? 'Portail Personnel Agence' : language === 'rw' ? 'Injira nk\'Umukozi w\'Ishami' : 'Branch Staff & Manager Portal'}
-                    </p>
-                    <p className="text-white/60 text-xs font-medium">
-                      {language === 'fr' ? 'Gérez les commandes, le stock et les équipes' : language === 'rw' ? 'Genzura itumiziwa, ibicuruzwa n\'abakozi' : 'Manage orders, inventory & staff — Remera, Kimironko, Kacyiru...'}
-                    </p>
-                  </div>
-                  <span className="text-white/60 group-hover:text-white transition-colors text-lg">→</span>
-                </Link>
-
                 {/* Category grid */}
                 <section id="categories-section">
                   <h2 className="text-base font-black text-gray-900 dark:text-white mb-4">
