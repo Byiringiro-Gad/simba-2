@@ -102,8 +102,17 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
             <ChevronDown className="w-3.5 h-3.5 text-white/60 flex-shrink-0" />
           </button>
 
-          {/* Search */}
-          <div ref={searchRef} className="flex-1 relative">
+          {/* Search icon — mobile only, activates search tab */}
+          <button
+            onClick={() => setActiveTab('search')}
+            className="sm:hidden p-2 rounded-xl hover:bg-white/10 transition-colors flex-shrink-0"
+            aria-label="Search"
+          >
+            <Search className="w-5 h-5 text-white" />
+          </button>
+
+          {/* Search bar — desktop only */}
+          <div ref={searchRef} className="hidden sm:flex flex-1 relative">
             <div className={clsx(
               'flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white transition-all',
               focused ? 'ring-2 ring-brand' : ''

@@ -288,21 +288,24 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] overflow-hidden">
+        <>
+          {/* Backdrop — separate from drawer, covers full screen */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
             onClick={onClose}
           />
 
+          {/* Drawer — slides in from right, full height */}
           <motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-            className="absolute right-0 top-0 h-full w-full sm:max-w-[420px] bg-white dark:bg-gray-950 shadow-2xl flex flex-col"
+            className="fixed right-0 top-0 bottom-0 z-[101] w-full sm:max-w-[420px] bg-white dark:bg-gray-950 shadow-2xl flex flex-col"
+            style={{ height: '100dvh' }}
           >
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-brand text-white">
               <div className="flex items-center gap-3">
@@ -697,7 +700,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
               </div>
             )}
           </motion.div>
-        </div>
+        </>
       )}
     </AnimatePresence>
   );

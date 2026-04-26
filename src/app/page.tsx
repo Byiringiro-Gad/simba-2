@@ -370,11 +370,11 @@ export default function Home() {
                             {link.label}
                           </a>
                         ))}
-                        <Link href="/branch/login"
+                        <Link href="/staff"
                           className="flex items-center gap-1.5 text-xs text-brand-dark dark:text-brand hover:underline transition-colors font-black">
                           🏪 {language === 'fr' ? 'Portail Personnel Agence' : language === 'rw' ? 'Injira nk\'Umukozi w\'Ishami' : 'Branch Staff Portal'}
                         </Link>
-                        <Link href="/admin/login"
+                        <Link href="/staff"
                           className="flex items-center gap-1.5 text-xs text-brand-dark dark:text-brand hover:underline transition-colors font-black">
                           🔐 {language === 'fr' ? 'Portail Administrateur' : language === 'rw' ? 'Injira nk\'Umuyobozi' : 'Admin Portal'}
                         </Link>

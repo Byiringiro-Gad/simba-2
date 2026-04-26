@@ -63,7 +63,7 @@ export default function HeroSection({ onShopNow }: { onShopNow: () => void }) {
   const t = translations[language];
 
   return (
-    <section className="relative overflow-hidden" style={{ minHeight: '420px' }}>
+    <section className="relative overflow-hidden" style={{ minHeight: 'min(420px, 70vw)' }}>
       {/* Animated background */}
       <AnimatePresence mode="wait">
         <motion.div

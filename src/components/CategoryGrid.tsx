@@ -29,7 +29,7 @@ export default function CategoryGrid({ categories, onSelect }: Props) {
   const { selectedCategory, language } = useSimbaStore();
 
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-3">
       {categories.map((cat, i) => {
         const meta = CATEGORY_META[cat] ?? { image: 'https://images.unsplash.com/photo-1543168256-418811576931?w=200&q=80', bg: 'bg-gray-50 dark:bg-gray-800' };
         const isActive = selectedCategory === cat;

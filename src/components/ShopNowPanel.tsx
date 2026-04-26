@@ -182,7 +182,8 @@ export default function ShopNowPanel({ isOpen, onClose, onCategorySelect }: Prop
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.2 }}
-          className="fixed top-16 left-0 right-0 bottom-0 z-[45] bg-gray-50 dark:bg-gray-950 flex flex-col"
+          className="fixed inset-0 z-[45] bg-gray-50 dark:bg-gray-950 flex flex-col"
+          style={{ paddingTop: '4rem' }}  // account for sticky navbar
         >
           {/* Sub-header — sits below main Navbar */}
           <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shadow-sm">

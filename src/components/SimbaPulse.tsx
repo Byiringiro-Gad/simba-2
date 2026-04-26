@@ -320,7 +320,7 @@ export default function SimbaPulse() {
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.92 }}
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 left-4 z-[60] w-14 h-14 bg-brand-dark rounded-2xl shadow-xl flex items-center justify-center border-2 border-brand/40"
+        className="fixed bottom-24 sm:bottom-6 left-4 z-[60] w-14 h-14 bg-brand-dark rounded-2xl shadow-xl flex items-center justify-center border-2 border-brand/40"
         aria-label="Open Simba AI"
       >
         <Sparkles className="w-6 h-6 text-brand" />
