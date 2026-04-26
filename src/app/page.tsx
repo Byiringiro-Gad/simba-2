@@ -129,6 +129,7 @@ export default function Home() {
     setSelectedCategory(cat);
     setSidebarOpen(false);
     setShopNowOpen(false);
+    setActiveTab('home');
   };
 
   const handleBack = () => {

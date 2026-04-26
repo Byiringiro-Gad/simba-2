@@ -10,10 +10,11 @@ import ProductCard from '../ProductCard';
 import Image from 'next/image';
 
 export default function SearchTab() {
-  const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, language, addToCart } = useSimbaStore();
+  const { searchQuery, setSearchQuery, language, addToCart } = useSimbaStore();
   const t = translations[language];
   const [sort, setSort] = useState('default');
   const [showFilters, setShowFilters] = useState(false);
+  const [localCategory, setLocalCategory] = useState<string | null>(null);
   const allProducts = useMemo(() => getSimbaData().products, []);
   const categories = useMemo(() => getCategories(), []);
 
@@ -33,14 +34,14 @@ export default function SearchTab() {
   const results = useMemo(() => {
     let list = allProducts.filter(p => {
       const matchQ = !searchQuery.trim() || p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.category.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchC = !selectedCategory || p.category === selectedCategory;
+      const matchC = !localCategory || p.category === localCategory;
       return matchQ && matchC;
     });
     if (sort === 'price-asc') list = [...list].sort((a, b) => a.price - b.price);
     if (sort === 'price-desc') list = [...list].sort((a, b) => b.price - a.price);
     if (sort === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name));
     return list;
-  }, [allProducts, searchQuery, selectedCategory, sort]);
+  }, [allProducts, searchQuery, localCategory, sort]);
 
   const handleAiSearch = async (q?: string) => {
     const query = (q ?? aiQuery).trim();
@@ -209,13 +210,13 @@ export default function SearchTab() {
               <div>
                 <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">{t.category}</p>
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => setSelectedCategory(null)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${!selectedCategory ? 'bg-brand text-white' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-brand-muted hover:text-brand'}`}>
+                  <button onClick={() => setLocalCategory(null)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${!localCategory ? 'bg-brand text-white' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-brand-muted hover:text-brand'}`}>
                     {t.allCategories}
                   </button>
                   {categories.map(cat => (
-                    <button key={cat} onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${selectedCategory === cat ? 'bg-brand text-white' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-brand-muted hover:text-brand'}`}>
+                    <button key={cat} onClick={() => setLocalCategory(localCategory === cat ? null : cat)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${localCategory === cat ? 'bg-brand text-white' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-brand-muted hover:text-brand'}`}>
                       {cat.split(' ')[0]}
                     </button>
                   ))}

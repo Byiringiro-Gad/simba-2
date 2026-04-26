@@ -197,6 +197,8 @@ export const useSimbaStore = create<SimbaState>()(
         promoDiscount: 0,
         isCartOpen: false,
         isAuthOpen: false,
+        // Go back to home tab
+        activeTab: 'home',
       }),
       setAuthOpen: (isAuthOpen) => set({ isAuthOpen }),
 

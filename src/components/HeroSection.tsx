@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, ChevronLeft, ChevronRight, ShoppingCart, MapPin } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const SLIDES = [
   {
@@ -51,20 +51,11 @@ function Particle({ delay, x, size }: { delay: number; x: number; size: number }
 export default function HeroSection({ onShopNow }: { onShopNow: () => void }) {
   const { language } = useSimbaStore();
   const [current, setCurrent] = useState(0);
-  const [orderCount, setOrderCount] = useState<number | null>(null);
 
   // Auto-advance slides
   useEffect(() => {
     const t = setInterval(() => setCurrent(c => (c + 1) % SLIDES.length), 5000);
     return () => clearInterval(t);
-  }, []);
-
-  // Fetch real order count from DB
-  useEffect(() => {
-    fetch('/api/stats')
-      .then(r => r.json())
-      .then(d => { if (d.ok && d.total > 0) setOrderCount(d.total); })
-      .catch(() => {});
   }, []);
 
   const slide = SLIDES[current];
@@ -147,32 +138,6 @@ export default function HeroSection({ onShopNow }: { onShopNow: () => void }) {
             <ShoppingBag className="w-5 h-5" />
             {t.heroCta}
           </motion.button>
-
-          {/* Real stats row */}
-          <div className="flex items-center gap-3 mt-6 flex-wrap">
-            {orderCount !== null && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full"
-              >
-                <ShoppingCart className="w-3.5 h-3.5 text-brand" />
-                <span className="text-white text-xs font-black">
-                  {orderCount.toLocaleString()} {language === 'fr' ? 'commandes passées' : language === 'rw' ? 'itumiziwa ryakozwe' : 'orders placed'}
-                </span>
-              </motion.div>
-            )}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-full"
-            >
-              <MapPin className="w-3.5 h-3.5 text-green-400" />
-              <span className="text-white text-xs font-black">
-                {language === 'fr' ? '9 agences à Kigali' : language === 'rw' ? 'Amashami 9 i Kigali' : '9 branches in Kigali'}
-              </span>
-            </motion.div>
-          </div>
         </div>
 
         {/* Slide controls */}

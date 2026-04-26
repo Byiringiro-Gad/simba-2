@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { useEffect } from 'react';
 
 export default function OrdersTab() {
-  const { orders, addToCart, language, user, fetchOrders } = useSimbaStore();
+  const { orders, addToCart, language, user, fetchOrders, setAuthOpen } = useSimbaStore();
   const t = translations[language];
 
   useEffect(() => {
@@ -16,6 +16,25 @@ export default function OrdersTab() {
       fetchOrders(user.id);
     }
   }, [user?.id, fetchOrders]);
+
+  // Not logged in — prompt sign in
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
+        <div className="w-20 h-20 bg-brand-muted rounded-3xl flex items-center justify-center mb-4">
+          <ClipboardList className="w-10 h-10 text-brand/40" />
+        </div>
+        <h3 className="text-lg font-black text-gray-900 dark:text-white mb-2">{t.myOrders}</h3>
+        <p className="text-sm text-gray-400 mb-6">{t.signInToTrack}</p>
+        <button
+          onClick={() => setAuthOpen(true)}
+          className="px-6 py-3 bg-brand-dark text-white rounded-2xl font-black text-sm hover:bg-gray-800 transition-colors"
+        >
+          {t.signInOrCreate}
+        </button>
+      </div>
+    );
+  }
 
   const STATUS_CONFIG = {
     processing: { label: t.processing, icon: Clock,         color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
