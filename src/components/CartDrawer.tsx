@@ -227,6 +227,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
           pickupSlot,
           paymentMethod: carrier,
           depositAmount: depositAmount,
+          items: cart,
           subtotal,
           deliveryFee: 0,
           discount: discountAmount,
