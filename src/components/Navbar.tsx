@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import { getSimbaData } from '@/lib/data';
-import { Search, ShoppingCart, ChevronDown, MapPin, X, Sun, Moon, Languages, Menu, User, LogOut, ChevronRight } from 'lucide-react';
+import { Search, ShoppingCart, ChevronDown, MapPin, X, Sun, Moon, Languages, Menu, User, LogOut, ChevronRight, Store } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
