@@ -5,10 +5,25 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const dynamic = 'force-dynamic';
 
+async function ensureUsersTable(conn: any) {
+  await conn.execute(`
+    CREATE TABLE IF NOT EXISTS users (
+      id             VARCHAR(36)  PRIMARY KEY,
+      name           VARCHAR(100) NOT NULL,
+      email          VARCHAR(150) NOT NULL UNIQUE,
+      phone          VARCHAR(20)  DEFAULT NULL,
+      password_hash  VARCHAR(255) NOT NULL DEFAULT '',
+      referral_code  VARCHAR(20)  UNIQUE,
+      loyalty_points INT          NOT NULL DEFAULT 0,
+      google_id      VARCHAR(100) DEFAULT NULL,
+      created_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    )
+  `);
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { name, email, phone, password, referralCode } = await req.json();
-
     if (!name || !email || !password) {
       return NextResponse.json({ ok: false, error: 'Name, email and password are required' }, { status: 400 });
     }
@@ -16,20 +31,7 @@ export async function POST(req: NextRequest) {
     const pool = getPool();
     const conn = await pool.getConnection();
     try {
-      // Ensure users table exists
-      await conn.execute(`
-        CREATE TABLE IF NOT EXISTS users (
-          id            VARCHAR(36)  PRIMARY KEY,
-          name          VARCHAR(100) NOT NULL,
-          email         VARCHAR(150) NOT NULL UNIQUE,
-          phone         VARCHAR(20)  DEFAULT NULL,
-          password_hash VARCHAR(255) NOT NULL,
-          referral_code VARCHAR(20)  UNIQUE,
-          loyalty_points INT         NOT NULL DEFAULT 0,
-          google_id     VARCHAR(100) DEFAULT NULL,
-          created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-      `);
+      await ensureUsersTable(conn);
 
       const [existing] = await conn.execute(
         'SELECT id FROM users WHERE email = ?',
@@ -62,10 +64,6 @@ export async function POST(req: NextRequest) {
     }
   } catch (err: any) {
     console.error('[POST /api/auth/register]', err.message);
-    const isDbError = err.message?.includes('ECONNREFUSED') || err.message?.includes('connect');
-    return NextResponse.json(
-      { ok: false, error: isDbError ? 'Database unavailable. Please try again shortly.' : 'Server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, error: 'Server error' }, { status: 500 });
   }
 }
