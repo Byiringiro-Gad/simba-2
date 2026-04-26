@@ -10,6 +10,7 @@ import PickupBranchModal from "@/components/PickupBranchModal";
 import AuthBootstrap from "@/components/AuthBootstrap";
 import GoogleAuthHandler from "@/components/GoogleAuthHandler";
 import PageLoader from "@/components/PageLoader";
+import ScrollToTop from "@/components/ScrollToTop";
 import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AuthModal />
           <PickupBranchModal />
           <ToastContainer />
+          <ScrollToTop />
         </ThemeProvider>
       </body>
     </html>
