@@ -13,8 +13,6 @@ import { clsx } from 'clsx';
 import { getSimbaData } from '@/lib/data';
 import DashboardSettingsBar from '@/components/DashboardSettingsBar';
 import { useSimbaStore } from '@/store/useSimbaStore';
-
-import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 
 const API = '/api';
