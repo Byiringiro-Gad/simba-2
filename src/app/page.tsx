@@ -369,22 +369,13 @@ export default function Home() {
                         {language === 'fr' ? 'Liens rapides' : language === 'rw' ? 'Aho Ugana Vuba' : 'Quick Links'}
                       </p>
                       <div className="space-y-2">
-                        {[
-                          { label: language === 'fr' ? 'Accueil' : language === 'rw' ? 'Ahabanza' : 'Home', href: '/' },
-                          { label: language === 'fr' ? 'À propos' : language === 'rw' ? 'Ibyerekeye' : 'About Simba', href: 'https://www.simbaonlineshopping.com/AboutUs.aspx' },
-                        ].map(link => (
-                          <a key={link.label} href={link.href} target={link.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer"
-                            className="block text-xs text-gray-600 dark:text-gray-300 hover:text-brand-dark dark:hover:text-brand transition-colors font-medium">
-                            {link.label}
-                          </a>
-                        ))}
                         <Link href="/" className="block text-xs text-gray-600 dark:text-gray-300 hover:text-brand-dark dark:hover:text-brand transition-colors font-medium">
-                            {language === 'fr' ? 'Accueil' : language === 'rw' ? 'Ahabanza' : 'Home'}
-                          </Link>
-                          <a href="https://www.simbaonlineshopping.com/AboutUs.aspx" target="_blank" rel="noopener noreferrer"
-                            className="block text-xs text-gray-600 dark:text-gray-300 hover:text-brand-dark dark:hover:text-brand transition-colors font-medium">
-                            {language === 'fr' ? 'À propos' : language === 'rw' ? 'Ibyerekeye' : 'About Simba'}
-                          </a>
+                          {language === 'fr' ? 'Accueil' : language === 'rw' ? 'Ahabanza' : 'Home'}
+                        </Link>
+                        <a href="https://www.simbaonlineshopping.com/AboutUs.aspx" target="_blank" rel="noopener noreferrer"
+                          className="block text-xs text-gray-600 dark:text-gray-300 hover:text-brand-dark dark:hover:text-brand transition-colors font-medium">
+                          {language === 'fr' ? 'À propos' : language === 'rw' ? 'Ibyerekeye' : 'About Simba'}
+                        </a>
                       </div>
                     </div>
 

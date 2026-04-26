@@ -385,16 +385,6 @@ export default function AuthModal() {
                 </p>
               </form>
             )}
-
-            {/* Staff portal link — visible to branch staff and admin */}
-            <div className="px-6 pb-5 border-t border-gray-100 dark:border-gray-800 pt-4">
-              <a
-                href="/staff"
-                className="flex items-center justify-center gap-2 w-full py-2.5 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-xs font-black text-gray-600 dark:text-gray-300 transition-colors border border-gray-200 dark:border-gray-700"
-              >
-                🏪 Branch Staff & Admin Portal
-              </a>
-            </div>
           </motion.div>
         </div>
       )}
