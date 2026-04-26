@@ -128,6 +128,7 @@ export default function Home() {
   const handleCategorySelect = (cat: string) => {
     setSelectedCategory(cat);
     setSidebarOpen(false);
+    setShopNowOpen(false);
   };
 
   const handleBack = () => {

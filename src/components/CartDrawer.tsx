@@ -149,6 +149,8 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
   const selectedBranch = getBranchById(pickupBranchId);
   const selectedPickupSlot = PICKUP_SLOTS.find((slot) => slot.id === pickupSlot) ?? PICKUP_SLOTS[0];
 
+  const t = translations[language];
+
   useEffect(() => {
     if (!fullName.trim() && user?.name) {
       setFullName(user.name);
