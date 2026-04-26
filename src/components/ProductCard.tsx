@@ -1,9 +1,10 @@
+
 'use client';
 
 import { Product } from '@/types';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
-import { Plus, Minus, Heart, ShoppingCart } from 'lucide-react';
+import { Plus, Minus, Heart } from 'lucide-react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -24,11 +25,9 @@ export default function ProductCard({ product }: ProductCardProps) {
   const isFav = favorites.includes(product.id);
   const { avg, count } = getProductRating(product.id);
   const prevQty = useRef(quantity);
-
-  // Floating +1 animation state
   const [floats, setFloats] = useState<number[]>([]);
-
   const [displayName, setDisplayName] = useState(product.name);
+
   useEffect(() => {
     if (language === 'en') { setDisplayName(product.name); return; }
     fetch('/api/translate', {
@@ -56,13 +55,11 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault(); e.stopPropagation();
     if (!isAvailable) return;
-    addToCart(product);
-    triggerFloat();
+    addToCart(product); triggerFloat();
   };
   const handleInc = (e: React.MouseEvent) => {
     e.preventDefault(); e.stopPropagation();
-    updateQuantity(product.id, quantity + 1);
-    triggerFloat();
+    updateQuantity(product.id, quantity + 1); triggerFloat();
   };
   const handleDec = (e: React.MouseEvent) => {
     e.preventDefault(); e.stopPropagation();
@@ -79,19 +76,19 @@ export default function ProductCard({ product }: ProductCardProps) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-40px' }}
       transition={{ duration: 0.3 }}
-      className="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-xl hover:shadow-black/8 hover:border-gray-200 dark:hover:border-gray-700 hover:-translate-y-1 transition-all duration-200 flex flex-col"
+      className="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-xl hover:border-gray-200 dark:hover:border-gray-700 hover:-translate-y-1 transition-all duration-200 flex flex-col"
     >
-      {/* Floating +1 indicators */}
+      {/* Floating +1 */}
       <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
         <AnimatePresence>
           {floats.map(id => (
             <motion.div
               key={id}
-              initial={{ opacity: 1, y: 0, x: '50%', scale: 1 }}
+              initial={{ opacity: 1, y: 0, scale: 1 }}
               animate={{ opacity: 0, y: -50, scale: 1.3 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
-              className="absolute bottom-12 right-4 text-brand font-black text-sm"
+              className="absolute bottom-12 right-6 text-brand font-black text-sm"
             >
               +1
             </motion.div>
@@ -102,38 +99,30 @@ export default function ProductCard({ product }: ProductCardProps) {
       {/* Image */}
       <Link href={`/products/${product.id}`} className="block relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-800">
         <Image
-          src={product.image}
-          alt={product.name}
-          fill
-          className="object-cover group-hover:scale-108 transition-transform duration-500"
+          src={product.image} alt={product.name} fill
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
         />
-
-        {/* Shimmer overlay on hover */}
+        {/* Shimmer on hover */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none" />
 
-        {/* Favorite */}
         <motion.button
-          whileTap={{ scale: 1.4 }}
-          onClick={handleFav}
+          whileTap={{ scale: 1.4 }} onClick={handleFav}
           className="absolute top-2 right-2 w-7 h-7 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm z-10"
           aria-label={isFav ? 'Remove from favourites' : 'Save'}
         >
-          <Heart className={clsx('w-3.5 h-3.5 transition-all duration-200', isFav ? 'fill-red-500 text-red-500 scale-110' : 'text-gray-400')} />
+          <Heart className={clsx('w-3.5 h-3.5 transition-all duration-200', isFav ? 'fill-red-500 text-red-500' : 'text-gray-400')} />
         </motion.button>
 
-        {/* Low stock badge */}
         {stockLeft !== null && isAvailable && (
           <motion.div
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
+            animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 1.5, repeat: Infinity }}
             className="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white rounded-full text-[9px] font-black uppercase tracking-wide shadow-sm"
           >
             {t.onlyLeft} {stockLeft} {t.leftInStock}
           </motion.div>
         )}
 
-        {/* Out of stock */}
         {!isAvailable && (
           <div className="absolute inset-0 bg-white/70 dark:bg-black/70 backdrop-blur-[2px] flex items-center justify-center">
             <span className="bg-gray-800 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
@@ -148,7 +137,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="flex items-center gap-1 mb-1">
           <div className="flex gap-0.5">
             {[1,2,3,4,5].map(i => (
-              <span key={i} className={`text-[10px] transition-colors ${count > 0 && i <= Math.round(avg) ? 'text-amber-500' : 'text-gray-200 dark:text-gray-700'}`}>★</span>
+              <span key={i} className={`text-[10px] ${count > 0 && i <= Math.round(avg) ? 'text-amber-500' : 'text-gray-200 dark:text-gray-700'}`}>★</span>
             ))}
           </div>
           {count > 0 && <span className="text-[10px] text-gray-400">({count})</span>}
@@ -163,9 +152,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <div className="mt-auto flex items-center justify-between gap-1">
           <div>
-            <p className="text-base font-black text-gray-900 dark:text-white leading-none">
-              {product.price.toLocaleString()}
-            </p>
+            <p className="text-base font-black text-gray-900 dark:text-white leading-none">{product.price.toLocaleString()}</p>
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">RWF</p>
           </div>
 
@@ -173,17 +160,14 @@ export default function ProductCard({ product }: ProductCardProps) {
             {quantity === 0 ? (
               <motion.button
                 key="add"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                whileTap={{ scale: 0.88 }}
+                initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }} whileTap={{ scale: 0.88 }}
                 transition={{ duration: 0.12 }}
-                onClick={handleAdd}
-                disabled={!isAvailable}
+                onClick={handleAdd} disabled={!isAvailable}
                 className={clsx(
                   'w-8 h-8 rounded-xl flex items-center justify-center transition-all',
                   isAvailable
-                    ? 'bg-brand-dark hover:bg-brand text-white shadow-sm hover:shadow-brand/30 hover:shadow-md'
+                    ? 'bg-brand-dark hover:bg-brand text-white shadow-sm hover:shadow-md'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-300 cursor-not-allowed'
                 )}
               >
@@ -192,10 +176,8 @@ export default function ProductCard({ product }: ProductCardProps) {
             ) : (
               <motion.div
                 key="controls"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ duration: 0.12 }}
+                initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }} transition={{ duration: 0.12 }}
                 className="flex items-center bg-brand-dark rounded-xl overflow-hidden shadow-sm"
               >
                 <button onClick={handleDec} className="w-7 h-8 flex items-center justify-center text-white hover:bg-black/10 transition-colors active:bg-black/20">
@@ -203,8 +185,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 </button>
                 <motion.span
                   key={quantity}
-                  initial={{ y: -6, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
+                  initial={{ y: -6, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.15 }}
                   className="text-white font-black text-xs w-4 text-center select-none"
                 >
@@ -219,171 +200,5 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
       </div>
     </motion.div>
-  );
-}
-
-interface ProductCardProps {
-  product: Product;
-}
-
-export default function ProductCard({ product }: ProductCardProps) {
-  const { addToCart, updateQuantity, cart, toggleFavorite, favorites, language, branchInventory } = useSimbaStore();
-  const t = translations[language];
-
-  const cartItem = cart.find(i => i.id === product.id);
-  const quantity = cartItem?.quantity ?? 0;
-  const isFav = favorites.includes(product.id);
-  const { avg, count } = getProductRating(product.id);
-
-  // Translated product name
-  const [displayName, setDisplayName] = useState(product.name);
-  useEffect(() => {
-    if (language === 'en') { setDisplayName(product.name); return; }
-    // Only translate if Groq is available — silent fallback to English
-    fetch('/api/translate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: product.name, targetLang: language }),
-    })
-      .then(r => r.json())
-      .then(d => { if (d.ok && d.translated) setDisplayName(d.translated); })
-      .catch(() => {}); // silent fallback
-  }, [product.name, language]);
-
-  // Use branch inventory if available, fall back to global inStock
-  const branchStock = branchInventory[product.id];
-  const isAvailable = branchStock ? branchStock.isAvailable : product.inStock;
-  const stockLeft = branchStock
-    ? (branchStock.stockCount <= 5 && branchStock.stockCount > 0 ? branchStock.stockCount : null)
-    : getStockCount(product.id);
-
-  const handleAdd = (e: React.MouseEvent) => {
-    e.preventDefault(); e.stopPropagation();
-    if (!isAvailable) return;
-    addToCart(product);
-  };
-  const handleInc = (e: React.MouseEvent) => {
-    e.preventDefault(); e.stopPropagation();
-    updateQuantity(product.id, quantity + 1);
-  };
-  const handleDec = (e: React.MouseEvent) => {
-    e.preventDefault(); e.stopPropagation();
-    updateQuantity(product.id, quantity - 1);
-  };
-  const handleFav = (e: React.MouseEvent) => {
-    e.preventDefault(); e.stopPropagation();
-    toggleFavorite(product.id);
-  };
-
-  return (
-    <div className="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-lg hover:border-gray-200 dark:hover:border-gray-700 transition-all duration-200 flex flex-col">
-
-      {/* Image */}
-      <Link href={`/products/${product.id}`} className="block relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-800">
-        <Image
-          src={product.image}
-          alt={product.name}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-        />
-
-        {/* Favorite */}
-        <button
-          onClick={handleFav}
-          className="absolute top-2 right-2 w-7 h-7 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition-transform z-10"
-          aria-label={isFav ? 'Remove from favourites' : 'Save'}
-        >
-          <Heart className={clsx('w-3.5 h-3.5 transition-colors', isFav ? 'fill-red-500 text-red-500' : 'text-gray-400')} />
-        </button>
-
-        {/* Low stock badge */}
-        {stockLeft !== null && isAvailable && (
-          <div className="absolute top-2 left-2 px-2 py-0.5 bg-red-500 text-white rounded-full text-[9px] font-black uppercase tracking-wide shadow-sm">
-            {t.onlyLeft} {stockLeft} {t.leftInStock}
-          </div>
-        )}
-
-        {/* Out of stock */}
-        {!isAvailable && (
-          <div className="absolute inset-0 bg-white/70 dark:bg-black/70 backdrop-blur-[2px] flex items-center justify-center">
-            <span className="bg-gray-800 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
-              {t.outOfStock}
-            </span>
-          </div>
-        )}
-      </Link>
-
-      {/* Info */}
-      <div className="p-3 flex flex-col flex-1">
-        {/* Rating row — always show 5 stars, colored if rated, empty if not */}
-        <div className="flex items-center gap-1 mb-1">
-          <div className="flex gap-0.5">
-            {[1,2,3,4,5].map(i => (
-              <span key={i} className={`text-[10px] ${count > 0 && i <= Math.round(avg) ? 'text-amber-500' : 'text-gray-200 dark:text-gray-700'}`}>★</span>
-            ))}
-          </div>
-          {count > 0 && (
-            <span className="text-[10px] text-gray-400">({count})</span>
-          )}
-        </div>
-
-        <Link href={`/products/${product.id}`}>
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug mb-1 hover:text-brand transition-colors min-h-[2rem]">
-            {displayName}
-          </h3>
-        </Link>
-        <p className="text-xs text-gray-400 font-medium mb-2">per {product.unit || 'unit'}</p>
-
-        <div className="mt-auto flex items-center justify-between gap-1">
-          <div>
-            <p className="text-base font-black text-gray-900 dark:text-white leading-none">
-              {product.price.toLocaleString()}
-            </p>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">RWF</p>
-          </div>
-
-          {/* Quantity control */}
-          <AnimatePresence mode="wait">
-            {quantity === 0 ? (
-              <motion.button
-                key="add"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ duration: 0.12 }}
-                onClick={handleAdd}
-                disabled={!isAvailable}
-                className={clsx(
-                  'w-8 h-8 rounded-xl flex items-center justify-center transition-all',
-                  isAvailable
-                    ? 'bg-brand-dark hover:bg-brand text-white active:scale-95 shadow-sm'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-300 cursor-not-allowed'
-                )}
-              >
-                <Plus className="w-4 h-4 stroke-[2.5px]" />
-              </motion.button>
-            ) : (
-              <motion.div
-                key="controls"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ duration: 0.12 }}
-                className="flex items-center bg-brand-dark rounded-xl overflow-hidden shadow-sm"
-              >
-                <button onClick={handleDec} className="w-7 h-8 flex items-center justify-center text-white hover:bg-black/10 transition-colors">
-                  <Minus className="w-3 h-3 stroke-[3px]" />
-                </button>
-                <span className="text-white font-black text-xs w-4 text-center select-none">{quantity}</span>
-                <button onClick={handleInc} className="w-7 h-8 flex items-center justify-center text-white hover:bg-black/10 transition-colors">
-                  <Plus className="w-3 h-3 stroke-[3px]" />
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-    </div>
   );
 }
