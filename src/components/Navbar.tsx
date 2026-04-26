@@ -213,6 +213,15 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
               </div>
             </div>
 
+            {/* Staff Portal link — always visible */}
+            <Link
+              href="/staff"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white/80 text-xs font-black flex-shrink-0"
+            >
+              <Store className="w-4 h-4" />
+              Staff
+            </Link>
+
             {/* User / Login */}
             {user ? (
               <div className="relative group">

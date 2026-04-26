@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { getSimbaData, getCategories } from '@/lib/data';
 import Navbar from '@/components/Navbar';
 import CategorySidebar from '@/components/CategorySidebar';
@@ -130,6 +130,14 @@ export default function Home() {
   // are we showing the product view?
   const showProducts = !!selectedCategory || !!searchQuery.trim();
 
+  // Close ShopNowPanel whenever user navigates away
+  useEffect(() => {
+    if (shopNowOpen && (activeTab !== 'home' || searchQuery.trim())) {
+      setShopNowOpen(false);
+    }
+  }, [activeTab, searchQuery]);
+
+  // Also close when a category is selected or back is pressed
   const handleCategorySelect = (cat: string) => {
     setSelectedCategory(cat);
     setSidebarOpen(false);
