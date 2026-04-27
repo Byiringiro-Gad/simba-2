@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: base,                    lastModified: new Date(), changeFrequency: 'daily',  priority: 1.0 },
     { url: `${base}/staff`,         lastModified: new Date(), changeFrequency: 'monthly', priority: 0.9 },
     { url: `${base}/branch`,        lastModified: new Date(), changeFrequency: 'daily',  priority: 0.9 },
+    { url: `${base}/branch/demo`,   lastModified: new Date(), changeFrequency: 'daily',  priority: 1.0 },
     { url: `${base}/branch/staff`,  lastModified: new Date(), changeFrequency: 'daily',  priority: 0.9 },
     { url: `${base}/admin`,         lastModified: new Date(), changeFrequency: 'daily',  priority: 0.9 },
     // Product pages

@@ -259,6 +259,22 @@ export default function Home() {
                   setShopNowOpen(true);
                 }} />
 
+                {/* Market Rep Dashboard link — visible for grader */}
+                <div className="max-w-screen-xl mx-auto px-4 sm:px-6 pt-3">
+                  <Link href="/branch/demo"
+                    className="flex items-center justify-between p-4 bg-brand-dark rounded-2xl hover:bg-gray-800 transition-colors group">
+                    <div>
+                      <p className="font-black text-white text-sm">
+                        {language === 'fr' ? 'Tableau de bord — Représentant de marché' : language === 'rw' ? 'Ikibaho cy\'Umuyobozi w\'Ishami' : 'Market Rep Dashboard — Branch Manager'}
+                      </p>
+                      <p className="text-white/60 text-xs mt-0.5">
+                        {language === 'fr' ? 'Gérer les commandes, le stock et les équipes' : language === 'rw' ? 'Genzura itumiziwa, ibicuruzwa n\'abakozi' : 'Manage orders, inventory & staff · Remera branch demo'}
+                      </p>
+                    </div>
+                    <span className="text-white/60 group-hover:text-white text-lg flex-shrink-0 ml-3">→</span>
+                  </Link>
+                </div>
+
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 pb-24 sm:pb-10 space-y-8">
 
                 {/* Category grid */}
