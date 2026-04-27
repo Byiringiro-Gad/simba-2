@@ -28,6 +28,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
   const [focused, setFocused] = useState(false);
   const [results, setResults] = useState<ReturnType<typeof getSimbaData>['products']>([]);
+  const [langOpen, setLangOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -112,8 +113,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           </button>
 
           {/* Search bar — desktop only */}
-          <div ref={searchRef} className="hidden sm:flex flex-1 relative">
-            <div className={clsx(
+          <div ref={searchRef} className="hidden sm:flex flex-1 relative">            <div className={clsx(
               'flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white transition-all',
               focused ? 'ring-2 ring-brand' : ''
             )}>
@@ -195,22 +195,39 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
               {isDarkMode ? <Sun className="w-5 h-5 text-brand" /> : <Moon className="w-5 h-5 text-white/80" />}
             </button>
 
-            {/* Language */}
-            <div className="relative group">
-              <button className="p-2 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-1">
+            {/* Language — click-based, works on mobile */}
+            <div className="relative">
+              <button
+                onClick={() => setLangOpen(o => !o)}
+                className="p-2 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-1"
+              >
                 <Languages className="w-4 h-4 text-white/80" />
                 <span className="text-xs font-black text-white uppercase">{language}</span>
               </button>
-              <div className="absolute right-0 top-full mt-1 w-44 bg-white rounded-2xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[100] overflow-hidden py-1">
-                {(['en', 'fr', 'rw'] as const).map(lang => (
-                  <button key={lang} onClick={() => setLanguage(lang)}
-                    className={clsx('w-full text-left px-4 py-2.5 text-sm font-bold transition-colors',
-                      language === lang ? 'text-brand bg-brand-muted' : 'text-gray-700 hover:bg-gray-50'
-                    )}>
-                    {lang === 'en' ? '🇬🇧 English' : lang === 'fr' ? '🇫🇷 Français' : '🇷🇼 Kinyarwanda'}
-                  </button>
-                ))}
-              </div>
+              <AnimatePresence>
+                {langOpen && (
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="fixed inset-0 z-[99]"
+                      onClick={() => setLangOpen(false)}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
+                      className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 z-[100] overflow-hidden py-1"
+                    >
+                      {(['en', 'fr', 'rw'] as const).map(lang => (
+                        <button key={lang} onClick={() => { setLanguage(lang); setLangOpen(false); }}
+                          className={clsx('w-full text-left px-4 py-3 text-sm font-bold transition-colors',
+                            language === lang ? 'text-brand bg-brand-muted dark:bg-brand/10' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                          )}>
+                          {lang === 'en' ? '🇬🇧 English' : lang === 'fr' ? '🇫🇷 Français' : '🇷🇼 Kinyarwanda'}
+                        </button>
+                      ))}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Staff Portal link — always visible */}
