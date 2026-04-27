@@ -146,6 +146,8 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
   const [promoInput, setPromoInput] = useState('');
   const [orderId, setOrderId] = useState('');
   const [depositAmount, setDepositAmount] = useState(BASE_DEPOSIT);
+  const [fulfillmentType, setFulfillmentType] = useState<'pickup' | 'delivery'>('pickup');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
   const selectedBranch = getBranchById(pickupBranchId);
   const selectedPickupSlot = PICKUP_SLOTS.find((slot) => slot.id === pickupSlot) ?? PICKUP_SLOTS[0];
 
@@ -223,15 +225,15 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
           userId: user?.id,
           customerName: fullName.trim(),
           customerPhone: `+250${momoNumber}`,
-          pickupBranch: selectedBranch?.name ?? '',
+          pickupBranch: fulfillmentType === 'pickup' ? (selectedBranch?.name ?? '') : deliveryAddress.trim(),
           pickupSlot,
           paymentMethod: carrier,
           depositAmount: depositAmount,
           items: cart,
           subtotal,
-          deliveryFee: 0,
+          deliveryFee: fulfillmentType === 'delivery' ? 500 : 0,
           discount: discountAmount,
-          total: orderTotal,
+          total: fulfillmentType === 'delivery' ? orderTotal + 500 : orderTotal,
           promoCode: appliedPromo ?? null,
         });
 
@@ -267,12 +269,18 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
     setFullName(user?.name ?? '');
     setMomoNumber('');
     setOrderId('');
+    setFulfillmentType('pickup');
+    setDeliveryAddress('');
     onClose();
   };
 
   const canProceed = () => {
     if (step === 'cart') return cart.length > 0;
-    if (step === 'details') return fullName.trim().length > 0 && !!selectedBranch;
+    if (step === 'details') {
+      if (!fullName.trim()) return false;
+      if (fulfillmentType === 'pickup') return !!selectedBranch;
+      return deliveryAddress.trim().length > 5;
+    }
     if (step === 'payment') return momoNumber.length >= 8;
     return false;
   };
@@ -465,45 +473,85 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
 
                 {step === 'details' && (
                   <motion.div key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} className="p-4 space-y-4">
-                    <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-100 dark:border-green-800">
-                      <Clock className="w-5 h-5 text-green-600 flex-shrink-0" />
-                      <div>
-                        <p className="text-xs font-black text-green-700 dark:text-green-400 uppercase tracking-wide">{t.branchPrepTime}</p>
-                        <p className="text-sm font-bold text-green-800 dark:text-green-300">{t.pickupReadyIn}</p>
-                      </div>
+
+                    {/* Fulfillment type selector */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {(['pickup', 'delivery'] as const).map(type => (
+                        <button key={type} type="button" onClick={() => setFulfillmentType(type)}
+                          className={`flex flex-col items-center gap-1.5 py-3 rounded-2xl border-2 transition-all ${
+                            fulfillmentType === type
+                              ? 'border-brand bg-brand-muted dark:bg-brand/10'
+                              : 'border-gray-100 dark:border-gray-800 hover:border-gray-200'
+                          }`}>
+                          <span className="text-xl">{type === 'pickup' ? '🏪' : '🚴'}</span>
+                          <span className={`text-xs font-black ${fulfillmentType === type ? 'text-brand-dark dark:text-brand' : 'text-gray-600 dark:text-gray-300'}`}>
+                            {type === 'pickup'
+                              ? (language === 'fr' ? 'Retrait' : language === 'rw' ? 'Gufata' : 'Pickup')
+                              : (language === 'fr' ? 'Livraison' : language === 'rw' ? 'Gutumiza' : 'Delivery')}
+                          </span>
+                          <span className="text-[10px] text-gray-400">
+                            {type === 'pickup' ? '20-45 min' : '45-90 min'}
+                          </span>
+                        </button>
+                      ))}
                     </div>
 
-                    <div>
-                      <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5">
-                        <Store className="w-3.5 h-3.5" /> {t.pickupBranch}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => setPickupBranchModalOpen(true)}
-                        className="w-full flex items-start gap-3 p-4 bg-brand-muted rounded-2xl border border-brand/20 text-left hover:border-brand/40 transition-colors"
-                      >
-                        <MapPin className="w-5 h-5 text-brand flex-shrink-0 mt-0.5" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-black text-gray-900 dark:text-white">
-                            {selectedBranch?.name ?? t.selectBranch}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            {selectedBranch?.area ?? t.chooseBranchDesc}
-                          </p>
+                    {fulfillmentType === 'pickup' ? (
+                      <>
+                        <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-100 dark:border-green-800">
+                          <Clock className="w-5 h-5 text-green-600 flex-shrink-0" />
+                          <div>
+                            <p className="text-xs font-black text-green-700 dark:text-green-400 uppercase tracking-wide">{t.branchPrepTime}</p>
+                            <p className="text-sm font-bold text-green-800 dark:text-green-300">{t.pickupReadyIn}</p>
+                          </div>
                         </div>
-                        <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                      </button>
-                    </div>
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-1.5">
+                            <Store className="w-3.5 h-3.5" /> {t.pickupBranch}
+                          </p>
+                          <button type="button" onClick={() => setPickupBranchModalOpen(true)}
+                            className="w-full flex items-start gap-3 p-4 bg-brand-muted rounded-2xl border border-brand/20 text-left hover:border-brand/40 transition-colors">
+                            <MapPin className="w-5 h-5 text-brand flex-shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-black text-gray-900 dark:text-white">{selectedBranch?.name ?? t.selectBranch}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{selectedBranch?.area ?? t.chooseBranchDesc}</p>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div>
+                        <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800 mb-3">
+                          <span className="text-xl">🚴</span>
+                          <div>
+                            <p className="text-xs font-black text-blue-700 dark:text-blue-400 uppercase tracking-wide">
+                              {language === 'fr' ? 'Livraison à domicile' : language === 'rw' ? 'Gutumizwa ku rugo' : 'Home Delivery'}
+                            </p>
+                            <p className="text-sm font-bold text-blue-800 dark:text-blue-300">
+                              {language === 'fr' ? 'Livré en 45-90 min · 500 RWF' : language === 'rw' ? 'Gutumizwa mu minota 45-90 · 500 RWF' : 'Delivered in 45-90 min · 500 RWF fee'}
+                            </p>
+                          </div>
+                        </div>
+                        <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
+                          {language === 'fr' ? 'Adresse de livraison *' : language === 'rw' ? 'Aho Kugezwa *' : 'Delivery Address *'}
+                        </label>
+                        <textarea
+                          value={deliveryAddress}
+                          onChange={e => setDeliveryAddress(e.target.value)}
+                          placeholder={language === 'fr' ? 'Rue, quartier, Kigali...' : language === 'rw' ? 'Umuhanda, akarere, Kigali...' : 'Street, neighborhood, Kigali...'}
+                          rows={3}
+                          className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-brand outline-none transition-all text-sm text-gray-900 dark:text-white placeholder:text-gray-400 resize-none"
+                        />
+                      </div>
+                    )}
 
+                    {/* Name field — always shown */}
                     <div>
                       <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{t.pickupName} *</label>
-                      <input
-                        type="text"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
+                      <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
                         placeholder={t.namePlaceholder}
-                        className="w-full px-4 py-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-brand outline-none transition-all font-bold text-sm text-gray-900 dark:text-white placeholder:text-gray-400 placeholder:font-normal"
-                      />
+                        className="w-full px-4 py-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-brand outline-none transition-all font-bold text-sm text-gray-900 dark:text-white placeholder:text-gray-400 placeholder:font-normal" />
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">

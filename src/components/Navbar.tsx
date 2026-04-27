@@ -32,11 +32,43 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [aiMessage, setAiMessage] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+
+  // Detect if query is conversational (question or sentence)
+  const isConversational = (q: string) =>
+    q.length > 10 || /\?|do you|have|need|want|looking|find|show|give|any|fresh|cheap|best/i.test(q);
+
   useEffect(() => {
-    if (searchQuery.trim().length < 2) { setResults([]); return; }
+    if (searchQuery.trim().length < 2) { setResults([]); setAiMessage(''); return; }
     const data = getSimbaData();
-    setResults(data.products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 7));
-  }, [searchQuery]);
+
+    if (isConversational(searchQuery.trim())) {
+      // AI search
+      setAiLoading(true);
+      setResults([]);
+      const timer = setTimeout(async () => {
+        try {
+          const res = await fetch('/api/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: searchQuery.trim(), language }),
+          });
+          const d = await res.json();
+          if (d.ok) {
+            setResults(d.products ?? []);
+            setAiMessage(d.message ?? '');
+          }
+        } catch { /* fallback to keyword */ }
+        setAiLoading(false);
+      }, 600);
+      return () => clearTimeout(timer);
+    } else {
+      // Keyword search
+      setAiMessage('');
+      setResults(data.products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 7));
+    }
+  }, [searchQuery, language]);
 
   useEffect(() => {
     const fn = (e: MouseEvent) => {
@@ -135,11 +167,27 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                   transition={{ duration: 0.15 }}
                   className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50"
                 >
-                  {results.length > 0 ? (
-                    <>
-                      <div className="px-4 pt-3 pb-1">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t.searchResults}</p>
+                  {aiLoading ? (
+                    <div className="px-4 py-4 flex items-center gap-3">
+                      <div className="flex gap-1">
+                        {[0,1,2].map(i => (
+                          <div key={i} className="w-1.5 h-1.5 bg-brand rounded-full animate-bounce"
+                            style={{ animationDelay: `${i * 0.15}s` }} />
+                        ))}
                       </div>
+                      <p className="text-xs text-gray-400 font-medium">{t.aiSearching}</p>
+                    </div>
+                  ) : results.length > 0 ? (
+                    <>
+                      <div className="px-4 pt-3 pb-1 flex items-center gap-2">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex-1">{t.searchResults}</p>
+                        {aiMessage && <span className="text-[9px] px-2 py-0.5 bg-brand/10 text-brand-dark rounded-full font-black">AI</span>}
+                      </div>
+                      {aiMessage && (
+                        <div className="px-4 pb-2">
+                          <p className="text-xs text-gray-600 dark:text-gray-300 font-medium leading-snug">{aiMessage}</p>
+                        </div>
+                      )}
                       {results.map(p => (
                         <button
                           key={p.id}
@@ -193,8 +241,8 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                 className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl hover:bg-white/10 transition-colors border border-white/20"
               >
                 <Languages className="w-4 h-4 text-white/80 flex-shrink-0" />
-                <span className="text-xs font-black text-white uppercase">
-                  {language === 'en' ? '🇬🇧 EN' : language === 'fr' ? '🇫🇷 FR' : '🇷🇼 RW'}
+                <span className="text-xs font-black text-white">
+                  {language === 'en' ? '🇬🇧 English' : language === 'fr' ? '🇫🇷 Français' : '🇷🇼 Kinyarwanda'}
                 </span>
               </button>
               <AnimatePresence>
