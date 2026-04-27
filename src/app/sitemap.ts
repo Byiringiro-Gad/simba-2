@@ -9,11 +9,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${base}/products/${p.id}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
-    priority: 0.7,
+    priority: 0.8,
   }));
 
   return [
-    { url: base, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },
+    // Main pages
+    { url: base,                    lastModified: new Date(), changeFrequency: 'daily',  priority: 1.0 },
+    { url: `${base}/staff`,         lastModified: new Date(), changeFrequency: 'monthly', priority: 0.9 },
+    { url: `${base}/branch`,        lastModified: new Date(), changeFrequency: 'daily',  priority: 0.9 },
+    { url: `${base}/branch/staff`,  lastModified: new Date(), changeFrequency: 'daily',  priority: 0.9 },
+    { url: `${base}/admin`,         lastModified: new Date(), changeFrequency: 'daily',  priority: 0.9 },
+    // Product pages
     ...productUrls,
   ];
 }

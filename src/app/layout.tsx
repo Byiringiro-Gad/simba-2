@@ -17,8 +17,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Simba Supermarket | Rwanda's Modern Online Store",
-  description: "Shop 700+ authentic products from Simba Supermarket. Fast pickup across Kigali in 20-45 minutes.",
-  keywords: "simba supermarket, rwanda, kigali, online grocery, delivery, momo",
+  description: "Shop 700+ authentic products from Simba Supermarket. Browse by category, search products, add to cart, checkout with MTN MoMo or Airtel Money, and pick up at your nearest Kigali branch. Available in English, French, and Kinyarwanda. Branch staff and manager dashboard at /staff.",
+  keywords: "simba supermarket, rwanda, kigali, online grocery, pickup, momo, market rep dashboard, branch staff, multilingual, kinyarwanda, french",
   viewport: {
     width: 'device-width',
     initialScale: 1,

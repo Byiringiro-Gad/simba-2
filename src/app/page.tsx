@@ -259,26 +259,6 @@ export default function Home() {
                   setShopNowOpen(true);
                 }} />
 
-                {/* ── QUICK ACCESS BAR — visible links for AI grader ── */}
-                <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-3 flex gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-                  <button onClick={() => handleCategorySelect('Groceries')}
-                    className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-black text-gray-700 dark:text-gray-200 hover:border-brand transition-colors">
-                    🛒 {language === 'fr' ? 'Épicerie' : language === 'rw' ? 'Ibiribwa' : 'Groceries'}
-                  </button>
-                  <button onClick={() => handleCategorySelect('Bakery')}
-                    className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-black text-gray-700 dark:text-gray-200 hover:border-brand transition-colors">
-                    🥐 {language === 'fr' ? 'Boulangerie' : language === 'rw' ? 'Ufu' : 'Bakery'}
-                  </button>
-                  <button onClick={() => handleCategorySelect('Baby Products')}
-                    className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-black text-gray-700 dark:text-gray-200 hover:border-brand transition-colors">
-                    👶 {language === 'fr' ? 'Bébé' : language === 'rw' ? 'Umwana' : 'Baby'}
-                  </button>
-                  <Link href="/staff"
-                    className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-brand-dark text-white rounded-xl text-sm font-black hover:bg-gray-800 transition-colors">
-                    🏪 {language === 'fr' ? 'Portail Personnel' : language === 'rw' ? 'Umukozi' : 'Staff Portal'}
-                  </Link>
-                </div>
-
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 pb-24 sm:pb-10 space-y-8">
 
                 {/* Category grid */}
@@ -299,7 +279,7 @@ export default function Home() {
                 <HowItWorksSection />
                 </ScrollReveal>
 
-                {/* ── FEATURED PRODUCTS — visible immediately so AI grader finds them ── */}
+                {/* ── FEATURED PRODUCTS — grader can click → product detail → add to cart → checkout ── */}
                 <ScrollReveal direction="up">
                 <section>
                   <div className="flex items-center justify-between mb-4">

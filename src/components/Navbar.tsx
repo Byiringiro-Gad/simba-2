@@ -103,17 +103,8 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
             <ChevronDown className="w-3.5 h-3.5 text-white/60 flex-shrink-0" />
           </button>
 
-          {/* Search icon — mobile only, activates search tab */}
-          <button
-            onClick={() => setActiveTab('search')}
-            className="sm:hidden p-2 rounded-xl hover:bg-white/10 transition-colors flex-shrink-0"
-            aria-label="Search"
-          >
-            <Search className="w-5 h-5 text-white" />
-          </button>
-
-          {/* Search bar — desktop only */}
-          <div ref={searchRef} className="hidden sm:flex flex-1 relative">            <div className={clsx(
+          {/* Search bar — visible on all screens */}
+          <div ref={searchRef} className="flex flex-1 relative">            <div className={clsx(
               'flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white transition-all',
               focused ? 'ring-2 ring-brand' : ''
             )}>
@@ -199,10 +190,12 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
             <div className="relative">
               <button
                 onClick={() => setLangOpen(o => !o)}
-                className="p-2 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-1"
+                className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl hover:bg-white/10 transition-colors border border-white/20"
               >
-                <Languages className="w-4 h-4 text-white/80" />
-                <span className="text-xs font-black text-white uppercase">{language}</span>
+                <Languages className="w-4 h-4 text-white/80 flex-shrink-0" />
+                <span className="text-xs font-black text-white uppercase">
+                  {language === 'en' ? '🇬🇧 EN' : language === 'fr' ? '🇫🇷 FR' : '🇷🇼 RW'}
+                </span>
               </button>
               <AnimatePresence>
                 {langOpen && (
