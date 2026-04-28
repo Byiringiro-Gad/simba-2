@@ -45,7 +45,7 @@ export default function BranchReviewForm({
     });
 
     if (success) {
-      toast(t.reviewSubmitted, 'success');
+      toast.success(t.reviewSubmitted);
       setRating(5);
       setComment('');
       onClose();
