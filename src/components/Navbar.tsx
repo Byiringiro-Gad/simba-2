@@ -271,6 +271,9 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
               </AnimatePresence>
             </div>
 
+            {/* Checkout */}
+            <a href="/checkout" className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-brand hover:bg-brand-dark rounded-xl transition-colors text-gray-900 text-xs font-black flex-shrink-0"><ShoppingCart className="w-3.5 h-3.5" /> Checkout</a>
+
             {/* Staff Portal link — always visible */}
             <Link
               href="/staff"

@@ -14,7 +14,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     // Main pages
-    { url: base,                    lastModified: new Date(), changeFrequency: 'daily',  priority: 1.0 },
+    { url: base+'/checkout', lastModified: new Date(), changeFrequency: 'daily' as const, priority: 1.0 },
+        { url: base,                    lastModified: new Date(), changeFrequency: 'daily',  priority: 1.0 },
     { url: `${base}/products`,      lastModified: new Date(), changeFrequency: 'daily',  priority: 1.0 },
     // Language entry points — graders can visit these to test multi-language
     { url: `${base}/fr`,            lastModified: new Date(), changeFrequency: 'daily',  priority: 1.0 },
