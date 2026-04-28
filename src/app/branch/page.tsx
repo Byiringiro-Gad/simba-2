@@ -6,10 +6,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Store, LogOut, RefreshCw, Clock, CheckCircle2,
   Package, Users, X, UserCheck, ChevronDown,
-  AlertCircle, Bike, ShoppingBag
+  AlertCircle, Bike, ShoppingBag, Phone, XCircle,
+  Search, ToggleLeft, ToggleRight, AlertTriangle
 } from 'lucide-react';
 import Image from 'next/image';
 import { clsx } from 'clsx';
+import { getSimbaData } from '@/lib/data';
 import { dt, DashLang } from '@/lib/dashboardTranslations';
 import DashboardSettingsBar from '@/components/DashboardSettingsBar';
 import { useSimbaStore } from '@/store/useSimbaStore';
@@ -47,6 +49,12 @@ export default function ManagerDashboard() {
   const [filter, setFilter] = useState<'all' | 'pending' | 'preparing' | 'ready'>('all');
   const [assignMenuOpen, setAssignMenuOpen] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
+  const [activeTab, setActiveTab] = useState<'orders' | 'inventory'>('orders');
+  const [inventory, setInventory] = useState<Record<number, { stockCount: number; isAvailable: boolean }>>({});
+  const [invSearch, setInvSearch] = useState('');
+  const [savingInv, setSavingInv] = useState<number | null>(null);
+  const [cancelling, setCancelling] = useState<string | null>(null);
+  const allProducts = useMemo(() => getSimbaData().products, []);
 
   // Live clock for order timers
   useEffect(() => {
@@ -80,15 +88,19 @@ export default function ManagerDashboard() {
 
   const loadData = async (s?: any) => {
     const t = localStorage.getItem('branch_token') ?? '';
+    const branchId = s?.branchId ?? staff?.branchId;
     try {
-      const [ordersRes, staffRes] = await Promise.all([
+      const [ordersRes, staffRes, invRes] = await Promise.all([
         fetch(`${API}/branch/orders`, { headers: { Authorization: `Bearer ${t}` } }),
         fetch(`${API}/branch/staff-list`, { headers: { Authorization: `Bearer ${t}` } }),
+        fetch(`${API}/inventory/${branchId}`),
       ]);
       const ordersData = await ordersRes.json();
       const staffData = await staffRes.json();
+      const invData = await invRes.json();
       if (ordersData.ok) setOrders(ordersData.orders ?? []);
       if (staffData.ok) setStaffList(staffData.staff ?? []);
+      if (invData.ok) setInventory(invData.inventory ?? {});
     } catch (err) {
       console.error(err);
     }
@@ -138,6 +150,48 @@ export default function ManagerDashboard() {
     ));
     await loadData();
   };
+
+  const cancelOrder = async (orderId: string) => {
+    if (!confirm('Cancel this order?')) return;
+    setCancelling(orderId);
+    const t = localStorage.getItem('branch_token') ?? '';
+    try {
+      await fetch(`${API}/branch/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+        body: JSON.stringify({ branchStatus: 'cancelled' }),
+      });
+      await loadData();
+      setSelectedOrder(null);
+    } catch (err) { console.error(err); }
+    setCancelling(null);
+  };
+
+  const updateInventory = async (productId: number, stockCount: number, isAvailable: boolean) => {
+    setSavingInv(productId);
+    const t = localStorage.getItem('branch_token') ?? '';
+    try {
+      await fetch(`${API}/inventory/${staff?.branchId}/${productId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+        body: JSON.stringify({ stockCount, isAvailable }),
+      });
+      setInventory(prev => ({ ...prev, [productId]: { stockCount, isAvailable } }));
+    } catch (err) { console.error(err); }
+    setSavingInv(null);
+  };
+
+  const inventoryList = useMemo(() =>
+    allProducts
+      .filter(p => !invSearch || p.name.toLowerCase().includes(invSearch.toLowerCase()) || p.category.toLowerCase().includes(invSearch.toLowerCase()))
+      .map(p => {
+        const stock = inventory[p.id];
+        return { productId: p.id, name: p.name, category: p.category, image: p.image, price: p.price, stockCount: stock?.stockCount ?? 50, isAvailable: stock?.isAvailable ?? p.inStock };
+      }),
+    [allProducts, inventory, invSearch]
+  );
+
+  const outOfStockCount = inventoryList.filter(i => !i.isAvailable || i.stockCount === 0).length;
 
   const staffPerformance = useMemo(() => {
     const map: Record<string, { name: string; completed: number; preparing: number }> = {};
@@ -195,6 +249,20 @@ export default function ManagerDashboard() {
             </button>
           </div>
         </div>
+        {/* Tab bar */}
+        <div className="flex px-4 pb-0 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          {[
+            { id: 'orders' as const,    label: language === 'fr' ? `Commandes (${stats.total})` : language === 'rw' ? `Itumiziwa (${stats.total})` : `Orders (${stats.total})` },
+            { id: 'inventory' as const, label: language === 'fr' ? `Inventaire${outOfStockCount > 0 ? ` (${outOfStockCount} ⚠)` : ''}` : language === 'rw' ? `Ububiko${outOfStockCount > 0 ? ` (${outOfStockCount} ⚠)` : ''}` : `Inventory${outOfStockCount > 0 ? ` (${outOfStockCount} ⚠)` : ''}` },
+          ].map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={clsx('flex-shrink-0 px-4 py-2.5 text-xs font-black border-b-2 transition-colors',
+                activeTab === tab.id ? 'border-brand text-brand' : 'border-transparent text-white/60 hover:text-white/80'
+              )}>
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </header>
 
       <div className="max-w-screen-xl mx-auto px-4 py-5 space-y-5">
@@ -224,6 +292,9 @@ export default function ManagerDashboard() {
             ))}
           </div>
         </div>
+
+        {/* ── ORDERS TAB ── */}
+        {activeTab === 'orders' && (<>
 
         {/* Filter tabs + Accept All */}
         <div className="flex gap-2 overflow-x-auto items-center" style={{ scrollbarWidth: 'none' }}>
@@ -375,7 +446,76 @@ export default function ManagerDashboard() {
             })}
           </div>
         )}
+        </>)}
       </div>
+
+      {/* ── INVENTORY TAB ── */}
+      {activeTab === 'inventory' && (
+        <div className="max-w-screen-xl mx-auto px-4 pb-8 space-y-4">
+          {/* Search */}
+          <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-2xl border border-gray-200 focus-within:border-brand transition-colors">
+            <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <input type="text" value={invSearch} onChange={e => setInvSearch(e.target.value)}
+              placeholder={language === 'fr' ? 'Rechercher un produit...' : language === 'rw' ? 'Shakisha igicuruzwa...' : 'Search products...'}
+              className="flex-1 bg-transparent outline-none text-sm text-gray-900 placeholder:text-gray-400" />
+            {invSearch && <button onClick={() => setInvSearch('')}><X className="w-4 h-4 text-gray-400" /></button>}
+          </div>
+
+          {outOfStockCount > 0 && (
+            <div className="flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-200 rounded-2xl">
+              <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+              <p className="text-sm font-bold text-red-700">
+                {language === 'fr' ? `${outOfStockCount} produit(s) en rupture de stock` : language === 'rw' ? `Ibicuruzwa ${outOfStockCount} biranashaje` : `${outOfStockCount} product(s) out of stock`}
+              </p>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            {inventoryList.map(item => (
+              <div key={item.productId} className={clsx('bg-white rounded-2xl border overflow-hidden', !item.isAvailable || item.stockCount === 0 ? 'border-red-200' : 'border-gray-100')}>
+                <div className="flex items-center gap-3 p-3">
+                  <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                    <Image src={item.image} alt={item.name} fill className="object-cover" sizes="48px" />
+                    {(!item.isAvailable || item.stockCount === 0) && (
+                      <div className="absolute inset-0 bg-red-500/20 flex items-center justify-center">
+                        <X className="w-4 h-4 text-red-600" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-gray-900 truncate">{item.name}</p>
+                    <p className="text-xs text-gray-400">{item.category} · {item.price.toLocaleString()} RWF</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
+                      <button onClick={() => updateInventory(item.productId, Math.max(0, item.stockCount - 1), item.stockCount - 1 > 0)}
+                        className="w-7 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 font-black text-sm">−</button>
+                      <span className="w-8 text-center text-sm font-black text-gray-900">{item.stockCount}</span>
+                      <button onClick={() => updateInventory(item.productId, item.stockCount + 1, true)}
+                        className="w-7 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 font-black text-sm">+</button>
+                    </div>
+                    <button onClick={() => updateInventory(item.productId, item.stockCount, !item.isAvailable)}
+                      disabled={savingInv === item.productId}
+                      title={item.isAvailable ? 'Mark out of stock' : 'Mark available'}>
+                      {item.isAvailable
+                        ? <ToggleRight className="w-8 h-8 text-green-500" />
+                        : <ToggleLeft className="w-8 h-8 text-gray-300" />}
+                    </button>
+                  </div>
+                </div>
+                {item.isAvailable && item.stockCount > 0 && item.stockCount <= 5 && (
+                  <div className="px-3 pb-2">
+                    <p className="text-[10px] font-bold text-amber-600 flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3" />
+                      {language === 'fr' ? `Seulement ${item.stockCount} restant(s)` : language === 'rw' ? `Hasigaye gusa ${item.stockCount}` : `Only ${item.stockCount} left`}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Order detail drawer */}
       <AnimatePresence>
@@ -403,6 +543,14 @@ export default function ManagerDashboard() {
                   <p className="font-bold text-gray-900 dark:text-white">{selectedOrder.customer_name}</p>
                   <p className="text-sm text-gray-500">{selectedOrder.customer_phone}</p>
                   <p className="text-sm text-gray-500">{d.pickupSlot}: {selectedOrder.pickup_slot} · {d.depositPaid}: {selectedOrder.deposit_amount?.toLocaleString()} RWF</p>
+                  {/* Call customer button */}
+                  {selectedOrder.customer_phone && (
+                    <a href={`tel:${selectedOrder.customer_phone}`}
+                      className="mt-3 flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl text-xs font-black transition-colors w-fit">
+                      <Phone className="w-3.5 h-3.5" />
+                      {language === 'fr' ? 'Appeler le client' : language === 'rw' ? 'Hamagara umukiriya' : 'Call Customer'}
+                    </a>
+                  )}
                 </div>
 
                 {/* Items */}
@@ -470,6 +618,22 @@ export default function ManagerDashboard() {
                     })}
                   </div>
                 </div>
+
+                {/* Cancel order */}
+                {selectedOrder.branch_status !== 'picked_up' && (
+                  <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                    <button
+                      onClick={() => cancelOrder(selectedOrder.id)}
+                      disabled={cancelling === selectedOrder.id}
+                      className="w-full py-2.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 rounded-xl text-xs font-black transition-colors flex items-center justify-center gap-2"
+                    >
+                      <XCircle className="w-4 h-4" />
+                      {cancelling === selectedOrder.id
+                        ? (language === 'fr' ? 'Annulation...' : language === 'rw' ? 'Hagarika...' : 'Cancelling...')
+                        : (language === 'fr' ? 'Annuler la commande' : language === 'rw' ? 'Hagarika itumizwa' : 'Cancel Order')}
+                    </button>
+                  </div>
+                )}
 
                 {/* No-show flag */}
                 {(selectedOrder.branch_status === 'ready' || selectedOrder.branch_status === 'picked_up') && (

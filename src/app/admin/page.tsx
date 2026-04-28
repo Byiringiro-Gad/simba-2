@@ -30,7 +30,7 @@ interface Product {
   description?: string | null; source: 'json' | 'override' | 'addition';
 }
 
-type AdminView = 'orders' | 'products' | 'branches';
+type AdminView = 'orders' | 'products' | 'branches' | 'promos';
 type StatusFilter = 'all' | 'processing' | 'delivered' | 'cancelled';
 
 const CATEGORIES = [
@@ -244,6 +244,20 @@ export default function AdminDashboard() {
   const [showProductModal, setShowProductModal] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
+  // Promo codes state
+  const [promos, setPromos] = useState([
+    { code: 'SIMBA10', discount: 10, uses: 0, active: true },
+    { code: 'WELCOME', discount: 15, uses: 0, active: true },
+    { code: 'KIGALI5', discount: 5,  uses: 0, active: true },
+  ]);
+  const [newPromoCode, setNewPromoCode] = useState('');
+  const [newPromoDiscount, setNewPromoDiscount] = useState(10);
+
+  // Bulk selection
+  const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState<'delivered' | 'cancelled' | ''>('');
+  const [bulkUpdating, setBulkUpdating] = useState(false);
+
   // View
   const [activeView, setActiveView] = useState<AdminView>('orders');
 
@@ -349,6 +363,48 @@ export default function AdminDashboard() {
       await loadProducts();
     } catch { /* silent */ }
     setDeletingId(null);
+  };
+
+  const handleBulkAction = async () => {
+    if (!bulkAction || selectedOrderIds.size === 0) return;
+    if (!confirm(`Mark ${selectedOrderIds.size} orders as ${bulkAction}?`)) return;
+    setBulkUpdating(true);
+    const token = localStorage.getItem('admin_token') ?? '';
+    await Promise.all(Array.from(selectedOrderIds).map(id =>
+      fetch(`${API}/admin/orders/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+        body: JSON.stringify({ status: bulkAction }),
+      })
+    ));
+    setSelectedOrderIds(new Set());
+    setBulkAction('');
+    await loadOrders();
+    setBulkUpdating(false);
+  };
+
+  const toggleOrderSelect = (id: string) => {
+    setSelectedOrderIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const addPromo = () => {
+    const code = newPromoCode.trim().toUpperCase();
+    if (!code || promos.find(p => p.code === code)) return;
+    setPromos(prev => [...prev, { code, discount: newPromoDiscount, uses: 0, active: true }]);
+    setNewPromoCode('');
+    setNewPromoDiscount(10);
+  };
+
+  const togglePromo = (code: string) => {
+    setPromos(prev => prev.map(p => p.code === code ? { ...p, active: !p.active } : p));
+  };
+
+  const deletePromo = (code: string) => {
+    setPromos(prev => prev.filter(p => p.code !== code));
   };
 
   /* ── Computed ── */
@@ -476,6 +532,7 @@ export default function AdminDashboard() {
             { id: 'orders',   label: `${language === 'fr' ? 'Commandes' : language === 'rw' ? 'Itumiziwa' : 'Orders'} (${orders.length})` },
             { id: 'products', label: `${language === 'fr' ? 'Produits' : language === 'rw' ? 'Ibicuruzwa' : 'Products'} (${products.length})` },
             { id: 'branches', label: `${language === 'fr' ? 'Agences' : language === 'rw' ? 'Amashami' : 'Branches'} (${branchStats.length})` },
+            { id: 'promos',   label: `${language === 'fr' ? 'Promos' : language === 'rw' ? 'Promo' : 'Promos'} (${promos.filter(p => p.active).length})` },
           ] as { id: AdminView; label: string }[]).map(tab => (
             <button key={tab.id} onClick={() => setActiveView(tab.id)}
               className={clsx('flex-shrink-0 px-4 py-2.5 text-xs font-black border-b-2 transition-colors',
@@ -715,6 +772,119 @@ export default function AdminDashboard() {
         )}
 
         {/* ══════════════════════════════════════════════════════════════════
+            PROMOS VIEW
+        ══════════════════════════════════════════════════════════════════ */}
+        {activeView === 'promos' && (
+          <div className="space-y-5">
+            {/* Create new promo */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">
+                {language === 'fr' ? 'Créer un code promo' : language === 'rw' ? 'Kora kode ya promo' : 'Create Promo Code'}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  value={newPromoCode}
+                  onChange={e => setNewPromoCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                  placeholder="e.g. SUMMER20"
+                  maxLength={12}
+                  className="flex-1 px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm font-black uppercase outline-none focus:border-brand transition-colors"
+                />
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gray-50 border border-gray-200">
+                  <Tag className="w-4 h-4 text-gray-400" />
+                  <input
+                    type="number" min={1} max={50}
+                    value={newPromoDiscount}
+                    onChange={e => setNewPromoDiscount(Number(e.target.value))}
+                    className="w-16 bg-transparent text-sm font-black outline-none text-gray-900"
+                  />
+                  <span className="text-sm font-black text-gray-400">% off</span>
+                </div>
+                <button onClick={addPromo} disabled={!newPromoCode.trim()}
+                  className="flex items-center gap-2 px-5 py-3 bg-brand-dark text-white rounded-xl text-sm font-black hover:bg-gray-800 disabled:opacity-50 transition-colors">
+                  <Plus className="w-4 h-4" />
+                  {language === 'fr' ? 'Ajouter' : language === 'rw' ? 'Ongeraho' : 'Add Code'}
+                </button>
+              </div>
+            </div>
+
+            {/* Promo list */}
+            <div className="space-y-3">
+              <p className="text-xs font-black uppercase tracking-widest text-gray-400">
+                {language === 'fr' ? 'Codes actifs' : language === 'rw' ? 'Kode zikoreshwa' : 'Active Codes'} ({promos.filter(p => p.active).length})
+              </p>
+              {promos.map(promo => (
+                <div key={promo.code} className={clsx(
+                  'flex items-center gap-4 p-4 bg-white rounded-2xl border transition-all',
+                  promo.active ? 'border-green-200' : 'border-gray-100 opacity-60'
+                )}>
+                  <div className={clsx('px-4 py-2 rounded-xl font-black text-sm tracking-widest', promo.active ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-400')}>
+                    {promo.code}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-black text-gray-900">{promo.discount}% discount</p>
+                    <p className="text-xs text-gray-400">{promo.uses} uses</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => togglePromo(promo.code)}
+                      className={clsx('px-3 py-1.5 rounded-xl text-xs font-black transition-colors',
+                        promo.active ? 'bg-amber-50 text-amber-700 hover:bg-amber-100' : 'bg-green-50 text-green-700 hover:bg-green-100'
+                      )}>
+                      {promo.active
+                        ? (language === 'fr' ? 'Désactiver' : language === 'rw' ? 'Hagarika' : 'Deactivate')
+                        : (language === 'fr' ? 'Activer' : language === 'rw' ? 'Fungura' : 'Activate')}
+                    </button>
+                    <button onClick={() => deletePromo(promo.code)}
+                      className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Revenue by day chart */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">
+                {language === 'fr' ? 'Revenus 7 derniers jours' : language === 'rw' ? 'Amafaranga - Iminsi 7' : 'Revenue — Last 7 Days'}
+              </p>
+              <div className="flex items-end gap-2 h-32">
+                {revenueByDay.map(({ day, rev }) => (
+                  <div key={day} className="flex-1 flex flex-col items-center gap-1">
+                    <p className="text-[9px] font-black text-gray-500">{rev > 0 ? `${(rev/1000).toFixed(0)}K` : ''}</p>
+                    <div className="w-full bg-brand rounded-t-lg transition-all" style={{ height: `${Math.max(4, (rev / maxRev) * 96)}px` }} />
+                    <p className="text-[9px] font-bold text-gray-400">{day}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Top products */}
+            {topProducts.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 p-5">
+                <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">
+                  {language === 'fr' ? 'Produits les plus vendus' : language === 'rw' ? 'Ibicuruzwa bikunzwe' : 'Top Selling Products'}
+                </p>
+                <div className="space-y-3">
+                  {topProducts.map((p, i) => (
+                    <div key={p.name} className="flex items-center gap-3">
+                      <span className="w-6 h-6 bg-brand-muted rounded-lg flex items-center justify-center text-xs font-black text-brand-dark flex-shrink-0">{i + 1}</span>
+                      <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                        <Image src={p.image} alt={p.name} fill className="object-cover" sizes="40px" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-sm text-gray-900 truncate">{p.name}</p>
+                        <p className="text-xs text-gray-400">{p.count} units sold</p>
+                      </div>
+                      <p className="font-black text-sm text-gray-900">{p.revenue.toLocaleString()} RWF</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════════
             ORDERS VIEW
         ══════════════════════════════════════════════════════════════════ */}
         {activeView === 'orders' && (
@@ -749,6 +919,29 @@ export default function AdminDashboard() {
 
             <p className="text-xs text-gray-400">Last updated: {lastRefresh.toLocaleTimeString()} · Auto-refreshes every 30s</p>
 
+            {/* Bulk action bar */}
+            {selectedOrderIds.size > 0 && (
+              <div className="flex items-center gap-3 px-4 py-3 bg-brand-dark rounded-2xl">
+                <span className="text-white font-black text-sm">{selectedOrderIds.size} selected</span>
+                <div className="flex gap-2 ml-auto">
+                  <select value={bulkAction} onChange={e => setBulkAction(e.target.value as any)}
+                    className="px-3 py-1.5 rounded-xl bg-white/10 text-white text-xs font-bold border border-white/20 outline-none">
+                    <option value="">Choose action...</option>
+                    <option value="delivered">Mark Delivered</option>
+                    <option value="cancelled">Mark Cancelled</option>
+                  </select>
+                  <button onClick={handleBulkAction} disabled={!bulkAction || bulkUpdating}
+                    className="px-4 py-1.5 bg-brand text-gray-900 rounded-xl text-xs font-black hover:bg-brand-light disabled:opacity-50 transition-colors">
+                    {bulkUpdating ? 'Updating...' : 'Apply'}
+                  </button>
+                  <button onClick={() => setSelectedOrderIds(new Set())}
+                    className="px-3 py-1.5 bg-white/10 text-white rounded-xl text-xs font-bold hover:bg-white/20 transition-colors">
+                    Clear
+                  </button>
+                </div>
+              </div>
+            )}
+
             {loading ? (
               <div className="flex items-center justify-center py-20">
                 <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
@@ -761,7 +954,8 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-                <div className="hidden sm:grid grid-cols-[1fr_160px_120px_120px_160px_80px] gap-4 px-5 py-3 bg-gray-50 border-b border-gray-100">
+                <div className="hidden sm:grid grid-cols-[32px_1fr_160px_120px_120px_160px_80px] gap-4 px-5 py-3 bg-gray-50 border-b border-gray-100">
+                  <div />
                   {['Order', 'Branch', 'Date', 'Total', 'Status', 'Action'].map(h => (
                     <p key={h} className="text-[10px] font-black uppercase tracking-widest text-gray-400">{h}</p>
                   ))}
@@ -772,7 +966,12 @@ export default function AdminDashboard() {
                     const StatusIcon = cfg.icon;
                     return (
                       <motion.div key={order.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
-                        className="grid grid-cols-1 sm:grid-cols-[1fr_160px_120px_120px_160px_80px] gap-3 sm:gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
+                        className="grid grid-cols-1 sm:grid-cols-[32px_1fr_160px_120px_120px_160px_80px] gap-3 sm:gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
+                        <div className="hidden sm:flex items-center">
+                          <input type="checkbox" checked={selectedOrderIds.has(order.id)}
+                            onChange={() => toggleOrderSelect(order.id)}
+                            className="w-4 h-4 rounded accent-brand cursor-pointer" />
+                        </div>
                         <div className="flex items-center gap-3">
                           <div className="flex gap-1 flex-shrink-0">
                             {order.items.slice(0, 2).map(item => (
