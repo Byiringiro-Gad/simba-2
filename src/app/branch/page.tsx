@@ -29,7 +29,7 @@ interface Order {
 
 export default function ManagerDashboard() {
   const router = useRouter();
-  const { language } = useSimbaStore();
+  const { language, isDarkMode } = useSimbaStore();
   const d = dt(language as DashLang);
 
   const BRANCH_STATUS_CONFIG = {
@@ -155,7 +155,7 @@ export default function ManagerDashboard() {
     localStorage.removeItem('branch_staff');
     router.push('/branch/login');
   };
-  const { isDarkMode } = useSimbaStore();
+
   const filtered = useMemo(() =>
     orders.filter(o => filter === 'all' || o.branch_status === filter),
     [orders, filter]
