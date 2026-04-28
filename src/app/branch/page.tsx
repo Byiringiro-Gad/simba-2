@@ -160,9 +160,6 @@ export default function ManagerDashboard() {
     orders.filter(o => filter === 'all' || o.branch_status === filter),
     [orders, filter]
   );
-    orders.filter(o => filter === 'all' || o.branch_status === filter),
-    [orders, filter]
-  );
 
   const stats = useMemo(() => ({
     total: orders.length,
