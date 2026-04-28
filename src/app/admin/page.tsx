@@ -375,6 +375,36 @@ export default function AdminDashboard() {
     return Object.values(map).sort((a, b) => b.total - a.total);
   }, [orders]);
 
+  // Top products by order frequency
+  const topProducts = useMemo(() => {
+    const map: Record<string, { name: string; image: string; count: number; revenue: number }> = {};
+    for (const o of orders) {
+      for (const item of o.items) {
+        if (!map[item.name]) map[item.name] = { name: item.name, image: item.image, count: 0, revenue: 0 };
+        map[item.name].count += item.quantity;
+        map[item.name].revenue += item.price * item.quantity;
+      }
+    }
+    return Object.values(map).sort((a, b) => b.count - a.count).slice(0, 5);
+  }, [orders]);
+
+  // Revenue last 7 days
+  const revenueByDay = useMemo(() => {
+    const days: Record<string, number> = {};
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      days[d.toLocaleDateString('en-RW', { weekday: 'short' })] = 0;
+    }
+    for (const o of orders) {
+      if (o.status === 'cancelled') continue;
+      const day = new Date(o.date).toLocaleDateString('en-RW', { weekday: 'short' });
+      if (day in days) days[day] += o.total;
+    }
+    return Object.entries(days).map(([day, rev]) => ({ day, rev }));
+  }, [orders]);
+
+  const maxRev = Math.max(...revenueByDay.map(d => d.rev), 1);
+
   const filteredOrders = useMemo(() =>
     orders
       .filter(o => statusFilter === 'all' || o.status === statusFilter)
