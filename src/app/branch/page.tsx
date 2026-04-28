@@ -171,8 +171,7 @@ export default function ManagerDashboard() {
   if (!staff) return null;
 
   return (
-    <div className={isDarkMode ? 'dark' : ''}>
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className={clsx("min-h-screen bg-gray-50 dark:bg-gray-950", isDarkMode && "dark")}>
       {/* Header */}
       <header className="sticky top-0 z-40 bg-brand-dark shadow-lg">
         <div className="max-w-screen-xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -505,7 +504,6 @@ export default function ManagerDashboard() {
           </>
         )}
       </AnimatePresence>
-    </div>
     </div>
   );
 }
