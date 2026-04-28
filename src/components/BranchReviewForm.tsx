@@ -31,7 +31,7 @@ export default function BranchReviewForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      toast('Please sign in to leave a review', 'error');
+      toast.error('Please sign in to leave a review');
       return;
     }
 
@@ -50,7 +50,7 @@ export default function BranchReviewForm({
       setComment('');
       onClose();
     } else {
-      toast('Failed to submit review', 'error');
+      toast.error('Failed to submit review');
     }
     setLoading(false);
   };
