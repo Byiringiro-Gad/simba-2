@@ -272,7 +272,6 @@ export default function ManagerDashboard() {
             </div>
           </div>
         )}
-        </div>
 
         {/* Orders */}
         {loading ? (
