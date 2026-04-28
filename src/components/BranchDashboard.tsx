@@ -96,14 +96,14 @@ export default function BranchDashboard({ token, staff }: BranchDashboardProps) 
         body: JSON.stringify({ staffId, staffName }),
       });
       if (res.ok) {
-        toast('Order assigned', 'success');
+        toast.success('Order assigned');
         fetchOrders();
         setAssigningTo(null);
       } else {
-        toast('Failed to assign order', 'error');
+        toast.error('Failed to assign order');
       }
     } catch (err) {
-      toast('Error assigning order', 'error');
+      toast.error('Error assigning order');
     }
   };
 
@@ -118,13 +118,13 @@ export default function BranchDashboard({ token, staff }: BranchDashboardProps) 
         body: JSON.stringify({ status: 'ready' }),
       });
       if (res.ok) {
-        toast('Order marked ready', 'success');
+        toast.success('Order marked ready');
         fetchOrders();
       } else {
-        toast('Failed to mark order ready', 'error');
+        toast.error('Failed to mark order ready');
       }
     } catch (err) {
-      toast('Error updating order', 'error');
+      toast.error('Error updating order');
     }
   };
 
