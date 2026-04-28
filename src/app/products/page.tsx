@@ -41,7 +41,7 @@ export default function ProductsPage() {
         <section>
           <h2 className="text-xl font-black text-gray-900 mb-4">All Products ({products.length})</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {products.filter(p => p.inStock).slice(0, 100).map(product => (
+            {products.filter(p => p.inStock).map(product => (
               <Link key={product.id} href={`/products/${product.id}`}
                 className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
                 <div className="relative aspect-square bg-gray-50">

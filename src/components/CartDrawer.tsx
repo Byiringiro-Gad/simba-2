@@ -494,6 +494,28 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                     </div>
 
                     <div>
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{t.pickupTime} *</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {PICKUP_SLOTS.map(slot => (
+                          <button
+                            key={slot.id}
+                            type="button"
+                            onClick={() => setPickupSlot(slot.id)}
+                            className={`flex flex-col items-start gap-1 p-3 rounded-xl border-2 transition-all ${
+                              pickupSlot === slot.id
+                                ? 'border-brand bg-brand-muted text-brand-dark'
+                                : 'border-gray-200 dark:border-gray-700 hover:border-brand/40 text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            <span className="text-lg">{slot.icon}</span>
+                            <span className="text-xs font-black">{slot.label}</span>
+                            <span className="text-[10px] text-gray-500 dark:text-gray-400">{slot.window}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
                       <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{t.pickupName} *</label>
                       <input type="text" value={fullName} onChange={e => setFullName(e.target.value)}
                         placeholder={t.namePlaceholder}
