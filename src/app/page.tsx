@@ -112,7 +112,6 @@ export default function Home() {
   const {
     language, isCartOpen, setCartOpen,
     activeTab, setActiveTab, selectedCategory, setSelectedCategory, searchQuery,
-    setLanguage,
   } = useSimbaStore();
   const t = translations[language];
 
@@ -259,37 +258,6 @@ export default function Home() {
                 <HeroSection onShopNow={() => {
                   setShopNowOpen(true);
                 }} />
-
-                {/* ── LANGUAGE SWITCHER BAR — visible to graders ── */}
-                <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
-                  <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-2 flex items-center gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex-shrink-0 mr-1">
-                      {language === 'fr' ? 'Langue' : language === 'rw' ? 'Ururimi' : 'Language'}:
-                    </span>
-                    {([
-                      { code: 'en' as const, flag: '🇬🇧', label: 'English',     labelFr: 'Anglais',    labelRw: 'Icyongereza' },
-                      { code: 'fr' as const, flag: '🇫🇷', label: 'Français',    labelFr: 'Français',   labelRw: 'Igifaransa' },
-                      { code: 'rw' as const, flag: '🇷🇼', label: 'Kinyarwanda', labelFr: 'Kinyarwanda',labelRw: 'Kinyarwanda' },
-                    ]).map(lang => (
-                      <button
-                        key={lang.code}
-                        onClick={() => setLanguage(lang.code)}
-                        className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                          language === lang.code
-                            ? 'bg-brand-dark text-white border-brand-dark'
-                            : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-brand-dark'
-                        }`}
-                      >
-                        <span>{lang.flag}</span>
-                        <span>{language === 'fr' ? lang.labelFr : language === 'rw' ? lang.labelRw : lang.label}</span>
-                        {language === lang.code && <span className="text-[9px] opacity-70">✓</span>}
-                      </button>
-                    ))}
-                    <span className="text-[10px] text-gray-300 dark:text-gray-600 ml-2 flex-shrink-0">
-                      {language === 'fr' ? '· Toute l\'interface est traduite' : language === 'rw' ? '· Urupapuro rwose rwahinduwe' : '· Full UI translated in all 3 languages'}
-                    </span>
-                  </div>
-                </div>
 
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 pb-24 sm:pb-10 space-y-8">
 
