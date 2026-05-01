@@ -29,6 +29,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const [focused, setFocused] = useState(false);
   const [results, setResults] = useState<ReturnType<typeof getSimbaData>['products']>([]);
   const [langOpen, setLangOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -241,9 +242,9 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                     <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
                       className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 z-[100] overflow-hidden py-1">
                       {[
-                        { code: 'en' as const, flag: '🇬🇧', label: 'English',     url: '/en' },
-                        { code: 'fr' as const, flag: '🇫🇷', label: 'Français',    url: '/fr' },
-                        { code: 'rw' as const, flag: '🇷🇼', label: 'Kinyarwanda', url: '/kinyarwanda' },
+                        { code: 'en' as const, flag: '🇬🇧', label: 'English' },
+                        { code: 'fr' as const, flag: '🇫🇷', label: 'Français' },
+                        { code: 'rw' as const, flag: '🇷🇼', label: 'Kinyarwanda' },
                       ].map(lang => (
                         <button key={lang.code} onClick={() => { setLanguage(lang.code); setLangOpen(false); }}
                           className={clsx('w-full text-left px-4 py-3 text-sm font-bold transition-colors flex items-center gap-2',
@@ -259,7 +260,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
               </AnimatePresence>
             </div>
 
-            {/* Login / User — single button */}
+            {/* Login / User */}
             {user ? (
               <div className="relative group">
                 <button className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
@@ -290,11 +291,43 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                 </div>
               </div>
             ) : (
-              <Link href="/login"
-                className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white text-xs font-black">
-                <User className="w-4 h-4" />
-                <span className="hidden sm:block">{t.signIn}</span>
-              </Link>
+              <div className="relative">
+                <button
+                  onClick={() => setLoginOpen(o => !o)}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white text-xs font-black"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="hidden sm:block">{t.signIn}</span>
+                </button>
+                <AnimatePresence>
+                  {loginOpen && (
+                    <>
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[99]" onClick={() => setLoginOpen(false)} />
+                      <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
+                        className="absolute right-0 top-full mt-1 w-64 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 z-[100] overflow-hidden p-2">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-2 py-1.5">
+                          {language === 'fr' ? 'Choisir un compte' : language === 'rw' ? 'Hitamo konti' : 'Choose account type'}
+                        </p>
+                        {[
+                          { href: '/customer', icon: '🛒', label: language === 'fr' ? 'Client / Acheteur' : language === 'rw' ? 'Umukiriya' : 'Customer / Buyer', sub: language === 'fr' ? 'Commander et suivre vos achats' : language === 'rw' ? 'Gutumiza no gukurikirana' : 'Order and track purchases' },
+                          { href: '/branch', icon: '🏪', label: language === 'fr' ? 'Personnel agence' : language === 'rw' ? 'Abakozi b\'ishami' : 'Branch Staff / Manager', sub: language === 'fr' ? 'Gérer les commandes' : language === 'rw' ? 'Gucunga itumiziwa' : 'Manage branch orders' },
+                          { href: '/admin', icon: '⚙️', label: language === 'fr' ? 'Administrateur' : language === 'rw' ? 'Umuyobozi' : 'Admin / HQ', sub: language === 'fr' ? 'Accès complet' : language === 'rw' ? 'Uburenganzira bwose' : 'Full system access' },
+                        ].map(item => (
+                          <Link key={item.href} href={item.href} onClick={() => setLoginOpen(false)}
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <span className="text-xl flex-shrink-0">{item.icon}</span>
+                            <div className="min-w-0">
+                              <p className="font-black text-sm text-gray-900 dark:text-white">{item.label}</p>
+                              <p className="text-[10px] text-gray-400 truncate">{item.sub}</p>
+                            </div>
+                          </Link>
+                        ))}
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
 
             {/* Cart — clicking goes to /checkout */}

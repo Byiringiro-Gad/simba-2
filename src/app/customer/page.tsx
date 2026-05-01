@@ -2,9 +2,9 @@
 import { useEffect } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { useRouter } from 'next/navigation';
-export default function LangPage() {
-  const { setLanguage } = useSimbaStore();
+export default function CustomerPage() {
+  const { setAuthOpen } = useSimbaStore();
   const router = useRouter();
-  useEffect(() => { setLanguage('fr'); router.replace('/'); }, []);
+  useEffect(() => { setAuthOpen(true); router.replace('/'); }, []);
   return null;
 }

@@ -2,20 +2,9 @@
 import { useEffect } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { useRouter } from 'next/navigation';
-
 export default function LangPage() {
   const { setLanguage } = useSimbaStore();
   const router = useRouter();
-  useEffect(() => {
-    setLanguage('rw');
-    router.replace('/');
-  }, []);
-  return (
-    <div style={{minHeight:'100vh',background:'#0F172A',display:'flex',alignItems:'center',justifyContent:'center'}}>
-      <div style={{textAlign:'center',color:'white'}}>
-        <p style={{fontWeight:900,fontSize:'1.25rem',marginBottom:'0.5rem'}}>Simba Supermarket — Kinyarwanda</p>
-        <p style={{opacity:0.6,fontSize:'0.875rem'}}>Setting language to Kinyarwanda...</p>
-      </div>
-    </div>
-  );
+  useEffect(() => { setLanguage('rw'); router.replace('/'); }, []);
+  return null;
 }
