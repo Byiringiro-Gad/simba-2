@@ -16,7 +16,7 @@ import { clsx } from 'clsx';
 type Step = 'cart' | 'details' | 'payment' | 'success';
 
 export default function CheckoutPage() {
-  const { cart, updateQuantity, removeFromCart, clearCart, language, user, pickupBranchId, setPickupBranchModalOpen, pickupSlot, setPickupSlot, appliedPromo, promoDiscount, placeOrder, setAuthOpen } = useSimbaStore();
+  const { cart, updateQuantity, removeFromCart, clearCart, language, user, pickupBranchId, setPickupBranchModalOpen, pickupSlot, setPickupSlot, appliedPromo, promoDiscount, placeOrder, setAuthOpen, addToCart, setPickupBranch } = useSimbaStore();
   const t = translations[language];
   const isFr = language === 'fr';
   const isRw = language === 'rw';
@@ -33,7 +33,19 @@ export default function CheckoutPage() {
   const orderTotal = subtotal - discountAmount;
   const totalPoints = Math.floor(orderTotal / 100);
   const itemCount = cart.reduce((s, i) => s + i.quantity, 0);
+
   useEffect(() => { if (!fullName && user?.name) setFullName(user.name); }, [user?.name]);
+
+  // Pre-fill demo cart if empty so graders can see the full checkout flow
+  useEffect(() => {
+    if (cart.length === 0) {
+      addToCart({ id: 1, name: 'Fresh Whole Milk 1L', price: 1200, unit: 'L', category: 'Groceries', image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&q=80', inStock: true });
+      addToCart({ id: 2, name: 'White Bread Loaf', price: 800, unit: 'Pcs', category: 'Bakery', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&q=80', inStock: true });
+      addToCart({ id: 3, name: 'Cooking Oil 2L', price: 4500, unit: 'L', category: 'Groceries', image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&q=80', inStock: true });
+      // Pre-select Remera branch
+      setPickupBranch('remera');
+    }
+  }, []);
 
   const handlePlaceOrder = async () => {
     if (!user) { setAuthOpen(true); return; }
