@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import { getSimbaData } from '@/lib/data';
-import { Search, ShoppingCart, ChevronDown, MapPin, X, Sun, Moon, Menu, User, LogOut, ChevronRight, Store } from 'lucide-react';
+import { Search, ShoppingCart, MapPin, X, Globe, Menu, User, LogOut, ChevronRight, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -15,11 +15,11 @@ const POPULAR = ['Fresh Milk', 'Bread', 'Avocado', 'Cooking Oil', 'Rice', 'Eggs'
 
 export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const {
-    language, setLanguage, isDarkMode, toggleDarkMode,
-    cart, searchQuery, setSearchQuery, setCartOpen,
+    language, setLanguage,
+    cart, searchQuery, setSearchQuery,
     pickupBranchId, setPickupBranchModalOpen,
-    activeTab, setActiveTab,
-    user, setAuthOpen, logout,
+    setActiveTab,
+    user, logout,
   } = useSimbaStore();
 
   const t = translations[language];
@@ -28,6 +28,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
   const [focused, setFocused] = useState(false);
   const [results, setResults] = useState<ReturnType<typeof getSimbaData>['products']>([]);
+  const [langOpen, setLangOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -219,27 +220,53 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
             </AnimatePresence>
           </div>
 
-          {/* Right actions */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          {/* Right actions — clean & minimal */}
+          <div className="flex items-center gap-2 flex-shrink-0">
 
-            {/* Dark mode */}
-            <button onClick={toggleDarkMode} className="p-2 rounded-xl hover:bg-white/10 transition-colors" aria-label="Toggle theme">
-              {isDarkMode ? <Sun className="w-5 h-5 text-brand" /> : <Moon className="w-5 h-5 text-white/80" />}
-            </button>
+            {/* Language — globe icon with dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setLangOpen(o => !o)}
+                className="flex items-center gap-1 p-2 rounded-xl hover:bg-white/10 transition-colors"
+                title="Change language"
+              >
+                <Globe className="w-5 h-5 text-white/80" />
+                <span className="text-[10px] font-black text-white/60 uppercase">{language}</span>
+              </button>
+              <AnimatePresence>
+                {langOpen && (
+                  <>
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      className="fixed inset-0 z-[99]" onClick={() => setLangOpen(false)} />
+                    <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
+                      className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 z-[100] overflow-hidden py-1">
+                      {[
+                        { code: 'en' as const, flag: '🇬🇧', label: 'English',     url: '/en' },
+                        { code: 'fr' as const, flag: '🇫🇷', label: 'Français',    url: '/fr' },
+                        { code: 'rw' as const, flag: '🇷🇼', label: 'Kinyarwanda', url: '/kinyarwanda' },
+                      ].map(lang => (
+                        <button key={lang.code} onClick={() => { setLanguage(lang.code); setLangOpen(false); }}
+                          className={clsx('w-full text-left px-4 py-3 text-sm font-bold transition-colors flex items-center gap-2',
+                            language === lang.code ? 'text-brand bg-brand-muted dark:bg-brand/10' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                          )}>
+                          <span>{lang.flag}</span> {lang.label}
+                          {language === lang.code && <span className="ml-auto text-[10px] text-brand font-black">✓</span>}
+                        </button>
+                      ))}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
 
-            {/* Staff Portal */}
-            <Link href="/staff" className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white/80 text-xs font-black flex-shrink-0">
-              <Store className="w-4 h-4" /> Staff
-            </Link>
-
-            {/* User / Login — always visible */}
+            {/* Login / User — single button */}
             {user ? (
               <div className="relative group">
-                <button className="flex items-center gap-2 px-2.5 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
+                <button className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
                   <div className="w-7 h-7 bg-brand rounded-full flex items-center justify-center font-black text-gray-900 text-sm flex-shrink-0">
                     {user.name.charAt(0).toUpperCase()}
                   </div>
-                  <span className="hidden lg:block text-xs font-bold text-white max-w-[70px] truncate">{user.name.split(' ')[0]}</span>
+                  <span className="hidden sm:block text-xs font-bold text-white max-w-[70px] truncate">{user.name.split(' ')[0]}</span>
                 </button>
                 <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[100] overflow-hidden py-1">
                   <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
@@ -263,63 +290,28 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                 </div>
               </div>
             ) : (
-              <button
-                onClick={() => setAuthOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white text-xs font-black"
-              >
+              <Link href="/login"
+                className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white text-xs font-black">
                 <User className="w-4 h-4" />
                 <span className="hidden sm:block">{t.signIn}</span>
-              </button>
+              </Link>
             )}
 
-            {/* Cart — always visible */}
-            <motion.button
-              id="cart-icon"
-              onClick={() => setCartOpen(true)}
-              whileTap={{ scale: 0.93 }}
-              animate={cartCount > 0 ? { scale: [1, 1.08, 1] } : {}}
-              transition={{ duration: 0.3 }}
-              className="relative flex items-center gap-2 px-3 py-2.5 bg-brand hover:bg-brand-dark text-gray-900 rounded-xl transition-all font-black text-sm shadow-brand-md min-h-[44px]"
+            {/* Cart — clicking goes to /checkout */}
+            <Link href="/checkout"
+              className="relative flex items-center gap-2 px-3 py-2.5 bg-brand hover:bg-brand-dark text-gray-900 rounded-xl transition-all font-black text-sm min-h-[44px]"
             >
               <ShoppingCart className="w-5 h-5" />
-              <span className="hidden md:block text-sm">
+              <span className="hidden sm:block">
                 {cartCount > 0 ? `${cartCount} item${cartCount > 1 ? 's' : ''}` : t.cart}
               </span>
               {cartCount > 0 && (
-                <motion.span
-                  key={cartCount}
-                  initial={{ scale: 1.5, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="md:hidden absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-brand"
-                >
+                <span className="sm:hidden absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-brand">
                   {cartCount}
-                </motion.span>
+                </span>
               )}
-            </motion.button>
+            </Link>
           </div>
-        </div>
-
-        {/* Second row — Language switcher + Checkout link */}
-        <div className="flex items-center justify-between pb-1.5 border-t border-white/10 pt-1.5">
-          <div className="flex items-center gap-1">
-            {(['en', 'fr', 'rw'] as const).map(lang => (
-              <button
-                key={lang}
-                onClick={() => setLanguage(lang)}
-                className={clsx(
-                  'px-3 py-1 rounded-lg text-[11px] font-black transition-all',
-                  language === lang
-                    ? 'bg-brand text-gray-900'
-                    : 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white'
-                )}
-              >
-                {lang === 'en' ? '🇬🇧 English' : lang === 'fr' ? '🇫🇷 Français' : '🇷🇼 Kinyarwanda'}
-              </button>
-            ))}
-          </div>
-          <Link href="/checkout" className="flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-white/70 text-[11px] font-black transition-colors">
-            <ShoppingCart className="w-3 h-3" /> Checkout
-          </Link>
         </div>
       </div>
     </header>

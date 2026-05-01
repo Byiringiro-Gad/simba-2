@@ -30,7 +30,7 @@ interface Product {
   description?: string | null; source: 'json' | 'override' | 'addition';
 }
 
-type AdminView = 'orders' | 'products' | 'branches' | 'promos';
+type AdminView = 'orders' | 'products' | 'branches' | 'promos' | 'users';
 type StatusFilter = 'all' | 'processing' | 'delivered' | 'cancelled';
 
 const CATEGORIES = [
@@ -244,6 +244,10 @@ export default function AdminDashboard() {
   const [showProductModal, setShowProductModal] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
+  // Users state
+  const [users, setUsers] = useState<any[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+
   // Promo codes state
   const [promos, setPromos] = useState([
     { code: 'SIMBA10', discount: 10, uses: 0, active: true },
@@ -298,9 +302,34 @@ export default function AdminDashboard() {
     setProdLoading(false);
   };
 
+  const loadUsers = async () => {
+    setUsersLoading(true);
+    try {
+      const token = localStorage.getItem('admin_token') ?? '';
+      const res = await fetch('/api/admin/users', { headers: { 'x-admin-token': token } });
+      const data = await res.json();
+      if (data.ok) setUsers(data.users ?? []);
+    } catch { /* silent */ }
+    setUsersLoading(false);
+  };
+
+  const deleteUser = async (userId: string) => {
+    if (!confirm('Delete this user account?')) return;
+    try {
+      const token = localStorage.getItem('admin_token') ?? '';
+      await fetch('/api/admin/users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+        body: JSON.stringify({ userId }),
+      });
+      setUsers(prev => prev.filter(u => u.id !== userId));
+    } catch { /* silent */ }
+  };
+
   useEffect(() => {
     loadOrders();
     loadProducts();
+    loadUsers();
     const iv = setInterval(loadOrders, 30000);
     return () => clearInterval(iv);
   }, []);
@@ -533,6 +562,7 @@ export default function AdminDashboard() {
             { id: 'products', label: `${language === 'fr' ? 'Produits' : language === 'rw' ? 'Ibicuruzwa' : 'Products'} (${products.length})` },
             { id: 'branches', label: `${language === 'fr' ? 'Agences' : language === 'rw' ? 'Amashami' : 'Branches'} (${branchStats.length})` },
             { id: 'promos',   label: `${language === 'fr' ? 'Promos' : language === 'rw' ? 'Promo' : 'Promos'} (${promos.filter(p => p.active).length})` },
+            { id: 'users',    label: `${language === 'fr' ? 'Utilisateurs' : language === 'rw' ? 'Abakoresha' : 'Users'} (${users.length})` },
           ] as { id: AdminView; label: string }[]).map(tab => (
             <button key={tab.id} onClick={() => setActiveView(tab.id)}
               className={clsx('flex-shrink-0 px-4 py-2.5 text-xs font-black border-b-2 transition-colors',
@@ -877,6 +907,71 @@ export default function AdminDashboard() {
                       </div>
                       <p className="font-black text-sm text-gray-900">{p.revenue.toLocaleString()} RWF</p>
                     </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════════
+            USERS VIEW
+        ══════════════════════════════════════════════════════════════════ */}
+        {activeView === 'users' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-black uppercase tracking-widest text-gray-400">
+                {language === 'fr' ? `${users.length} utilisateurs enregistrés` : language === 'rw' ? `Abakoresha ${users.length} biyandikishije` : `${users.length} registered users`}
+              </p>
+              <button onClick={loadUsers} className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-dark text-white rounded-xl text-xs font-black hover:bg-gray-800 transition-colors">
+                <RefreshCw className="w-3.5 h-3.5" />
+                {language === 'fr' ? 'Actualiser' : language === 'rw' ? 'Vugurura' : 'Refresh'}
+              </button>
+            </div>
+
+            {usersLoading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : users.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+                <Users className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                <p className="font-black text-gray-900">
+                  {language === 'fr' ? 'Aucun utilisateur' : language === 'rw' ? 'Nta bakoresha' : 'No users yet'}
+                </p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                <div className="hidden sm:grid grid-cols-[1fr_200px_120px_100px_80px] gap-4 px-5 py-3 bg-gray-50 border-b border-gray-100">
+                  {['User', 'Email', 'Phone', 'Points', 'Action'].map(h => (
+                    <p key={h} className="text-[10px] font-black uppercase tracking-widest text-gray-400">{h}</p>
+                  ))}
+                </div>
+                <div className="divide-y divide-gray-50">
+                  {users.map((u, i) => (
+                    <motion.div key={u.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
+                      className="grid grid-cols-1 sm:grid-cols-[1fr_200px_120px_100px_80px] gap-3 sm:gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-brand-muted rounded-full flex items-center justify-center font-black text-brand-dark text-sm flex-shrink-0">
+                          {u.name?.charAt(0)?.toUpperCase() ?? '?'}
+                        </div>
+                        <div>
+                          <p className="font-black text-sm text-gray-900">{u.name}</p>
+                          <p className="text-xs text-gray-400">{new Date(u.created_at).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center"><p className="text-xs text-gray-600 truncate">{u.email}</p></div>
+                      <div className="flex items-center"><p className="text-xs text-gray-600">{u.phone ?? '—'}</p></div>
+                      <div className="flex items-center">
+                        <span className="px-2 py-0.5 bg-brand-muted text-brand-dark rounded-full text-xs font-black">{u.loyalty_points ?? 0} pts</span>
+                      </div>
+                      <div className="flex items-center">
+                        <button onClick={() => deleteUser(u.id)}
+                          className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
