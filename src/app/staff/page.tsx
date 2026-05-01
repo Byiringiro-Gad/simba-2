@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Store, Lock, User, AlertCircle, ShieldCheck, Users } from 'lucide-react';
+import { Store, Lock, User, AlertCircle, ShieldCheck, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
 import Link from 'next/link';
@@ -103,6 +103,21 @@ export default function StaffPortal() {
       <Link href="/" className="flex items-center gap-2 mb-6 text-sm font-bold text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
         <span>←</span> Back to Simba Store
       </Link>
+
+      {/* Buyer / Customer test credentials */}
+      <div className="w-full max-w-md mb-4 bg-blue-50 border border-blue-200 rounded-2xl p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <ShoppingBag className="w-4 h-4 text-blue-600 flex-shrink-0" />
+          <p className="text-xs font-black uppercase tracking-widest text-blue-600">Buyer / Customer Account</p>
+        </div>
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div><p className="text-gray-500 font-medium">Email</p><p className="font-black text-gray-900 font-mono">demo@simba.rw</p></div>
+          <div><p className="text-gray-500 font-medium">Password</p><p className="font-black text-gray-900 font-mono">demo1234</p></div>
+        </div>
+        <Link href="/" className="mt-3 block text-center px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-black hover:bg-blue-700 transition-colors">
+          Go to Store → Sign In
+        </Link>
+      </div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
