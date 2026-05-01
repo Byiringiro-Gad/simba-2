@@ -220,52 +220,27 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-1 flex-shrink-0">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+
             {/* Dark mode */}
             <button onClick={toggleDarkMode} className="p-2 rounded-xl hover:bg-white/10 transition-colors" aria-label="Toggle theme">
               {isDarkMode ? <Sun className="w-5 h-5 text-brand" /> : <Moon className="w-5 h-5 text-white/80" />}
             </button>
 
-            {/* Language — 3 visible buttons, always shown */}
-            <div className="flex items-center gap-1">
-              {(['en', 'fr', 'rw'] as const).map(lang => (
-                <button
-                  key={lang}
-                  onClick={() => setLanguage(lang)}
-                  className={clsx(
-                    'px-2.5 py-1.5 rounded-lg text-[11px] font-black transition-all whitespace-nowrap',
-                    language === lang
-                      ? 'bg-brand text-gray-900'
-                      : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
-                  )}
-                >
-                  {lang === 'en' ? '🇬🇧 English' : lang === 'fr' ? '🇫🇷 Français' : '🇷🇼 Kinyarwanda'}
-                </button>
-              ))}
-            </div>
-
-            {/* Checkout */}
-            <a href="/checkout" className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-brand hover:bg-brand-dark rounded-xl transition-colors text-gray-900 text-xs font-black flex-shrink-0"><ShoppingCart className="w-3.5 h-3.5" /> Checkout</a>
-
-            {/* Staff Portal link — always visible */}
-            <Link
-              href="/staff"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white/80 text-xs font-black flex-shrink-0"
-            >
-              <Store className="w-4 h-4" />
-              Staff
+            {/* Staff Portal */}
+            <Link href="/staff" className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white/80 text-xs font-black flex-shrink-0">
+              <Store className="w-4 h-4" /> Staff
             </Link>
 
-            {/* User / Login */}
+            {/* User / Login — always visible */}
             {user ? (
               <div className="relative group">
-                <button className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
-                  <div className="w-6 h-6 bg-brand rounded-full flex items-center justify-center font-black text-gray-900 text-xs flex-shrink-0">
+                <button className="flex items-center gap-2 px-2.5 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors">
+                  <div className="w-7 h-7 bg-brand rounded-full flex items-center justify-center font-black text-gray-900 text-sm flex-shrink-0">
                     {user.name.charAt(0).toUpperCase()}
                   </div>
-                  <span className="hidden sm:block text-xs font-bold text-white max-w-[80px] truncate">{user.name.split(' ')[0]}</span>
+                  <span className="hidden lg:block text-xs font-bold text-white max-w-[70px] truncate">{user.name.split(' ')[0]}</span>
                 </button>
-                {/* Dropdown */}
                 <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[100] overflow-hidden py-1">
                   <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
                     <p className="font-black text-sm text-gray-900 dark:text-white truncate">{user.name}</p>
@@ -290,42 +265,61 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
             ) : (
               <button
                 onClick={() => setAuthOpen(true)}
-                className="hidden sm:flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white text-xs font-black"
+                className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors text-white text-xs font-black"
               >
                 <User className="w-4 h-4" />
-                {t.signIn}
+                <span className="hidden sm:block">{t.signIn}</span>
               </button>
             )}
 
-            {/* Cart */}
+            {/* Cart — always visible */}
             <motion.button
               id="cart-icon"
               onClick={() => setCartOpen(true)}
               whileTap={{ scale: 0.93 }}
               animate={cartCount > 0 ? { scale: [1, 1.08, 1] } : {}}
               transition={{ duration: 0.3 }}
-              className="relative flex items-center gap-2 px-3 py-2.5 bg-brand hover:bg-brand-dark text-gray-900 rounded-xl transition-all font-black text-sm ml-1 shadow-brand-md min-h-[44px]"
+              className="relative flex items-center gap-2 px-3 py-2.5 bg-brand hover:bg-brand-dark text-gray-900 rounded-xl transition-all font-black text-sm shadow-brand-md min-h-[44px]"
             >
               <ShoppingCart className="w-5 h-5" />
-              <span className="hidden sm:block">
+              <span className="hidden md:block text-sm">
                 {cartCount > 0 ? `${cartCount} item${cartCount > 1 ? 's' : ''}` : t.cart}
               </span>
               {cartCount > 0 && (
-                <>
-                  <motion.span
-                    key={cartCount}
-                    initial={{ scale: 1.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="sm:hidden absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-brand"
-                  >
-                    {cartCount}
-                  </motion.span>
-                  {/* Pulse ring */}
-                  <span className="absolute inset-0 rounded-xl animate-ping bg-brand/30 pointer-events-none" style={{ animationDuration: '2s' }} />
-                </>
+                <motion.span
+                  key={cartCount}
+                  initial={{ scale: 1.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="md:hidden absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-brand"
+                >
+                  {cartCount}
+                </motion.span>
               )}
             </motion.button>
           </div>
+        </div>
+
+        {/* Second row — Language switcher + Checkout link */}
+        <div className="flex items-center justify-between pb-1.5 border-t border-white/10 pt-1.5">
+          <div className="flex items-center gap-1">
+            {(['en', 'fr', 'rw'] as const).map(lang => (
+              <button
+                key={lang}
+                onClick={() => setLanguage(lang)}
+                className={clsx(
+                  'px-3 py-1 rounded-lg text-[11px] font-black transition-all',
+                  language === lang
+                    ? 'bg-brand text-gray-900'
+                    : 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white'
+                )}
+              >
+                {lang === 'en' ? '🇬🇧 English' : lang === 'fr' ? '🇫🇷 Français' : '🇷🇼 Kinyarwanda'}
+              </button>
+            ))}
+          </div>
+          <Link href="/checkout" className="flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/20 rounded-lg text-white/70 text-[11px] font-black transition-colors">
+            <ShoppingCart className="w-3 h-3" /> Checkout
+          </Link>
         </div>
       </div>
     </header>
