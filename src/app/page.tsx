@@ -497,17 +497,22 @@ export default function Home() {
       {/* Floating cart button — visible on desktop where BottomNav is hidden */}
       {cartCount > 0 && (
         <motion.button
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
           onClick={() => setCartOpen(true)}
-          className="fixed bottom-6 right-6 z-[60] hidden sm:flex items-center gap-2 px-5 py-3.5 bg-brand-dark text-white rounded-2xl shadow-2xl font-black text-sm hover:bg-gray-800 transition-colors"
-          style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
+          className="fixed bottom-8 right-8 z-[60] hidden sm:flex items-center gap-3 px-6 py-4 bg-brand text-gray-900 rounded-2xl shadow-2xl font-black text-sm hover:bg-brand-dark hover:text-white transition-all"
+          style={{ boxShadow: '0 8px 40px rgba(255,204,0,0.5)' }}
         >
-          <ShoppingCart className="w-5 h-5" />
-          <span>{cartCount} {cartCount === 1 ? t.item : t.items}</span>
-          <span className="ml-1 px-2 py-0.5 bg-brand text-gray-900 rounded-lg text-xs font-black">
-            {subtotal.toLocaleString()} RWF
-          </span>
+          <div className="relative">
+            <ShoppingCart className="w-6 h-6" />
+            <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">
+              {cartCount}
+            </span>
+          </div>
+          <div className="text-left">
+            <p className="text-xs font-black leading-none">{t.cart}</p>
+            <p className="text-sm font-black leading-none mt-0.5">{subtotal.toLocaleString()} RWF</p>
+          </div>
         </motion.button>
       )}
       <BranchMapModal branch={selectedBranchMap} onClose={() => setSelectedBranchMap(null)} />

@@ -233,13 +233,13 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                   key={lang}
                   onClick={() => setLanguage(lang)}
                   className={clsx(
-                    'px-2 py-1.5 rounded-lg text-[11px] font-black transition-all',
+                    'px-2.5 py-1.5 rounded-lg text-[11px] font-black transition-all whitespace-nowrap',
                     language === lang
                       ? 'bg-brand text-gray-900'
                       : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
                   )}
                 >
-                  {lang === 'en' ? '🇬🇧 EN' : lang === 'fr' ? '🇫🇷 FR' : '🇷🇼 RW'}
+                  {lang === 'en' ? '🇬🇧 English' : lang === 'fr' ? '🇫🇷 Français' : '🇷🇼 Kinyarwanda'}
                 </button>
               ))}
             </div>
