@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import { getSimbaData } from '@/lib/data';
-import { Search, ShoppingCart, ChevronDown, MapPin, X, Sun, Moon, Languages, Menu, User, LogOut, ChevronRight, Store } from 'lucide-react';
+import { Search, ShoppingCart, ChevronDown, MapPin, X, Sun, Moon, Menu, User, LogOut, ChevronRight, Store } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -28,7 +28,6 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
   const [focused, setFocused] = useState(false);
   const [results, setResults] = useState<ReturnType<typeof getSimbaData>['products']>([]);
-  const [langOpen, setLangOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -234,41 +233,22 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
               {isDarkMode ? <Sun className="w-5 h-5 text-brand" /> : <Moon className="w-5 h-5 text-white/80" />}
             </button>
 
-            {/* Language — click-based, works on mobile */}
-            <div className="relative">
-              <button
-                onClick={() => setLangOpen(o => !o)}
-                className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl hover:bg-white/10 transition-colors border border-white/20"
-              >
-                <Languages className="w-4 h-4 text-white/80 flex-shrink-0" />
-                <span className="text-xs font-black text-white">
-                  {language === 'en' ? '🇬🇧 English' : language === 'fr' ? '🇫🇷 Français' : '🇷🇼 Kinyarwanda'}
-                </span>
-              </button>
-              <AnimatePresence>
-                {langOpen && (
-                  <>
-                    <motion.div
-                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                      className="fixed inset-0 z-[99]"
-                      onClick={() => setLangOpen(false)}
-                    />
-                    <motion.div
-                      initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
-                      className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 z-[100] overflow-hidden py-1"
-                    >
-                      {(['en', 'fr', 'rw'] as const).map(lang => (
-                        <button key={lang} onClick={() => { setLanguage(lang); setLangOpen(false); }}
-                          className={clsx('w-full text-left px-4 py-3 text-sm font-bold transition-colors',
-                            language === lang ? 'text-brand bg-brand-muted dark:bg-brand/10' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                          )}>
-                          {lang === 'en' ? '🇬🇧 English' : lang === 'fr' ? '🇫🇷 Français' : '🇷🇼 Kinyarwanda'}
-                        </button>
-                      ))}
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
+            {/* Language — 3 visible buttons, always shown */}
+            <div className="flex items-center gap-1">
+              {(['en', 'fr', 'rw'] as const).map(lang => (
+                <button
+                  key={lang}
+                  onClick={() => setLanguage(lang)}
+                  className={clsx(
+                    'px-2 py-1.5 rounded-lg text-[11px] font-black transition-all',
+                    language === lang
+                      ? 'bg-brand text-gray-900'
+                      : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                  )}
+                >
+                  {lang === 'en' ? '🇬🇧 EN' : lang === 'fr' ? '🇫🇷 FR' : '🇷🇼 RW'}
+                </button>
+              ))}
             </div>
 
             {/* Checkout */}
