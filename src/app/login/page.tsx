@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useSimbaStore } from '@/store/useSimbaStore';
-import { translations } from '@/lib/translations';
 import { ShoppingBag, Store, ShieldCheck, ArrowLeft } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
 
@@ -40,8 +39,8 @@ export default function LoginPage() {
           <Link href="/staff" className="w-full flex items-center gap-4 p-5 bg-white dark:bg-gray-900 rounded-2xl border-2 border-gray-100 dark:border-gray-800 hover:border-brand hover:shadow-md transition-all">
             <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center flex-shrink-0"><Store className="w-6 h-6 text-green-600" /></div>
             <div>
-              <p className="font-black text-gray-900 dark:text-white">{isFr ? 'Personnel de l'agence' : isRw ? 'Abakozi b'ishami' : 'Branch Staff / Manager'}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{isFr ? 'Gérer les commandes et l'inventaire' : isRw ? 'Gucunga itumiziwa n'ububiko' : 'Manage branch orders and inventory'}</p>
+              <p className="font-black text-gray-900 dark:text-white">{isFr ? "Personnel de l'agence" : isRw ? "Abakozi b'ishami" : 'Branch Staff / Manager'}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{isFr ? "Gérer les commandes et l'inventaire" : isRw ? "Gucunga itumiziwa n'ububiko" : 'Manage branch orders and inventory'}</p>
             </div>
           </Link>
           <Link href="/admin/login" className="w-full flex items-center gap-4 p-5 bg-white dark:bg-gray-900 rounded-2xl border-2 border-gray-100 dark:border-gray-800 hover:border-brand hover:shadow-md transition-all">
