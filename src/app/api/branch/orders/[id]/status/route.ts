@@ -21,6 +21,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ ok: false, error: 'Invalid status' }, { status: 400 });
     }
 
+    // Demo orders — return success without DB (UI updates optimistically)
+    if (params.id.startsWith('DEMO-')) {
+      return NextResponse.json({ ok: true });
+    }
+
     const pool = getPool();
     const conn = await pool.getConnection();
     try {

@@ -21,6 +21,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   try {
     const { staffId, staffName } = await req.json();
+
+    // Demo orders — return success without DB (UI updates optimistically)
+    if (params.id.startsWith('DEMO-')) {
+      return NextResponse.json({ ok: true });
+    }
+
     const pool = getPool();
     const conn = await pool.getConnection();
     try {
