@@ -15,6 +15,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ ok: false, error: 'Invalid status' }, { status: 400 });
     }
 
+    // Demo orders — return success without DB
+    if (id.startsWith('DEMO-')) {
+      return NextResponse.json({ ok: true });
+    }
+
     await conn.execute(
       `UPDATE orders SET status = ?, updated_at = NOW() WHERE id = ?`,
       [status, id]

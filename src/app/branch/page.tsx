@@ -116,7 +116,11 @@ export default function ManagerDashboard() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
         body: JSON.stringify({ staffId, staffName }),
       });
-      await loadData();
+      // Update local state immediately (works for both real and demo orders)
+      setOrders(prev => prev.map(o => o.id === orderId
+        ? { ...o, assigned_to: staffId, assigned_name: staffName, branch_status: 'preparing' }
+        : o
+      ));
       if (selectedOrder?.id === orderId) {
         setSelectedOrder(prev => prev ? { ...prev, assigned_to: staffId, assigned_name: staffName, branch_status: 'preparing' } : null);
       }
@@ -132,7 +136,11 @@ export default function ManagerDashboard() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
         body: JSON.stringify({ branchStatus }),
       });
-      await loadData();
+      // Update local state immediately
+      setOrders(prev => prev.map(o => o.id === orderId
+        ? { ...o, branch_status: branchStatus, status: branchStatus === 'picked_up' ? 'delivered' : o.status }
+        : o
+      ));
       setSelectedOrder(null);
     } catch (err) { console.error(err); }
   };
@@ -148,7 +156,8 @@ export default function ManagerDashboard() {
         body: JSON.stringify({ branchStatus: 'preparing' }),
       })
     ));
-    await loadData();
+    // Update all pending orders to preparing in local state
+    setOrders(prev => prev.map(o => o.branch_status === 'pending' ? { ...o, branch_status: 'preparing' } : o));
   };
 
   const cancelOrder = async (orderId: string) => {
@@ -161,7 +170,8 @@ export default function ManagerDashboard() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
         body: JSON.stringify({ branchStatus: 'cancelled' }),
       });
-      await loadData();
+      // Remove from local state
+      setOrders(prev => prev.filter(o => o.id !== orderId));
       setSelectedOrder(null);
     } catch (err) { console.error(err); }
     setCancelling(null);
