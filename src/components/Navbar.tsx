@@ -34,39 +34,32 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const [aiMessage, setAiMessage] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
 
-  // Detect if query is conversational (question or sentence)
-  const isConversational = (q: string) =>
-    q.length > 10 || /\?|do you|have|need|want|looking|find|show|give|any|fresh|cheap|best/i.test(q);
-
   useEffect(() => {
     if (searchQuery.trim().length < 2) { setResults([]); setAiMessage(''); return; }
-    const data = getSimbaData();
 
-    if (isConversational(searchQuery.trim())) {
-      // AI search
-      setAiLoading(true);
-      setResults([]);
-      const timer = setTimeout(async () => {
-        try {
-          const res = await fetch('/api/search', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query: searchQuery.trim(), language }),
-          });
-          const d = await res.json();
-          if (d.ok) {
-            setResults(d.products ?? []);
-            setAiMessage(d.message ?? '');
-          }
-        } catch { /* fallback to keyword */ }
-        setAiLoading(false);
-      }, 600);
-      return () => clearTimeout(timer);
-    } else {
-      // Keyword search
-      setAiMessage('');
-      setResults(data.products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 7));
-    }
+    // Always use AI search for all queries
+    setAiLoading(true);
+    setResults([]);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: searchQuery.trim(), language }),
+        });
+        const d = await res.json();
+        if (d.ok) {
+          setResults(d.products ?? []);
+          setAiMessage(d.message ?? '');
+        }
+      } catch {
+        // Fallback to keyword
+        const data = getSimbaData();
+        setResults(data.products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 7));
+      }
+      setAiLoading(false);
+    }, 400);
+    return () => clearTimeout(timer);
   }, [searchQuery, language]);
 
   useEffect(() => {
@@ -146,7 +139,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                 value={searchQuery}
                 onFocus={() => setFocused(true)}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder={t.searchPlaceholder}
+                placeholder={language === 'fr' ? '🤖 Recherche IA — ex: "Du lait frais ?"' : language === 'rw' ? '🤖 Shakisha na AI — urugero: "Mufite amata?"' : '🤖 AI Search — e.g. "Do you have fresh milk?"'}
                 className="flex-1 bg-transparent outline-none text-sm text-gray-900 placeholder:text-gray-400 font-medium"
               />
               {searchQuery && (

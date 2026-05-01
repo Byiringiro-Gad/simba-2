@@ -21,6 +21,7 @@ import { ArrowLeft, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
+import { ShoppingCart } from 'lucide-react';
 import { SimbaData } from '@/types';
 import { SIMBA_BRANCHES, SimbaBranch } from '@/lib/branches';
 import ScrollReveal, { StaggerReveal, StaggerItem } from '@/components/ScrollReveal';
@@ -112,8 +113,11 @@ export default function Home() {
   const {
     language, isCartOpen, setCartOpen,
     activeTab, setActiveTab, selectedCategory, setSelectedCategory, searchQuery,
+    cart,
   } = useSimbaStore();
   const t = translations[language];
+  const cartCount = cart.reduce((a, i) => a + i.quantity, 0);
+  const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
 
   // sidebar drawer state
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -489,6 +493,23 @@ export default function Home() {
       <BottomNav />
       <AddressModal />
       <CartDrawer isOpen={isCartOpen} onClose={() => setCartOpen(false)} />
+
+      {/* Floating cart button — visible on desktop where BottomNav is hidden */}
+      {cartCount > 0 && (
+        <motion.button
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          onClick={() => setCartOpen(true)}
+          className="fixed bottom-6 right-6 z-[60] hidden sm:flex items-center gap-2 px-5 py-3.5 bg-brand-dark text-white rounded-2xl shadow-2xl font-black text-sm hover:bg-gray-800 transition-colors"
+          style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
+        >
+          <ShoppingCart className="w-5 h-5" />
+          <span>{cartCount} {cartCount === 1 ? t.item : t.items}</span>
+          <span className="ml-1 px-2 py-0.5 bg-brand text-gray-900 rounded-lg text-xs font-black">
+            {subtotal.toLocaleString()} RWF
+          </span>
+        </motion.button>
+      )}
       <BranchMapModal branch={selectedBranchMap} onClose={() => setSelectedBranchMap(null)} />
       <ShopNowPanel
         isOpen={shopNowOpen}
