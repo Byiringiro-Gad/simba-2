@@ -36,19 +36,6 @@ export default function CheckoutPage() {
 
   useEffect(() => { if (!fullName && user?.name) setFullName(user.name); }, [user?.name]);
 
-  // Pre-fill demo cart if empty so graders can see the full checkout flow
-  useEffect(() => {
-    if (cart.length === 0) {
-      const demo = [
-        { id: 1, name: 'Fresh Whole Milk 1L', price: 1200, unit: 'L', category: 'Groceries', subcategoryId: 0, image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&q=80', inStock: true },
-        { id: 2, name: 'White Bread Loaf', price: 800, unit: 'Pcs', category: 'Bakery', subcategoryId: 0, image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&q=80', inStock: true },
-        { id: 3, name: 'Cooking Oil 2L', price: 4500, unit: 'L', category: 'Groceries', subcategoryId: 0, image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400&q=80', inStock: true },
-      ];
-      demo.forEach(p => addToCart(p as any));
-      setPickupBranch('remera');
-    }
-  }, []);
-
   const handlePlaceOrder = async () => {
     if (!user) { setAuthOpen(true); return; }
     if (!fullName.trim() || !selectedBranch) { toast.error(t.selectBranch); return; }
