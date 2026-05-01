@@ -9,6 +9,7 @@ export const getSimbaData = (): SimbaData => {
     // Support both {products:[]} and [{...}] formats
     const rawProducts = Array.isArray(raw) ? raw : (raw.products ?? []);
     cachedData = {
+      store: raw.store ?? { name: 'Simba Supermarket', tagline: "Rwanda's #1 Supermarket", location: 'Kigali, Rwanda', currency: 'RWF' },
       products: rawProducts.filter((p: any) => p.price >= 10 && p.image && p.image.length > 0),
     } as SimbaData;
   }
