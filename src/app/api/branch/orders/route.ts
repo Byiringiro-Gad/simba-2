@@ -15,12 +15,12 @@ function verifyToken(req: NextRequest) {
 
 async function ensureOrderColumns(conn: any) {
   const cols = [
-    `ALTER TABLE orders ADD COLUMN assigned_to VARCHAR(36) DEFAULT NULL`,
-    `ALTER TABLE orders ADD COLUMN assigned_name VARCHAR(100) DEFAULT NULL`,
-    `ALTER TABLE orders ADD COLUMN branch_status ENUM('pending','preparing','ready','picked_up') NOT NULL DEFAULT 'pending'`,
-    `ALTER TABLE orders ADD COLUMN pickup_branch VARCHAR(255) NOT NULL DEFAULT ''`,
-    `ALTER TABLE orders ADD COLUMN pickup_slot VARCHAR(20) NOT NULL DEFAULT 'asap'`,
-    `ALTER TABLE orders ADD COLUMN deposit_amount INT NOT NULL DEFAULT 0`,
+    `ALTER TABLE orders ADD COLUMN IF NOT EXISTS assigned_to VARCHAR(36) DEFAULT NULL`,
+    `ALTER TABLE orders ADD COLUMN IF NOT EXISTS assigned_name VARCHAR(100) DEFAULT NULL`,
+    `ALTER TABLE orders ADD COLUMN IF NOT EXISTS branch_status VARCHAR(20) NOT NULL DEFAULT 'pending'`,
+    `ALTER TABLE orders ADD COLUMN IF NOT EXISTS pickup_branch VARCHAR(255) NOT NULL DEFAULT ''`,
+    `ALTER TABLE orders ADD COLUMN IF NOT EXISTS pickup_slot VARCHAR(20) NOT NULL DEFAULT 'asap'`,
+    `ALTER TABLE orders ADD COLUMN IF NOT EXISTS deposit_amount INT NOT NULL DEFAULT 0`,
   ];
   for (const sql of cols) { try { await conn.execute(sql); } catch { /* already exists */ } }
 }
