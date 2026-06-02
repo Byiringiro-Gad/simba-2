@@ -232,21 +232,23 @@ export default function Home() {
                 </div>
 
                 {/* Two-column layout: sidebar + grid */}
-                <div className="max-w-screen-xl mx-auto flex">
-                  {/* Left sidebar — desktop only */}
-                  <aside className="hidden lg:block w-56 flex-shrink-0 sticky top-[7.5rem] h-[calc(100vh-7.5rem)] overflow-y-auto border-r border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950">
-                    <CategorySidebar
-                      categories={categories}
-                      onSelect={handleCategorySelect}
-                    />
-                  </aside>
+                <div className="max-w-screen-xl mx-auto">
+                  <div className="flex">
+                    {/* Left sidebar — desktop only */}
+                    <aside className="hidden lg:block w-56 flex-shrink-0 sticky top-[7.5rem] h-[calc(100vh-7.5rem)] overflow-y-auto border-r border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950">
+                      <CategorySidebar
+                        categories={categories}
+                        onSelect={handleCategorySelect}
+                      />
+                    </aside>
 
-                  {/* Products */}
-                  <main className="flex-1 min-w-0 px-4 sm:px-6 py-5 pb-24 sm:pb-8">
-                    <ProductGrid
-                      products={selectedCategory ? categoryProducts : data.products}
-                    />
-                  </main>
+                    {/* Products */}
+                    <main className="flex-1 min-w-0 px-4 sm:px-6 py-5 pb-24 sm:pb-8">
+                      <ProductGrid
+                        products={selectedCategory ? categoryProducts : data.products}
+                      />
+                    </main>
+                  </div>
                 </div>
               </motion.div>
             ) : (

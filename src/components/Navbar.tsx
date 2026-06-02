@@ -74,8 +74,8 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
   return (
     <header className="sticky top-0 z-50 bg-brand-dark shadow-lg shadow-black/30">
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center gap-3 h-16">
+      <div className="max-w-screen-xl mx-auto px-3 sm:px-6">
+        <div className="flex items-center gap-2 sm:gap-3 h-16 w-full overflow-hidden">
 
           {/* Logo */}
           <Link href="/" onClick={() => setActiveTab('home')} className="flex items-center gap-2 flex-shrink-0">
@@ -130,8 +130,9 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           </button>
 
           {/* Search bar — visible on all screens */}
-          <div ref={searchRef} className="flex flex-1 relative">            <div className={clsx(
-              'flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white transition-all',
+          <div ref={searchRef} className="flex-1 relative min-w-0">
+            <div className={clsx(
+              'flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl bg-white transition-all w-full',
               focused ? 'ring-2 ring-brand' : ''
             )}>
               <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -142,7 +143,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                 onFocus={() => setFocused(true)}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder={language === 'fr' ? '🤖 Recherche IA — ex: "Du lait frais ?"' : language === 'rw' ? '🤖 Shakisha na AI — urugero: "Mufite amata?"' : '🤖 AI Search — e.g. "Do you have fresh milk?"'}
-                className="flex-1 bg-transparent outline-none text-sm text-gray-900 placeholder:text-gray-400 font-medium"
+                className="flex-1 min-w-0 bg-transparent outline-none text-sm text-gray-900 placeholder:text-gray-400 font-medium"
               />
               {searchQuery && (
                 <button onClick={() => setSearchQuery('')} className="p-0.5 hover:bg-gray-100 rounded-full">
@@ -222,7 +223,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           </div>
 
           {/* Right actions — clean & minimal */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
 
             {/* Language — globe icon with dropdown */}
             <div className="relative">
@@ -232,7 +233,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                 title="Change language"
               >
                 <Globe className="w-5 h-5 text-white/80" />
-                <span className="text-[10px] font-black text-white/60 uppercase">{language}</span>
+                <span className="hidden sm:block text-[10px] font-black text-white/60 uppercase">{language}</span>
               </button>
               <AnimatePresence>
                 {langOpen && (
