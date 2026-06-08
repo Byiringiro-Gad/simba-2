@@ -4,7 +4,7 @@ import { Product } from '@/types';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations, translateCategory } from '@/lib/translations';
 import ProductCard from './ProductCard';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SearchX, SlidersHorizontal, ChevronDown, X, Check } from 'lucide-react';
 import { getProductRating } from '@/lib/reviews';
@@ -21,6 +21,43 @@ const MAX_PRICE = 50000;
 export default function ProductGrid({ products }: ProductGridProps) {
   const { searchQuery, selectedCategory, language, branchInventory } = useSimbaStore();
   const t = translations[language];
+
+  // ── AI search state ───────────────────────────────────────────────────────
+  const [aiProducts, setAiProducts] = useState<Product[] | null>(null);
+  const [aiMessage, setAiMessage] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const lastQuery = useRef('');
+
+  useEffect(() => {
+    // Only run AI search when there's a search query (not when browsing a category)
+    if (!searchQuery.trim()) {
+      setAiProducts(null);
+      setAiMessage('');
+      return;
+    }
+    // Debounce
+    const timer = setTimeout(async () => {
+      if (lastQuery.current === searchQuery.trim()) return;
+      lastQuery.current = searchQuery.trim();
+      setAiLoading(true);
+      try {
+        const res = await fetch('/api/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: searchQuery.trim(), language }),
+        });
+        const d = await res.json();
+        if (d.ok) {
+          setAiProducts(d.products ?? []);
+          setAiMessage(d.message ?? '');
+        }
+      } catch {
+        setAiProducts(null);
+      }
+      setAiLoading(false);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery, language]);
 
   // ── Filter & sort state ───────────────────────────────────────────────────
   const [sort, setSort] = useState<SortOption>('default');
@@ -40,33 +77,28 @@ export default function ProductGrid({ products }: ProductGridProps) {
   ];
 
   const currentSortLabel = SORT_OPTIONS.find(o => o.id === sort)?.label ?? SORT_OPTIONS[0].label;
-
-  // Active filter count for badge
   const activeFilters = (maxPrice < MAX_PRICE ? 1 : 0) + (minRating > 0 ? 1 : 0) + (inStockOnly ? 1 : 0);
 
   const filteredProducts = useMemo(() => {
-    let list = products.filter(p => {
-      // Search
-      const matchesSearch = !searchQuery.trim() ||
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.category.toLowerCase().includes(searchQuery.toLowerCase());
-      // Category
+    // Use AI results when searching, otherwise use the passed products list
+    const base = (searchQuery.trim() && aiProducts !== null) ? aiProducts : products;
+
+    let list = base.filter(p => {
+      // When AI search is active, skip text filtering — AI already handled it
+      const matchesSearch = searchQuery.trim() && aiProducts !== null
+        ? true
+        : (!searchQuery.trim() ||
+            p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.category.toLowerCase().includes(searchQuery.toLowerCase()));
       const matchesCategory = !selectedCategory || p.category === selectedCategory;
-      // Price
       const matchesPrice = p.price <= maxPrice;
-      // Stock
-      const isAvail = branchInventory[p.id]
-        ? branchInventory[p.id].isAvailable
-        : p.inStock;
+      const isAvail = branchInventory[p.id] ? branchInventory[p.id].isAvailable : p.inStock;
       const matchesStock = !inStockOnly || isAvail;
-      // Rating
       const { avg } = getProductRating(p.id);
       const matchesRating = avg >= minRating;
-
       return matchesSearch && matchesCategory && matchesPrice && matchesStock && matchesRating;
     });
 
-    // Sort
     switch (sort) {
       case 'price-asc':  list = [...list].sort((a, b) => a.price - b.price); break;
       case 'price-desc': list = [...list].sort((a, b) => b.price - a.price); break;
@@ -74,9 +106,8 @@ export default function ProductGrid({ products }: ProductGridProps) {
       case 'name-az':    list = [...list].sort((a, b) => a.name.localeCompare(b.name)); break;
       case 'name-za':    list = [...list].sort((a, b) => b.name.localeCompare(a.name)); break;
     }
-
     return list;
-  }, [products, searchQuery, selectedCategory, sort, maxPrice, minRating, inStockOnly, branchInventory]);
+  }, [products, aiProducts, searchQuery, selectedCategory, sort, maxPrice, minRating, inStockOnly, branchInventory]);
 
   const resetFilters = () => {
     setMaxPrice(MAX_PRICE);
@@ -95,6 +126,24 @@ export default function ProductGrid({ products }: ProductGridProps) {
 
   return (
     <div>
+      {/* ── AI search message ── */}
+      {aiMessage && searchQuery.trim() && (
+        <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-brand-muted rounded-xl">
+          <span className="text-[10px] px-2 py-0.5 bg-brand-dark text-white rounded-full font-black flex-shrink-0">AI</span>
+          <p className="text-xs text-gray-700 dark:text-gray-300 font-medium">{aiMessage}</p>
+        </div>
+      )}
+      {aiLoading && searchQuery.trim() && (
+        <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-brand-muted rounded-xl">
+          <div className="flex gap-1">
+            {[0,1,2].map(i => (
+              <div key={i} className="w-1.5 h-1.5 bg-brand-dark rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 font-medium">{t.aiSearching}</p>
+        </div>
+      )}
+
       {/* ── Toolbar: Sort + Filter ── */}
       <div className="flex items-center gap-2 mb-4 sticky top-[7.5rem] z-20 bg-gray-50 dark:bg-gray-950 py-2 overflow-x-auto no-scrollbar">
         {/* Result count */}
