@@ -6,6 +6,13 @@ export const dynamic = 'force-dynamic';
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
+const STOP_WORDS = new Set([
+  'do', 'you', 'have', 'i', 'a', 'an', 'the', 'is', 'are', 'want', 'need',
+  'show', 'me', 'give', 'get', 'find', 'looking', 'for', 'any', 'some', 'please',
+  'can', 'we', 'what', 'which', 'where', 'how', 'much', 'many', 'there', 'with',
+  'and', 'or', 'of', 'in', 'on', 'to', 'it', 'be', 'this', 'that',
+]);
+
 export async function POST(req: NextRequest) {
   try {
     const { query, language = 'en' } = await req.json();
@@ -14,44 +21,38 @@ export async function POST(req: NextRequest) {
     }
 
     const { products } = getSimbaData();
-
-    // Compact catalog — id, name, category, price
-    const catalog = products
-      .map(p => `${p.id}|${p.name}|${p.category}|${p.price}RWF`)
-      .join('\n');
-
     const apiKey = process.env.GROQ_API_KEY;
 
-    // ── No API key → smart keyword fallback ─────────────────────────────────
     if (!apiKey) {
       return keywordFallback(query, language, products);
     }
 
-    // ── Groq AI search ───────────────────────────────────────────────────────
-    const systemPrompt = `You are a product search assistant for Simba Supermarket in Kigali, Rwanda.
-The user will ask for products in natural language (English, French, or Kinyarwanda).
-Respond in the SAME language the user used.
+    // Send name + category only — much smaller than full catalog
+    // Group by category so Groq understands the structure
+    const catalog = products
+      .map(p => `${p.name} [${p.category}] ${p.price}RWF`)
+      .join('\n');
 
-You must understand natural language queries including:
-- Synonyms and similar words (e.g. "milk" matches "Fresh Milk", "Dairy Milk", "Long Life Milk")
-- Category queries (e.g. "cleaning stuff" matches Cleaning & Sanitary category)
-- Price conditions (e.g. "cheap", "under 2000 RWF", "less than 5000")
-- Partial words (e.g. "chick" matches "Chicken")
-- Mixed language (e.g. "lait" is French for milk, "amata" is Kinyarwanda for milk)
-- Related items (e.g. "breakfast" could match bread, eggs, milk, juice, yogurt)
+    const systemPrompt = `You are a smart product search assistant for Simba Supermarket in Kigali, Rwanda.
+The user sends a natural language query in English, French, or Kinyarwanda.
+Your job is to understand the full meaning of the query and find matching products.
 
-Product catalog (id|name|category|price):
+Rules:
+- Understand questions like "do you have milk?" = search for milk products
+- Understand "something cheap for breakfast" = low-price breakfast items (bread, eggs, milk, juice)
+- Understand French: "lait" = milk, "pain" = bread, "eau" = water
+- Understand Kinyarwanda: "amata" = milk, "umugati" = bread, "amazi" = water
+- Match by category too: "cleaning products", "baby stuff", "cosmetics" etc.
+- If price mentioned (e.g. "under 5000 RWF"), only include products within that range
+
+Product catalog (name [category] price):
 ${catalog}
 
-Instructions:
-1. Understand what the user wants — consider synonyms, related words, category matches, price conditions
-2. Return a short friendly message (1-2 sentences) in the user's language
-3. Return up to 8 best matching product IDs as a JSON array
+Respond ONLY in this exact JSON format, no markdown, no extra text:
+{"message":"short friendly reply in the same language the user used","productNames":["exact product name 1","exact product name 2"]}
 
-Respond ONLY with this exact JSON format, no other text:
-{"message":"your response here","productIds":[1,2,3]}
-
-If nothing matches, return {"message":"...","productIds":[]}`;
+Return up to 8 product names. Use the EXACT names from the catalog.
+If nothing matches respond: {"message":"...","productNames":[]}`;
 
     const res = await fetch(GROQ_URL, {
       method: 'POST',
@@ -65,8 +66,8 @@ If nothing matches, return {"message":"...","productIds":[]}`;
           { role: 'system', content: systemPrompt },
           { role: 'user', content: query },
         ],
-        temperature: 0.2,
-        max_tokens: 256,
+        temperature: 0.1,
+        max_tokens: 400,
       }),
     });
 
@@ -76,22 +77,29 @@ If nothing matches, return {"message":"...","productIds":[]}`;
     }
 
     const data = await res.json();
-    const raw = data.choices?.[0]?.message?.content ?? '{}';
+    const raw = data.choices?.[0]?.message?.content ?? '';
 
-    // Parse Groq response
-    let parsed: { message: string; productIds: number[] };
+    let parsed: { message: string; productNames: string[] };
     try {
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       parsed = JSON.parse(jsonMatch?.[0] ?? raw);
     } catch {
+      console.error('[Groq parse error]', raw);
       return keywordFallback(query, language, products);
     }
 
-    const matched = (parsed.productIds ?? [])
-      .map((id: number) => products.find(p => p.id === id))
+    // Match returned names back to actual products (exact + fuzzy)
+    const matched = (parsed.productNames ?? [])
+      .map((name: string) => {
+        const lower = name.toLowerCase();
+        // Try exact match first
+        let found = products.find(p => p.name.toLowerCase() === lower);
+        // Fall back to includes match
+        if (!found) found = products.find(p => p.name.toLowerCase().includes(lower) || lower.includes(p.name.toLowerCase()));
+        return found;
+      })
       .filter(Boolean);
 
-    // If AI returned nothing, fall back
     if (matched.length === 0) {
       return keywordFallback(query, language, products);
     }
@@ -109,78 +117,62 @@ If nothing matches, return {"message":"...","productIds":[]}`;
   }
 }
 
-// ── Smart keyword fallback — fuzzy + synonyms + price ────────────────────────
+// ── Keyword fallback ──────────────────────────────────────────────────────────
 function keywordFallback(query: string, language: string, products: any[]) {
   const q = query.toLowerCase().trim();
 
-  // Price condition detection
   const priceMatch = q.match(/under\s*(\d+)|less\s*than\s*(\d+)|moins\s*de\s*(\d+)/i);
-  const maxPrice = priceMatch
-    ? parseInt(priceMatch[1] || priceMatch[2] || priceMatch[3])
-    : null;
+  const maxPrice = priceMatch ? parseInt(priceMatch[1] || priceMatch[2] || priceMatch[3]) : null;
   const isCheap = /cheap|affordable|bon march[eé]|buhoro/i.test(q);
 
-  // Synonym map
   const synonyms: Record<string, string[]> = {
-    milk:      ['milk', 'lait', 'amata', 'dairy'],
-    bread:     ['bread', 'pain', 'umugati', 'bakery'],
+    milk:      ['milk', 'lait', 'amata', 'dairy', 'lactogen'],
+    bread:     ['bread', 'pain', 'umugati'],
     water:     ['water', 'eau', 'amazi'],
-    juice:     ['juice', 'jus', 'umusoki'],
-    eggs:      ['egg', 'eggs', 'oeuf', 'amagi'],
+    juice:     ['juice', 'jus'],
+    egg:       ['egg', 'eggs', 'oeuf', 'amagi'],
     rice:      ['rice', 'riz', 'umuceli'],
     oil:       ['oil', 'huile', 'amavuta'],
-    soap:      ['soap', 'savon', 'isabuni', 'cleaning'],
+    soap:      ['soap', 'savon', 'isabuni'],
     chicken:   ['chicken', 'poulet', 'inkoko'],
     sugar:     ['sugar', 'sucre', 'isukari'],
-    flour:     ['flour', 'farine', 'ufu'],
     yogurt:    ['yogurt', 'yaourt'],
-    baby:      ['baby', 'bébé', 'uruhinja', 'infant'],
-    breakfast: ['bread', 'milk', 'egg', 'juice', 'yogurt', 'cereal'],
-    cleaning:  ['cleaning', 'sanitary', 'hygiene', 'soap', 'detergent'],
-    cosmetics: ['cosmetic', 'beauty', 'skin', 'hair', 'lotion'],
-    drink:     ['juice', 'water', 'soda', 'beverage', 'drink'],
-    snack:     ['snack', 'chips', 'biscuit', 'cookie'],
+    baby:      ['baby', 'infant', 'uruhinja'],
+    cleaning:  ['cleaning', 'sanitary', 'detergent'],
+    cosmetics: ['cosmetic', 'beauty', 'lotion', 'shampoo', 'cream'],
+    breakfast: ['bread', 'milk', 'egg', 'juice', 'yogurt'],
   };
 
-  const words = q.split(/\s+/).filter(w => w.length > 1);
-  const searchTerms = new Set<string>(words);
+  // Strip stop words
+  const words = q.split(/\s+/).filter(w => w.length > 2 && !STOP_WORDS.has(w));
 
+  if (words.length === 0) {
+    return NextResponse.json({ ok: true, message: `No products found for "${query}".`, products: [], usedAI: false });
+  }
+
+  const searchTerms = new Set<string>(words);
   for (const variants of Object.values(synonyms)) {
-    if (variants.some(v => q.includes(v))) {
+    if (variants.some(v => words.some(w => v.includes(w) || w.includes(v)))) {
       variants.forEach(v => searchTerms.add(v));
     }
   }
 
-  let matched = products.filter(p => {
+  const terms = Array.from(searchTerms);
+  const matched = products.filter(p => {
     const name = p.name.toLowerCase();
     const cat  = p.category.toLowerCase();
-    const textMatch  = Array.from(searchTerms).some(t => name.includes(t) || cat.includes(t));
-    const priceOk    = maxPrice ? p.price <= maxPrice : true;
-    const cheapOk    = isCheap  ? p.price <= 3000     : true;
+    const textMatch = terms.some(t => name.includes(t) || cat.includes(t));
+    const priceOk   = maxPrice ? p.price <= maxPrice : true;
+    const cheapOk   = isCheap  ? p.price <= 3000     : true;
     return textMatch && priceOk && cheapOk;
-  });
-
-  // Partial match fallback (first 3 chars)
-  if (matched.length === 0) {
-    matched = products.filter(p =>
-      words.some(w => w.length >= 3 && p.name.toLowerCase().includes(w.slice(0, 3)))
-    );
-  }
-
-  matched = matched.slice(0, 8);
+  }).slice(0, 8);
 
   const message =
     language === 'fr'
-      ? matched.length > 0
-        ? `${matched.length} produit(s) trouvé(s) pour "${query}"`
-        : `Aucun produit trouvé pour "${query}". Essayez un autre terme.`
+      ? matched.length > 0 ? `${matched.length} produit(s) pour "${query}"` : `Aucun résultat pour "${query}".`
       : language === 'rw'
-      ? matched.length > 0
-        ? `Ibisubizo ${matched.length} bya "${query}"`
-        : `Nta bicuruzwa bibonetse bya "${query}". Gerageza ijambo rindi.`
-      : matched.length > 0
-        ? `Found ${matched.length} product(s) for "${query}"`
-        : `No products found for "${query}". Try a different search.`;
+      ? matched.length > 0 ? `Ibisubizo ${matched.length} bya "${query}"` : `Nta bicuruzwa bya "${query}".`
+      : matched.length > 0 ? `Found ${matched.length} product(s) for "${query}"` : `No products found for "${query}".`;
 
   return NextResponse.json({ ok: true, message, products: matched, usedAI: false });
 }
