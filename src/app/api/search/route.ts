@@ -154,7 +154,7 @@ function keywordFallback(query: string, language: string, products: any[]) {
   let matched = products.filter(p => {
     const name = p.name.toLowerCase();
     const cat  = p.category.toLowerCase();
-    const textMatch  = [...searchTerms].some(t => name.includes(t) || cat.includes(t));
+    const textMatch  = Array.from(searchTerms).some(t => name.includes(t) || cat.includes(t));
     const priceOk    = maxPrice ? p.price <= maxPrice : true;
     const cheapOk    = isCheap  ? p.price <= 3000     : true;
     return textMatch && priceOk && cheapOk;
