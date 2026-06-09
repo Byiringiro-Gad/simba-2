@@ -714,7 +714,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                           </div>
                           <div className="flex items-center gap-2 text-sm font-bold text-gray-500 dark:text-gray-400">
                             <span className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-700" />
-                            {t.pickupTime}: {selectedPickupSlot.label} ({selectedPickupSlot.window})
+                            {t.pickupTime}: {pickupTime ? new Date(pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
                           </div>
                         </div>
                       </div>
@@ -727,7 +727,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                       <div>
                         <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t.pickupWindow}</p>
                         <p className="text-sm font-bold text-gray-900 dark:text-white">
-                          {selectedPickupSlot.label} • {selectedPickupSlot.window}
+                          {pickupTime ? new Date(pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
                         </p>
                       </div>
                     </div>
