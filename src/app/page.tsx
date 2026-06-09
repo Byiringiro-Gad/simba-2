@@ -374,12 +374,9 @@ export default function Home() {
 
                     {/* Brand */}
                     <div className="lg:col-span-1">
-                      <HomeBrandLink
-                        className="w-fit mb-3"
-                        iconWrapperClassName="w-9 h-9 rounded-xl"
-                        titleClassName="text-gray-900 dark:text-white text-base"
-                        subtitleClassName="text-gray-400"
-                      />
+                      <div className="inline-flex items-center gap-2.5 mb-3 px-3 py-2 rounded-xl" style={{ backgroundColor: '#FF6600' }}>
+                        <HomeBrandLink variant="footer" showText={true} />
+                      </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-3">{t.aboutSimbaDesc}</p>
                       <p className="text-[10px] text-gray-400">
                         {language === 'fr' ? 'Fondé en 2007 · Kigali, Rwanda' : language === 'rw' ? 'Yashinzwe 2007 · Kigali, Rwanda' : 'Founded 2007 · Kigali, Rwanda'}

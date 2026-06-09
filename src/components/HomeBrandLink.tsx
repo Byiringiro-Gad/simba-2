@@ -7,56 +7,53 @@ import { useSimbaStore } from '@/store/useSimbaStore';
 
 type HomeBrandLinkProps = {
   className?: string;
-  iconWrapperClassName?: string;
-  titleClassName?: string;
-  subtitleClassName?: string;
-  imageClassName?: string;
   showText?: boolean;
+  /** 'header' = white circle on orange bg (navbar/header use)
+   *  'light'  = white circle on any dark bg (login, loading screens)
+   *  'footer' = same as header but slightly smaller */
+  variant?: 'header' | 'light' | 'footer';
 };
 
 export default function HomeBrandLink({
   className,
-  iconWrapperClassName,
-  titleClassName,
-  subtitleClassName,
-  imageClassName,
   showText = true,
+  variant = 'header',
 }: HomeBrandLinkProps) {
   const goHome = useSimbaStore((state) => state.goHome);
-  const titleClasses = clsx('font-black tracking-tight leading-none', titleClassName ?? 'text-white');
-  const subtitleClasses = clsx(
-    'block text-[10px] font-medium tracking-widest uppercase',
-    subtitleClassName ?? 'text-white/60',
-  );
+
+  const circleSize = variant === 'footer' ? 'w-9 h-9' : 'w-11 h-11';
+  const imgSize   = variant === 'footer' ? 'w-8 h-8'  : 'w-10 h-10';
+  const titleSize = variant === 'footer' ? 'text-sm'  : 'text-base';
 
   return (
     <Link
       href="/"
       onClick={goHome}
-      aria-label={showText ? undefined : 'Simba home'}
-      className={clsx('flex items-center gap-2', className)}
+      aria-label="Simba Supermarket — go home"
+      className={clsx('flex items-center gap-2.5', className)}
     >
-      <div
-        className={clsx(
-          'relative flex-shrink-0 overflow-hidden bg-brand-dark',
-          iconWrapperClassName ?? 'w-10 h-10 rounded-xl',
-        )}
-      >
-        <Image
-          src="/simba-icon.png"
-          alt="Simba"
-          fill
-          sizes="64px"
-          className={clsx('object-cover', imageClassName)}
-        />
+      {/* White circle with lion */}
+      <div className={clsx('rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden', circleSize)}>
+        <div className={clsx('relative', imgSize)}>
+          <Image
+            src="/simba-icon.png"
+            alt="Simba logo"
+            fill
+            sizes="44px"
+            className="object-contain"
+          />
+        </div>
       </div>
+
       {showText && (
-        <span className={titleClasses}>
-          SIMBA
-          <span className={subtitleClasses}>
-            Online Supermarket
-          </span>
-        </span>
+        <div className="leading-tight">
+          <p className={clsx('font-black text-white leading-none tracking-tight', titleSize)}>
+            Simba Supermarket
+          </p>
+          <p className="text-white/80 text-[11px] font-medium leading-none mt-0.5">
+            Online Shopping
+          </p>
+        </div>
       )}
     </Link>
   );

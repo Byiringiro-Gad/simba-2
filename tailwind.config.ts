@@ -9,16 +9,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // ── Simba Brand Colors — Official Simba Orange ──────────────────────
+        // ── Simba Brand Colors — Official Simba Orange (from logo image) ──
         brand: {
-          DEFAULT:        '#E8501A',   // Simba Orange — matches official logo/platform
-          dark:           '#C43E0F',   // Darker for hover states
-          light:          '#F07040',   // Lighter for accents
-          muted:          '#FEF0EB',   // Very light orange bg (light mode)
-          'muted-dark':   '#2A0F00',   // Dark orange bg (dark mode)
-          accent:         '#E8501A',
-          'accent-dark':  '#C43E0F',
-          'accent-light': '#FEF0EB',
+          DEFAULT:        '#FF6600',   // Simba Orange — exact match from official header
+          dark:           '#E05500',   // Darker for hover states
+          light:          '#FF8533',   // Lighter for accents
+          muted:          '#FFF0E6',   // Very light orange bg (light mode)
+          'muted-dark':   '#2A1200',   // Dark orange bg (dark mode)
+          accent:         '#FF6600',
+          'accent-dark':  '#E05500',
+          'accent-light': '#FFF0E6',
           blue:           '#1E40AF',   // Deep blue — secondary
           'blue-light':   '#DBEAFE',   // Light blue bg
           'bg-dark':      '#0F172A',   // Simba dark background
@@ -47,10 +47,10 @@ module.exports = {
         '5xl': '2.5rem',
       },
       boxShadow: {
-        'brand-sm':  '0 1px 3px 0 rgba(232,80,26,0.15)',
-        'brand-md':  '0 4px 12px 0 rgba(232,80,26,0.25)',
-        'brand-lg':  '0 8px 24px 0 rgba(232,80,26,0.30)',
-        'brand-xl':  '0 16px 40px 0 rgba(232,80,26,0.35)',
+        'brand-sm':  '0 1px 3px 0 rgba(255,102,0,0.15)',
+        'brand-md':  '0 4px 12px 0 rgba(255,102,0,0.25)',
+        'brand-lg':  '0 8px 24px 0 rgba(255,102,0,0.30)',
+        'brand-xl':  '0 16px 40px 0 rgba(255,102,0,0.35)',
       },
       animation: {
         'shimmer':    'shimmer 1.5s linear infinite',

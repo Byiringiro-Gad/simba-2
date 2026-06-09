@@ -10,7 +10,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { clsx } from 'clsx';
 import { getBranchById } from '@/lib/branches';
-import HomeBrandLink from '@/components/HomeBrandLink';
 
 const POPULAR = ['Fresh Milk', 'Bread', 'Avocado', 'Cooking Oil', 'Rice', 'Eggs', 'Juice', 'Yogurt'];
 
@@ -120,15 +119,38 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-brand-dark shadow-lg shadow-black/30">
+      <header className="sticky top-0 z-50 shadow-lg shadow-black/20" style={{ backgroundColor: '#FF6600' }}>
         <div className="max-w-screen-xl mx-auto px-3 sm:px-6">
           <div className="flex items-center gap-2 sm:gap-3 h-16 w-full">
 
-            {/* Logo */}
-            <HomeBrandLink
-              className="flex-shrink-0"
-              iconWrapperClassName="w-10 h-10 rounded-xl"
-            />
+            {/* Logo — matches official Simba header: white circle + text */}
+            <Link
+              href="/"
+              onClick={() => {
+                setActiveTab('home');
+                setSearchQuery('');
+                setSelectedCategory(null);
+              }}
+              className="flex items-center gap-3 flex-shrink-0"
+            >
+              {/* White circle with lion icon */}
+              <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
+                <div className="relative w-10 h-10">
+                  <Image
+                    src="/simba-icon.png"
+                    alt="Simba"
+                    fill
+                    sizes="40px"
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+              {/* Text block — "Simba Supermarket" + "Online Shopping" */}
+              <div className="hidden sm:block leading-tight">
+                <p className="font-black text-white text-base leading-none tracking-tight">Simba Supermarket</p>
+                <p className="text-white/80 text-[11px] font-medium leading-none mt-0.5">Online Shopping</p>
+              </div>
+            </Link>
 
             {/* Menu button */}
             {onMenuClick && (

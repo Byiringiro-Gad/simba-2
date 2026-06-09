@@ -48,7 +48,7 @@
 
   /* Better focus styles for accessibility */
   :focus-visible {
-    outline: 2px solid #E8501A;
+    outline: 2px solid #FF6600;
     outline-offset: 2px;
     border-radius: 4px;
   }
