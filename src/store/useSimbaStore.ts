@@ -113,7 +113,6 @@ interface SimbaState {
   toggleDarkMode: () => void;
   setActiveTab: (tab: SimbaState['activeTab']) => void;
   goHome: () => void;
-  isShopNowOpen: boolean;
   setShopNowOpen: (open: boolean) => void;
 
   // Actions — Orders
