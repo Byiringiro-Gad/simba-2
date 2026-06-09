@@ -10,6 +10,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { clsx } from 'clsx';
 import { getBranchById } from '@/lib/branches';
+import HomeBrandLink from '@/components/HomeBrandLink';
 
 const POPULAR = ['Fresh Milk', 'Bread', 'Avocado', 'Cooking Oil', 'Rice', 'Eggs', 'Juice', 'Yogurt'];
 
@@ -20,6 +21,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
     pickupBranchId, setPickupBranchModalOpen,
     setActiveTab,
     user, logout, setCartOpen,
+    setSelectedCategory,
   } = useSimbaStore();
 
   const t = translations[language];
@@ -123,19 +125,10 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           <div className="flex items-center gap-2 sm:gap-3 h-16 w-full">
 
             {/* Logo */}
-            <Link href="/" onClick={() => setActiveTab('home')} className="flex items-center gap-2 flex-shrink-0">
-              <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0" style={{ position: 'relative' }}>
-                <img
-                  src="/simbaheaderM.png"
-                  alt="Simba"
-                  style={{ position: 'absolute', height: '100%', width: 'auto', maxWidth: 'none', left: 0, top: 0 }}
-                />
-              </div>
-              <span className="hidden sm:block font-black text-xl text-white tracking-tight leading-none">
-                SIMBA
-                <span className="block text-[10px] font-medium text-white/60 tracking-widest uppercase">Online Supermarket</span>
-              </span>
-            </Link>
+            <HomeBrandLink
+              className="flex-shrink-0"
+              iconWrapperClassName="w-10 h-10 rounded-xl"
+            />
 
             {/* Menu button */}
             {onMenuClick && (

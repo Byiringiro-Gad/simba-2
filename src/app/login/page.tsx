@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { ShoppingBag, Store, ShieldCheck, ArrowLeft } from 'lucide-react';
 import AuthModal from '@/components/AuthModal';
+import HomeBrandLink from '@/components/HomeBrandLink';
 
 export default function LoginPage() {
   const { language, setAuthOpen } = useSimbaStore();
@@ -18,9 +19,11 @@ export default function LoginPage() {
       </Link>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden mx-auto mb-4 relative bg-brand-dark">
-            <img src="/simbaheaderM.png" alt="Simba" style={{position:'absolute',height:'100%',width:'auto',maxWidth:'none',left:0,top:0}} />
-          </div>
+          <HomeBrandLink
+            showText={false}
+            className="w-fit mx-auto mb-4"
+            iconWrapperClassName="w-16 h-16 rounded-2xl"
+          />
           <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-1">
             {isFr ? 'Connexion' : isRw ? 'Injira' : 'Sign In'}
           </h1>

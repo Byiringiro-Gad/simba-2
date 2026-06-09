@@ -12,6 +12,8 @@ import { toast } from '@/components/Toast';
 import { ShoppingCart, ArrowLeft, MapPin, Clock, CheckCircle2, Package, Minus, Plus, Trash2, ChevronRight, ShieldCheck, Store } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
+import type { PaymentMethod } from '@/types';
+import { PAYMENT_METHODS, PAYMENT_METHOD_THEMES, getPaymentMethodLabel, getPaymentMethodNote, getPaymentMethodSubLabel } from '@/lib/paymentMethods';
 
 type Step = 'cart' | 'details' | 'payment' | 'success';
 
@@ -22,8 +24,8 @@ export default function CheckoutPage() {
   const isRw = language === 'rw';
   const [step, setStep] = useState<Step>('cart');
   const [fullName, setFullName] = useState('');
-  const [momoNumber, setMomoNumber] = useState('');
-  const [carrier, setCarrier] = useState<'mtn'|'airtel'>('mtn');
+  const [contactPhone, setContactPhone] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('mtn');
   const [orderId, setOrderId] = useState('');
   const [placing, setPlacing] = useState(false);
   const [depositAmount] = useState(PICKUP_DEPOSIT_RWF);
@@ -39,12 +41,12 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async () => {
     if (!user) { setAuthOpen(true); return; }
     if (!fullName.trim() || !selectedBranch) { toast.error(t.selectBranch); return; }
-    if (momoNumber.length < 8) { toast.error(t.phoneNumber); return; }
+    if (contactPhone.length < 8) { toast.error(t.phoneNumber); return; }
     setPlacing(true);
     const id = 'SIMB-' + Math.floor(Math.random() * 90000 + 10000);
     try {
       const { ordersApi } = await import('@/lib/api');
-      const result = await ordersApi.place({ id, userId: user?.id, customerName: fullName.trim(), customerPhone: `+250${momoNumber}`, pickupBranch: selectedBranch?.name ?? '', pickupSlot, paymentMethod: carrier, depositAmount, items: cart, subtotal, deliveryFee: 0, discount: discountAmount, total: orderTotal, promoCode: appliedPromo ?? null });
+      const result = await ordersApi.place({ id, userId: user?.id, customerName: fullName.trim(), customerPhone: `+250${contactPhone}`, pickupBranch: selectedBranch?.name ?? '', pickupSlot, paymentMethod, depositAmount, items: cart, subtotal, deliveryFee: 0, discount: discountAmount, total: orderTotal, promoCode: appliedPromo ?? null });
       if (!result.ok) throw new Error(result.error ?? 'Failed');
       placeOrder({ id, items: cart, total: orderTotal, pickupBranch: selectedBranch?.name ?? '', pickupSlot, depositAmount });
       setOrderId(id); setStep('success');
@@ -80,7 +82,7 @@ export default function CheckoutPage() {
           </p>
           <div className="space-y-3">
             {[
-              { icon: '📱', en: 'You will receive an MTN MoMo notification to confirm payment', fr: 'Vous recevrez une notification MTN MoMo pour confirmer', rw: 'Uzakira ubutumwa bwa MTN MoMo guhamya kwishura' },
+              { icon: paymentMethod === 'card' ? '💳' : '📱', en: getPaymentMethodNote(paymentMethod, 'en'), fr: getPaymentMethodNote(paymentMethod, 'fr'), rw: getPaymentMethodNote(paymentMethod, 'rw') },
               { icon: '🏪', en: 'Branch team is preparing your order', fr: "L'équipe de l'agence prépare votre commande", rw: 'Itsinda ry ishami ritegura itumizwa ryawe' },
               { icon: '✅', en: 'Come pick up in 20-45 minutes', fr: 'Venez récupérer en 20-45 minutes', rw: 'Iza gufata mu minota 20-45' },
             ].map((s, i) => (
@@ -232,20 +234,20 @@ export default function CheckoutPage() {
                 </div>
                 <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-4">
                   <div>
-                    <label className="block text-xs font-black uppercase text-gray-400 mb-3">{t.selectProvider}</label>
+                    <label className="block text-xs font-black uppercase text-gray-400 mb-3">{t.paymentMethod}</label>
                     <div className="space-y-3">
-                      {[
-                        {id:'mtn',   label:'MTN MoMo',    sub:'Mobile Money Rwanda', activeBg:'bg-[#FFCC00]', activeText:'text-black', activeBorder:'border-[#FFCC00]'},
-                        {id:'airtel',label:'Airtel Money', sub:'Airtel Rwanda',       activeBg:'bg-[#ED1C24]', activeText:'text-white', activeBorder:'border-[#ED1C24]'},
-                      ].map(opt => (
-                        <button key={opt.id} onClick={() => setCarrier(opt.id as 'mtn'|'airtel')} className={clsx('w-full p-4 rounded-2xl font-bold flex items-center justify-between border-2 transition-all', carrier===opt.id ? `${opt.activeBg} ${opt.activeText} ${opt.activeBorder} shadow-lg` : 'bg-gray-50 dark:bg-gray-900 text-gray-500 border-transparent hover:border-gray-200')}>
+                      {PAYMENT_METHODS.map(option => {
+                        const theme = PAYMENT_METHOD_THEMES[option];
+                        return (
+                        <button key={option} onClick={() => setPaymentMethod(option)} className={clsx('w-full p-4 rounded-2xl font-bold flex items-center justify-between border-2 transition-all', paymentMethod===option ? `${theme.activeBg} ${theme.activeText} ${theme.activeBorder} shadow-lg` : 'bg-gray-50 dark:bg-gray-900 text-gray-500 border-transparent hover:border-gray-200')}>
                           <span className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[10px] font-black shadow-sm text-gray-800">{opt.id.toUpperCase()}</div>
-                            <div className="text-left"><p className="font-black text-sm">{opt.label}</p><p className="text-[10px] opacity-60">{opt.sub}</p></div>
+                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[10px] font-black shadow-sm text-gray-800">{option.toUpperCase()}</div>
+                            <div className="text-left"><p className="font-black text-sm">{getPaymentMethodLabel(option, language)}</p><p className="text-[10px] opacity-60">{getPaymentMethodSubLabel(option, language)}</p></div>
                           </span>
-                          <div className={clsx('w-5 h-5 rounded-full border-2', carrier===opt.id ? (opt.id==='mtn' ? 'border-black bg-black' : 'border-white bg-white') : 'border-gray-300')} />
+                          <div className={clsx('w-5 h-5 rounded-full border-2', paymentMethod===option ? (option==='mtn' ? 'border-black bg-black' : option === 'airtel' ? 'border-white bg-white' : 'border-white bg-white') : 'border-gray-300')} />
                         </button>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                   <div>
@@ -253,9 +255,9 @@ export default function CheckoutPage() {
                     <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus-within:border-brand">
                       <span className="font-black text-gray-500">+250</span>
                       <div className="w-px h-5 bg-gray-200 dark:bg-gray-700" />
-                      <input type="tel" value={momoNumber} onChange={e => setMomoNumber(e.target.value.replace(/\D/g,'').slice(0,9))} placeholder={carrier==='mtn' ? '78X XXX XXX' : '73X XXX XXX'} className="flex-1 bg-transparent outline-none font-black text-lg tracking-widest text-gray-900 dark:text-white placeholder:text-gray-300 placeholder:font-normal placeholder:text-sm" />
+                      <input type="tel" value={contactPhone} onChange={e => setContactPhone(e.target.value.replace(/\D/g,'').slice(0,9))} placeholder={paymentMethod === 'card' ? '7XX XXX XXX' : paymentMethod==='mtn' ? '78X XXX XXX' : '73X XXX XXX'} className="flex-1 bg-transparent outline-none font-black text-lg tracking-widest text-gray-900 dark:text-white placeholder:text-gray-300 placeholder:font-normal placeholder:text-sm" />
                     </div>
-                    <p className="text-[11px] text-gray-400 mt-2 text-center">{isFr ? 'Vous recevrez une notification pour confirmer' : isRw ? 'Uzakira ubutumwa bwo guhamya' : 'You will receive a push notification to confirm'}</p>
+                    <p className="text-[11px] text-gray-400 mt-2 text-center">{getPaymentMethodNote(paymentMethod, language)}</p>
                   </div>
                 </div>
               </motion.div>
@@ -284,9 +286,9 @@ export default function CheckoutPage() {
                   {step === 'cart' ? (isFr ? 'Continuer' : isRw ? 'Komeza' : 'Continue') : (isFr ? 'Passer au paiement' : isRw ? 'Jya kwishura' : 'Go to Payment')}
                 </button>
               ) : (
-                <button onClick={handlePlaceOrder} disabled={placing || momoNumber.length < 8}
+                <button onClick={handlePlaceOrder} disabled={placing || contactPhone.length < 8}
                   className="w-full py-4 bg-brand-dark text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-gray-800 disabled:opacity-50 transition-all flex items-center justify-center gap-2">
-                  {placing ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{isFr ? 'Traitement...' : isRw ? 'Gutegereza...' : 'Processing...'}</> : (isFr ? 'Confirmer & Payer' : isRw ? 'Emeza & Wishura' : 'Confirm & Pay')}
+                  {placing ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{isFr ? 'Traitement...' : isRw ? 'Gutegereza...' : 'Processing...'}</> : `${getPaymentMethodLabel(paymentMethod, language)} — ${depositAmount.toLocaleString()} RWF`}
                 </button>
               )}
               {(step === 'details' || step === 'payment') && (
@@ -298,6 +300,7 @@ export default function CheckoutPage() {
                 <div className="flex items-center gap-2">
                   <span className="px-2 py-1 bg-yellow-400 text-black rounded-lg text-[10px] font-black">MTN MoMo</span>
                   <span className="px-2 py-1 bg-red-500 text-white rounded-lg text-[10px] font-black">Airtel Money</span>
+                  <span className="px-2 py-1 bg-slate-900 text-white rounded-lg text-[10px] font-black">Card</span>
                 </div>
                 <p className="text-[10px] text-gray-400">{isFr ? 'Dépôt de 500 RWF requis · Reste payé au retrait' : isRw ? 'Inguzanyo 500 RWF · Isigaye wishurwa ugiye gufata' : '500 RWF deposit · Balance paid at pickup'}</p>
               </div>

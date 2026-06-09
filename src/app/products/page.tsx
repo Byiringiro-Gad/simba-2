@@ -4,6 +4,7 @@
 import { getSimbaData, getCategories } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
+import HomeBrandLink from '@/components/HomeBrandLink';
 
 export const metadata = {
   title: 'Products | Simba Supermarket',
@@ -16,10 +17,12 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-brand-dark py-6 px-4">
-        <div className="max-w-screen-xl mx-auto">
-          <Link href="/" className="text-white font-black text-2xl">← Simba Supermarket</Link>
-          <p className="text-white/60 text-sm mt-1">Browse {products.length} products across {categories.length} categories</p>
+      <header className="sticky top-0 z-40 bg-brand-dark shadow-lg shadow-black/20 px-4 py-4">
+        <div className="max-w-screen-xl mx-auto flex items-center justify-between gap-4">
+          <HomeBrandLink className="flex-shrink-0" iconWrapperClassName="w-10 h-10 rounded-xl" />
+          <p className="text-white/60 text-sm text-right">
+            Browse {products.length} products across {categories.length} categories
+          </p>
         </div>
       </header>
 
@@ -64,7 +67,7 @@ export default function ProductsPage() {
           <ol className="space-y-2 text-sm text-white/80">
             <li>1. Browse products and add to cart</li>
             <li>2. Select your Simba branch (Remera, Kimironko, Kacyiru, Nyamirambo, Gikondo, Kanombe...)</li>
-            <li>3. Pay 500 RWF deposit via MTN MoMo or Airtel Money</li>
+            <li>3. Pay 500 RWF deposit via MTN MoMo, Airtel Money, or card</li>
             <li>4. Pick up your order in 20-45 minutes</li>
           </ol>
           <div className="mt-4 flex gap-3 flex-wrap">
@@ -159,7 +162,7 @@ export default function ProductsPage() {
                 <p className="font-bold text-gray-700 mb-1">🇬🇧 English</p>
                 <p>Cart: "My Cart"</p>
                 <p>Checkout: "Pickup Details"</p>
-                <p>Payment: "MoMo Deposit"</p>
+                <p>Payment: "Payment Method"</p>
                 <p>Success: "Order Placed!"</p>
                 <p>Search: "Search products..."</p>
                 <p>Login: "Sign In"</p>
@@ -170,7 +173,7 @@ export default function ProductsPage() {
                 <p className="font-bold text-gray-700 mb-1">🇫🇷 Français</p>
                 <p>Panier: "Mon panier"</p>
                 <p>Commande: "Détails du retrait"</p>
-                <p>Paiement: "Dépôt MoMo"</p>
+                <p>Paiement: "Mode de paiement"</p>
                 <p>Succès: "Commande passée !"</p>
                 <p>Recherche: "Rechercher des produits..."</p>
                 <p>Connexion: "Se connecter"</p>
@@ -181,7 +184,7 @@ export default function ProductsPage() {
                 <p className="font-bold text-gray-700 mb-1">🇷🇼 Kinyarwanda</p>
                 <p>Gitebo: "Igitebo Cyanjye"</p>
                 <p>Itumizwa: "Amakuru yo Gufata"</p>
-                <p>Kwishura: "Inguzanyo ya MoMo"</p>
+                <p>Kwishura: "Uburyo bwo Kwishura"</p>
                 <p>Impano: "Itumizwa Ryashyizweho!"</p>
                 <p>Gushakisha: "Shakisha ibicuruzwa..."</p>
                 <p>Injira: "Injira"</p>

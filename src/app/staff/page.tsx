@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Store, Lock, User, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import HomeBrandLink from '@/components/HomeBrandLink';
 
 export default function BranchLoginPage() {
   const router = useRouter();
@@ -45,9 +46,11 @@ export default function BranchLoginPage() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
         <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
           <div className="bg-brand-dark px-6 pt-8 pb-6 text-center">
-            <div className="w-14 h-14 rounded-2xl overflow-hidden mx-auto mb-4 relative bg-brand">
-              <img src="/simbaheaderM.png" alt="Simba" style={{ position: 'absolute', height: '100%', width: 'auto', maxWidth: 'none', left: 0, top: 0 }} />
-            </div>
+            <HomeBrandLink
+              showText={false}
+              className="w-fit mx-auto mb-4"
+              iconWrapperClassName="w-14 h-14 rounded-2xl"
+            />
             <div className="flex items-center justify-center gap-2 mb-1">
               <Store className="w-5 h-5 text-brand" />
               <p className="text-white font-black text-lg">Branch Staff Portal</p>

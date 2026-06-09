@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import HomeBrandLink from '@/components/HomeBrandLink';
 
 /**
  * Auto-login demo page for the Market Rep Dashboard.
@@ -38,10 +39,11 @@ export default function BranchDemo() {
   return (
     <div className="min-h-screen bg-brand-dark flex items-center justify-center">
       <div className="text-center">
-        <div className="w-16 h-16 rounded-2xl overflow-hidden mx-auto mb-4 relative bg-brand">
-          <img src="/simbaheaderM.png" alt="Simba"
-            style={{ position: 'absolute', height: '100%', width: 'auto', maxWidth: 'none', left: 0, top: 0 }} />
-        </div>
+        <HomeBrandLink
+          showText={false}
+          className="w-fit mx-auto mb-4"
+          iconWrapperClassName="w-16 h-16 rounded-2xl"
+        />
         <p className="text-white font-black text-lg mb-2">Market Rep Dashboard</p>
         <p className="text-white/60 text-sm mb-4">Simba Supermarket — Branch Manager Portal</p>
         <p className="text-white/40 text-xs">Logging in as manager_remera...</p>

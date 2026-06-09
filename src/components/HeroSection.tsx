@@ -13,9 +13,9 @@ const SLIDES = [
     bg: 'from-[#0F172A] to-[#1E3A8A]',
     accent: '#3B82F6',
     image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=900&q=80',
-    en: { headline: 'Fresh groceries,\nready in 20 min.', sub: 'Order online, pick up at your nearest Simba branch in Kigali. Pay with MTN MoMo or Airtel Money.' },
-    fr: { headline: 'Courses fraîches,\nprêtes en 20 min.', sub: 'Commandez en ligne, retirez à votre agence Simba la plus proche. Payez avec MTN MoMo ou Airtel Money.' },
-    rw: { headline: 'Ibicuruzwa bishya,\nbikitegurwa mu minota 20.', sub: 'Tumiza kuri interineti, fata ku ishami rya Simba riri hafi yawe. Wishura na MTN MoMo cyangwa Airtel Money.' },
+    en: { headline: 'Fresh groceries,\nready in 20 min.', sub: 'Order online, pick up at your nearest Simba branch in Kigali. Pay with MTN MoMo, Airtel Money, or card.' },
+    fr: { headline: 'Courses fraîches,\nprêtes en 20 min.', sub: 'Commandez en ligne, retirez à votre agence Simba la plus proche. Payez avec MTN MoMo, Airtel Money ou carte.' },
+    rw: { headline: 'Ibicuruzwa bishya,\nbikitegurwa mu minota 20.', sub: 'Tumiza kuri interineti, fata ku ishami rya Simba riri hafi yawe. Wishura na MTN MoMo, Airtel Money cyangwa ikarita.' },
   },
   {
     id: 2,

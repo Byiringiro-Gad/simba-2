@@ -37,7 +37,7 @@ export default function PageLoader() {
             {/* Simba logo mark */}
             <div className="relative w-20 h-20 rounded-2xl overflow-hidden shadow-2xl shadow-black/40">
               <img
-                src="/simbaheaderM.png"
+                src="/simba-icon.png"
                 alt="Simba"
                 style={{ position: 'absolute', height: '100%', width: 'auto', maxWidth: 'none', left: 0, top: 0 }}
               />

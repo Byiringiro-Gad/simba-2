@@ -62,6 +62,7 @@ interface SimbaState {
   language: Language;
   isDarkMode: boolean;
   activeTab: 'home' | 'search' | 'favorites' | 'orders' | 'account';
+  isShopNowOpen: boolean;
 
   // Orders
   orders: Order[];
@@ -111,6 +112,9 @@ interface SimbaState {
   setLanguage: (lang: Language) => void;
   toggleDarkMode: () => void;
   setActiveTab: (tab: SimbaState['activeTab']) => void;
+  goHome: () => void;
+  isShopNowOpen: boolean;
+  setShopNowOpen: (open: boolean) => void;
 
   // Actions — Orders
   placeOrder: (orderData: { id: string, items: CartItem[], total: number, pickupBranch: string, pickupSlot: PickupSlotId, depositAmount: number }) => void;
@@ -161,6 +165,7 @@ export const useSimbaStore = create<SimbaState>()(
       language: 'en',
       isDarkMode: false,
       activeTab: 'home',
+      isShopNowOpen: false,
       orders: [],
       branchInventory: {},
       branchRatings: {},
@@ -254,6 +259,17 @@ export const useSimbaStore = create<SimbaState>()(
       setLanguage: (language) => set({ language }),
       toggleDarkMode: () => set((s) => ({ isDarkMode: !s.isDarkMode })),
       setActiveTab: (activeTab) => set({ activeTab }),
+      setShopNowOpen: (isShopNowOpen) => set({ isShopNowOpen }),
+      goHome: () => set({
+        searchQuery: '',
+        selectedCategory: null,
+        activeTab: 'home',
+        isCartOpen: false,
+        isAuthOpen: false,
+        isPickupBranchModalOpen: false,
+        isAddressModalOpen: false,
+        isShopNowOpen: false,
+      }),
 
       // Orders
       placeOrder: (orderData) => {

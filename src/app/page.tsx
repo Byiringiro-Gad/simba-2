@@ -28,6 +28,7 @@ import ScrollReveal, { StaggerReveal, StaggerItem } from '@/components/ScrollRev
 import HeroSection from '@/components/HeroSection';
 import BranchMapModal from '@/components/BranchMapModal';
 import ShopNowPanel from '@/components/ShopNowPanel';
+import HomeBrandLink from '@/components/HomeBrandLink';
 
 // ── Why Simba Section — How it works only (stats are in hero) ────────────────
 function HowItWorksSection() {
@@ -114,6 +115,7 @@ export default function Home() {
     language, isCartOpen, setCartOpen,
     activeTab, setActiveTab, selectedCategory, setSelectedCategory, searchQuery,
     cart,
+    isShopNowOpen, setShopNowOpen,
   } = useSimbaStore();
   const t = translations[language];
   const cartCount = cart.reduce((a, i) => a + i.quantity, 0);
@@ -123,8 +125,6 @@ export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // branch map modal
   const [selectedBranchMap, setSelectedBranchMap] = useState<SimbaBranch | null>(null);
-  // shop now panel
-  const [shopNowOpen, setShopNowOpen] = useState(false);
 
   // products for the selected category
   const categoryProducts = useMemo(() => {
@@ -137,7 +137,7 @@ export default function Home() {
 
   // Close ShopNowPanel whenever user navigates away
   useEffect(() => {
-    if (shopNowOpen && (activeTab !== 'home' || searchQuery.trim())) {
+    if (isShopNowOpen && (activeTab !== 'home' || searchQuery.trim())) {
       setShopNowOpen(false);
     }
   }, [activeTab, searchQuery]);
@@ -374,15 +374,12 @@ export default function Home() {
 
                     {/* Brand */}
                     <div className="lg:col-span-1">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 relative bg-brand-dark">
-                          <img src="/simbaheaderM.png" alt="Simba" style={{ position: 'absolute', height: '100%', width: 'auto', maxWidth: 'none', left: 0, top: 0 }} />
-                        </div>
-                        <div>
-                          <p className="font-black text-gray-900 dark:text-white text-base leading-none">SIMBA</p>
-                          <p className="text-[10px] text-gray-400 font-medium">Online Supermarket</p>
-                        </div>
-                      </div>
+                      <HomeBrandLink
+                        className="w-fit mb-3"
+                        iconWrapperClassName="w-9 h-9 rounded-xl"
+                        titleClassName="text-gray-900 dark:text-white text-base"
+                        subtitleClassName="text-gray-400"
+                      />
                       <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-3">{t.aboutSimbaDesc}</p>
                       <p className="text-[10px] text-gray-400">
                         {language === 'fr' ? 'Fondé en 2007 · Kigali, Rwanda' : language === 'rw' ? 'Yashinzwe 2007 · Kigali, Rwanda' : 'Founded 2007 · Kigali, Rwanda'}
@@ -447,6 +444,7 @@ export default function Home() {
                       <div className="flex gap-2">
                         <span className="px-2 py-1 bg-yellow-400 text-black rounded-lg text-[10px] font-black">MTN MoMo</span>
                         <span className="px-2 py-1 bg-red-500 text-white rounded-lg text-[10px] font-black">Airtel Money</span>
+                        <span className="px-2 py-1 bg-slate-900 text-white rounded-lg text-[10px] font-black">Card</span>
                       </div>
                     </div>
                   </div>
@@ -503,7 +501,7 @@ export default function Home() {
           animate={{ scale: 1, opacity: 1 }}
           onClick={() => setCartOpen(true)}
           className="fixed bottom-8 right-8 z-[60] hidden sm:flex items-center gap-3 px-6 py-4 bg-brand text-gray-900 rounded-2xl shadow-2xl font-black text-sm hover:bg-brand-dark hover:text-white transition-all"
-          style={{ boxShadow: '0 8px 40px rgba(255,204,0,0.5)' }}
+          style={{ boxShadow: '0 8px 40px rgba(252,125,0,0.5)' }}
         >
           <div className="relative">
             <ShoppingCart className="w-6 h-6" />
@@ -519,7 +517,7 @@ export default function Home() {
       )}
       <BranchMapModal branch={selectedBranchMap} onClose={() => setSelectedBranchMap(null)} />
       <ShopNowPanel
-        isOpen={shopNowOpen}
+        isOpen={isShopNowOpen}
         onClose={() => setShopNowOpen(false)}
         onCategorySelect={handleCategorySelect}
       />

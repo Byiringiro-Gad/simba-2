@@ -121,36 +121,56 @@ If nothing matches respond: {"message":"...","productNames":[]}`;
 function keywordFallback(query: string, language: string, products: any[]) {
   const q = query.toLowerCase().trim();
 
-  const priceMatch = q.match(/under\s*(\d+)|less\s*than\s*(\d+)|moins\s*de\s*(\d+)/i);
-  const maxPrice = priceMatch ? parseInt(priceMatch[1] || priceMatch[2] || priceMatch[3]) : null;
-  const isCheap = /cheap|affordable|bon march[eé]|buhoro/i.test(q);
+  const priceMatch = q.match(/under\s*(\d+)|less\s*than\s*(\d+)|moins\s*de\s*(\d+)|munsi\s*ya\s*(\d+)/i);
+  const maxPrice = priceMatch
+    ? parseInt(priceMatch[1] || priceMatch[2] || priceMatch[3] || priceMatch[4])
+    : null;
+  const isCheap = /cheap|affordable|bon march[eé]|buhoro|inexpensive|low.?cost/i.test(q);
+
+  // Intent patterns — map phrases to product keywords
+  const intentMap: Array<{ pattern: RegExp; keywords: string[] }> = [
+    { pattern: /breakfast|matin|petit.?d[eé]j|turahira/i,        keywords: ['bread', 'milk', 'egg', 'juice', 'yogurt', 'butter', 'cereal'] },
+    { pattern: /baby|infant|uruhinja|enfant/i,                    keywords: ['baby', 'infant', 'lactogen', 'pampers', 'diaper'] },
+    { pattern: /clean(ing)?|sanit|detergent|isuku/i,              keywords: ['soap', 'detergent', 'bleach', 'cleaning', 'sanitary'] },
+    { pattern: /drink|beverage|boisson|ibiryo/i,                  keywords: ['juice', 'water', 'soda', 'drink', 'beer', 'wine'] },
+    { pattern: /cook(ing)?|cuisine|guteka/i,                      keywords: ['oil', 'flour', 'spice', 'salt', 'tomato', 'onion', 'garlic'] },
+    { pattern: /beauty|cosmetic|beaut[eé]|isukura/i,              keywords: ['shampoo', 'lotion', 'cream', 'soap', 'makeup', 'deodorant'] },
+    { pattern: /snack|grignoter|ibiryo bito/i,                    keywords: ['biscuit', 'cracker', 'chip', 'chocolate', 'candy'] },
+    { pattern: /dairy|laitiier|amata/i,                           keywords: ['milk', 'yogurt', 'butter', 'cheese', 'cream'] },
+    { pattern: /meat|viande|inyama/i,                             keywords: ['beef', 'chicken', 'pork', 'fish', 'sausage', 'meat'] },
+    { pattern: /vegetable|fruit|légume|imbuto/i,                  keywords: ['tomato', 'onion', 'carrot', 'cabbage', 'spinach', 'banana', 'mango'] },
+    { pattern: /water|eau|amazi/i,                                keywords: ['water', 'mineral', 'still', 'sparkling'] },
+    { pattern: /something (sweet|nice|good)|quelque chose/i,      keywords: ['juice', 'yogurt', 'biscuit', 'chocolate', 'cake'] },
+  ];
 
   const synonyms: Record<string, string[]> = {
     milk:      ['milk', 'lait', 'amata', 'dairy', 'lactogen'],
-    bread:     ['bread', 'pain', 'umugati'],
-    water:     ['water', 'eau', 'amazi'],
-    juice:     ['juice', 'jus'],
-    egg:       ['egg', 'eggs', 'oeuf', 'amagi'],
+    bread:     ['bread', 'pain', 'umugati', 'baguette'],
+    water:     ['water', 'eau', 'amazi', 'mineral'],
+    juice:     ['juice', 'jus', 'nectar'],
+    egg:       ['egg', 'oeuf', 'amagi'],
     rice:      ['rice', 'riz', 'umuceli'],
-    oil:       ['oil', 'huile', 'amavuta'],
+    oil:       ['oil', 'huile', 'amavuta', 'cooking oil'],
     soap:      ['soap', 'savon', 'isabuni'],
     chicken:   ['chicken', 'poulet', 'inkoko'],
     sugar:     ['sugar', 'sucre', 'isukari'],
-    yogurt:    ['yogurt', 'yaourt'],
-    baby:      ['baby', 'infant', 'uruhinja'],
-    cleaning:  ['cleaning', 'sanitary', 'detergent'],
-    cosmetics: ['cosmetic', 'beauty', 'lotion', 'shampoo', 'cream'],
-    breakfast: ['bread', 'milk', 'egg', 'juice', 'yogurt'],
+    yogurt:    ['yogurt', 'yaourt', 'ikirere'],
+    tomato:    ['tomato', 'tomate', 'inyanya'],
+    onion:     ['onion', 'oignon', 'katarazo'],
   };
 
-  // Strip stop words
+  // Build search terms from query
   const words = q.split(/\s+/).filter(w => w.length > 2 && !STOP_WORDS.has(w));
+  const searchTerms = new Set<string>(words);
 
-  if (words.length === 0) {
-    return NextResponse.json({ ok: true, message: `No products found for "${query}".`, products: [], usedAI: false });
+  // Add intent-based keywords
+  for (const intent of intentMap) {
+    if (intent.pattern.test(q)) {
+      intent.keywords.forEach(k => searchTerms.add(k));
+    }
   }
 
-  const searchTerms = new Set<string>(words);
+  // Add synonym expansions
   for (const variants of Object.values(synonyms)) {
     if (variants.some(v => words.some(w => v.includes(w) || w.includes(v)))) {
       variants.forEach(v => searchTerms.add(v));
@@ -158,21 +178,28 @@ function keywordFallback(query: string, language: string, products: any[]) {
   }
 
   const terms = Array.from(searchTerms);
-  const matched = products.filter(p => {
-    const name = p.name.toLowerCase();
-    const cat  = p.category.toLowerCase();
-    const textMatch = terms.some(t => name.includes(t) || cat.includes(t));
-    const priceOk   = maxPrice ? p.price <= maxPrice : true;
-    const cheapOk   = isCheap  ? p.price <= 3000     : true;
-    return textMatch && priceOk && cheapOk;
-  }).slice(0, 8);
+
+  // Score products — more matching terms = higher score
+  const scored = products
+    .map(p => {
+      const name = p.name.toLowerCase();
+      const cat  = p.category.toLowerCase();
+      const score = terms.filter(t => name.includes(t) || cat.includes(t)).length;
+      const priceOk = maxPrice ? p.price <= maxPrice : true;
+      const cheapOk = isCheap ? p.price <= 3000 : true;
+      return { p, score, priceOk, cheapOk };
+    })
+    .filter(x => x.score > 0 && x.priceOk && x.cheapOk)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 8)
+    .map(x => x.p);
 
   const message =
     language === 'fr'
-      ? matched.length > 0 ? `${matched.length} produit(s) pour "${query}"` : `Aucun résultat pour "${query}".`
+      ? scored.length > 0 ? `${scored.length} produit(s) pour "${query}"` : `Aucun résultat pour "${query}".`
       : language === 'rw'
-      ? matched.length > 0 ? `Ibisubizo ${matched.length} bya "${query}"` : `Nta bicuruzwa bya "${query}".`
-      : matched.length > 0 ? `Found ${matched.length} product(s) for "${query}"` : `No products found for "${query}".`;
+      ? scored.length > 0 ? `Ibisubizo ${scored.length} bya "${query}"` : `Nta bicuruzwa bya "${query}".`
+      : scored.length > 0 ? `Found ${scored.length} product(s) for "${query}"` : `No products found for "${query}".`;
 
-  return NextResponse.json({ ok: true, message, products: matched, usedAI: false });
+  return NextResponse.json({ ok: true, message, products: scored, usedAI: false });
 }

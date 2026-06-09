@@ -53,9 +53,9 @@ function buildResponse(input: string, lang: string, products: Product[]): ChatMe
     return {
       role: 'assistant',
       text: pick(
-        "💳 Simba accepts **MTN MoMo** and **Airtel Money**. A **500 RWF deposit** is required at checkout to confirm your order. The rest is paid at pickup. Simple and secure!",
-        "💳 Simba accepte **MTN MoMo** et **Airtel Money**. Un **dépôt de 500 RWF** est requis à la caisse pour confirmer votre commande. Le reste est payé au retrait.",
-        "💳 Simba yemera **MTN MoMo** na **Airtel Money**. **Inguzanyo ya 500 RWF** irasabwa mu kwishura kugira ngo wemeze itumizwa. Isigaye wishurwa igihe ugiye gufata."
+        "💳 Simba accepts **MTN MoMo**, **Airtel Money**, and **card** payments. A **500 RWF deposit** is required at checkout to confirm your order. The rest is paid at pickup. Simple and secure!",
+        "💳 Simba accepte **MTN MoMo**, **Airtel Money** et **carte**. Un **dépôt de 500 RWF** est requis à la caisse pour confirmer votre commande. Le reste est payé au retrait.",
+        "💳 Simba yemera **MTN MoMo**, **Airtel Money** na **ikarita**. **Inguzanyo ya 500 RWF** irasabwa mu kwishura kugira ngo wemeze itumizwa. Isigaye wishurwa igihe ugiye gufata."
       ),
     };
   }
@@ -238,9 +238,9 @@ function buildResponse(input: string, lang: string, products: Product[]): ChatMe
   return {
     role: 'assistant',
     text: pick(
-      "I'm here to help! You can ask me about:\n• 🛒 Finding products\n• 🚴 Delivery (45 min)\n• 💳 Payment (MoMo)\n• 🎁 Promo codes\n• 👨‍🍳 Recipe ideas\n• 📍 Store locations\n\nWhat would you like to know?",
-      "Je suis là pour vous aider ! Demandez-moi :\n• 🛒 Trouver des produits\n• 🚴 Livraison (45 min)\n• 💳 Paiement (MoMo)\n• 🎁 Codes promo\n• 👨‍🍳 Recettes\n• 📍 Emplacements\n\nQue voulez-vous savoir ?",
-      "Ndi hano kukufasha! Mbaza:\n• 🛒 Gushaka ibicuruzwa\n• 🚴 Gutumiza (min 45)\n• 💳 Kwishura (MoMo)\n• 🎁 Amakode ya promo\n• 👨‍🍳 Amafunguro\n• 📍 Aho amashami ari\n\nUshaka kumenya iki?"
+      "I'm here to help! You can ask me about:\n• 🛒 Finding products\n• 🚴 Delivery (45 min)\n• 💳 Payment (MoMo or card)\n• 🎁 Promo codes\n• 👨‍🍳 Recipe ideas\n• 📍 Store locations\n\nWhat would you like to know?",
+      "Je suis là pour vous aider ! Demandez-moi :\n• 🛒 Trouver des produits\n• 🚴 Livraison (45 min)\n• 💳 Paiement (MoMo ou carte)\n• 🎁 Codes promo\n• 👨‍🍳 Recettes\n• 📍 Emplacements\n\nQue voulez-vous savoir ?",
+      "Ndi hano kukufasha! Mbaza:\n• 🛒 Gushaka ibicuruzwa\n• 🚴 Gutumiza (min 45)\n• 💳 Kwishura (MoMo cyangwa ikarita)\n• 🎁 Amakode ya promo\n• 👨‍🍳 Amafunguro\n• 📍 Aho amashami ari\n\nUshaka kumenya iki?"
     ),
   };
 }

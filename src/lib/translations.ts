@@ -125,7 +125,7 @@ export const translations = {
     stepPickBranch:       "Pick a Branch",
     stepPickBranchDesc:   "Select the Simba branch that will prepare your order",
     stepPayDeposit:       "Pay Deposit",
-    stepPayDepositDesc:   "500 RWF deposit via MTN MoMo or Airtel Money",
+    stepPayDepositDesc:   "500 RWF deposit via MTN MoMo, Airtel Money, or card",
     stepPickUp:           "Pick Up",
     stepPickUpDesc:       "Your order is ready in 20-45 min at the branch",
     // ── Recently viewed ──
@@ -250,7 +250,8 @@ export const translations = {
     freshProductsTitle:   "Fresh Products",
     freshProductsDesc:    "Sourced daily from local farms",
     securePaymentTitle:   "Secure Payment",
-    securePaymentDesc:    "MTN MoMo & Airtel Money",
+    securePaymentDesc:    "MTN MoMo, Airtel Money & card",
+    cardPaymentNote:      "Card payments are confirmed securely at pickup.",
     loyaltyPointsTitle:   "Loyalty Points",
     loyaltyPointsDesc:    "Earn points on every order",
 
@@ -509,7 +510,7 @@ export const translations = {
     stepPickBranch:       "Choisir une agence",
     stepPickBranchDesc:   "Sélectionnez l'agence Simba qui préparera votre commande",
     stepPayDeposit:       "Payer le dépôt",
-    stepPayDepositDesc:   "500 RWF de dépôt via MTN MoMo ou Airtel Money",
+    stepPayDepositDesc:   "500 RWF de dépôt via MTN MoMo, Airtel Money ou carte",
     stepPickUp:           "Retirer",
     stepPickUpDesc:       "Votre commande est prête en 20-45 min à l'agence",
     // ── Récemment consultés ──
@@ -634,7 +635,8 @@ export const translations = {
     freshProductsTitle:   "Produits frais",
     freshProductsDesc:    "Approvisionnés quotidiennement",
     securePaymentTitle:   "Paiement sécurisé",
-    securePaymentDesc:    "MTN MoMo & Airtel Money",
+    securePaymentDesc:    "MTN MoMo, Airtel Money et carte",
+    cardPaymentNote:      "Les paiements par carte sont confirmés en toute sécurité au retrait.",
     loyaltyPointsTitle:   "Points de fidélité",
     loyaltyPointsDesc:    "Gagnez des points à chaque commande",
 
@@ -893,7 +895,7 @@ export const translations = {
     stepPickBranch:       "Hitamo Ishami",
     stepPickBranchDesc:   "Hitamo ishami rya Simba rizategura itumizwa ryawe",
     stepPayDeposit:       "Ishura Inguzanyo",
-    stepPayDepositDesc:   "Inguzanyo ya 500 RWF na MTN MoMo cyangwa Airtel Money",
+    stepPayDepositDesc:   "Inguzanyo ya 500 RWF na MTN MoMo, Airtel Money cyangwa ikarita",
     stepPickUp:           "Fata",
     stepPickUpDesc:       "Itumizwa ryawe ritegurwa mu minota 20-45 mu ishami",
     // ── Byabonwe vuba ──
@@ -1018,7 +1020,8 @@ export const translations = {
     freshProductsTitle:   "Ibicuruzwa Bishya",
     freshProductsDesc:    "Bivuye ku mirima buri munsi",
     securePaymentTitle:   "Kwishura Neza",
-    securePaymentDesc:    "MTN MoMo na Airtel Money",
+    securePaymentDesc:    "MTN MoMo, Airtel Money na ikarita",
+    cardPaymentNote:      "Kwishura ukoresheje ikarita byemezwa neza igihe ugiye gufata.",
     loyaltyPointsTitle:   "Amanota y'Ubudahemuka",
     loyaltyPointsDesc:    "Unguka amanota ku itumizwa ryose",
 

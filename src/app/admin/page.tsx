@@ -15,6 +15,7 @@ import { clsx } from 'clsx';
 import DashboardSettingsBar from '@/components/DashboardSettingsBar';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
+import { getPaymentMethodLabel, normalizePaymentMethod } from '@/lib/paymentMethods';
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 interface OrderItem { id: number; name: string; price: number; quantity: number; image: string; unit: string; category: string; }
@@ -22,7 +23,7 @@ interface Order {
   id: string; date: string; items: OrderItem[]; total: number;
   status: 'processing' | 'delivered' | 'cancelled';
   pickup_branch?: string; pickup_slot?: string; deposit_amount?: number;
-  customer_name?: string; customer_phone?: string;
+  customer_name?: string; customer_phone?: string; payment_method?: string;
 }
 interface Product {
   id: number; _dbId?: number; name: string; price: number; category: string;
@@ -1163,6 +1164,10 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="bg-gray-50 rounded-2xl p-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">{translations[language].paymentMethod}</span>
+                    <span className="font-bold">{getPaymentMethodLabel(normalizePaymentMethod(selectedOrder.payment_method), language)}</span>
+                  </div>
                   <div className="flex justify-between text-sm"><span className="text-gray-500">Pickup Slot</span><span className="font-bold">{selectedOrder.pickup_slot ?? 'asap'}</span></div>
                   <div className="flex justify-between text-sm"><span className="text-gray-500">Deposit Paid</span><span className="font-bold">{(selectedOrder.deposit_amount ?? 0).toLocaleString()} RWF</span></div>
                   <div className="flex justify-between pt-2 border-t border-gray-200">

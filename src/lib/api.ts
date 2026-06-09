@@ -2,6 +2,8 @@
 // If NEXT_PUBLIC_API_URL is set → calls the Express backend (Render)
 // If empty → calls Next.js built-in API routes (local XAMPP or Vercel)
 
+import type { PaymentMethod } from '@/types';
+
 const EXTERNAL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 function url(path: string): string {
@@ -72,7 +74,7 @@ export const authApi = {
 export const ordersApi = {
   place: (body: {
     id: string; userId?: string; customerName: string; customerPhone: string;
-    pickupBranch: string; pickupSlot: string; paymentMethod: string;
+    pickupBranch: string; pickupSlot: string; paymentMethod: PaymentMethod;
     depositAmount: number; items: any[]; subtotal: number; deliveryFee: number;
     discount: number; total: number; promoCode?: string | null;
   }) => request<{ ok: boolean; id?: string; error?: string }>(

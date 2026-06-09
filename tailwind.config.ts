@@ -9,16 +9,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // ── Simba Original Brand Colors (from simba-2-ebon.vercel.app) ──────
+        // ── Simba Brand Colors — Official Simba Orange ──────────────────────
         brand: {
-          DEFAULT:        '#EAB308',   // Gold — primary CTA, buttons
-          dark:           '#CA8A04',   // Darker gold for hover
-          light:          '#FACC15',   // Lighter gold
-          muted:          '#FEF9C3',   // Very light gold bg (light mode)
-          'muted-dark':   '#1C1A00',   // Dark gold bg (dark mode)
-          accent:         '#EAB308',   // Same as DEFAULT (alias)
-          'accent-dark':  '#CA8A04',
-          'accent-light': '#FEF9C3',
+          DEFAULT:        '#E8501A',   // Simba Orange — matches official logo/platform
+          dark:           '#C43E0F',   // Darker for hover states
+          light:          '#F07040',   // Lighter for accents
+          muted:          '#FEF0EB',   // Very light orange bg (light mode)
+          'muted-dark':   '#2A0F00',   // Dark orange bg (dark mode)
+          accent:         '#E8501A',
+          'accent-dark':  '#C43E0F',
+          'accent-light': '#FEF0EB',
           blue:           '#1E40AF',   // Deep blue — secondary
           'blue-light':   '#DBEAFE',   // Light blue bg
           'bg-dark':      '#0F172A',   // Simba dark background
@@ -47,10 +47,10 @@ module.exports = {
         '5xl': '2.5rem',
       },
       boxShadow: {
-        'brand-sm':  '0 1px 3px 0 rgba(234,179,8,0.15)',
-        'brand-md':  '0 4px 12px 0 rgba(234,179,8,0.25)',
-        'brand-lg':  '0 8px 24px 0 rgba(234,179,8,0.30)',
-        'brand-xl':  '0 16px 40px 0 rgba(234,179,8,0.35)',
+        'brand-sm':  '0 1px 3px 0 rgba(232,80,26,0.15)',
+        'brand-md':  '0 4px 12px 0 rgba(232,80,26,0.25)',
+        'brand-lg':  '0 8px 24px 0 rgba(232,80,26,0.30)',
+        'brand-xl':  '0 16px 40px 0 rgba(232,80,26,0.35)',
       },
       animation: {
         'shimmer':    'shimmer 1.5s linear infinite',

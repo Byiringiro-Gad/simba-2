@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import {
@@ -10,21 +10,85 @@ import {
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckoutStep } from '@/types';
+import type { PaymentMethod } from '@/types';
+import type { Language } from '@/types';
 import { toast } from './Toast';
-import { getBranchById, PICKUP_DEPOSIT_RWF, PICKUP_SLOTS } from '@/lib/branches';
+import { getBranchById, PICKUP_DEPOSIT_RWF } from '@/lib/branches';
+import { PAYMENT_METHODS, PAYMENT_METHOD_THEMES, getPaymentMethodLabel, getPaymentMethodNote, getPaymentMethodSubLabel } from '@/lib/paymentMethods';
 
 const BASE_DEPOSIT = PICKUP_DEPOSIT_RWF; // 500 RWF base
 
+// ── Generate pickup time slots from now+30min to 9pm in 30-min steps ─────────
+function generatePickupSlots(): { value: string; label: string }[] {
+  const slots: { value: string; label: string }[] = [];
+  const now = new Date();
+
+  // Earliest pickup = now + 30 min (prep time), rounded up to next 30-min mark
+  const earliest = new Date(now.getTime() + 30 * 60 * 1000);
+  const mins = earliest.getMinutes();
+  const roundedMins = mins <= 30 ? 30 : 60;
+  earliest.setMinutes(roundedMins, 0, 0);
+  if (roundedMins === 60) {
+    earliest.setHours(earliest.getHours() + 1);
+    earliest.setMinutes(0);
+  }
+
+  // Store closes at 21:00
+  const closing = new Date(now);
+  closing.setHours(21, 0, 0, 0);
+
+  // If it's past 8:30pm, no more slots today — offer tomorrow 8am
+  if (earliest >= closing) {
+    const tomorrow8am = new Date(now);
+    tomorrow8am.setDate(tomorrow8am.getDate() + 1);
+    tomorrow8am.setHours(8, 0, 0, 0);
+    const tomorrowLabel = tomorrow8am.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    for (let t = new Date(tomorrow8am); t.getHours() < 21; t.setMinutes(t.getMinutes() + 30)) {
+      const h = t.getHours();
+      const m = t.getMinutes();
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const h12 = h % 12 === 0 ? 12 : h % 12;
+      const mStr = m === 0 ? '00' : '30';
+      const value = t.toISOString();
+      const label = `${tomorrowLabel} · ${h12}:${mStr} ${ampm}`;
+      slots.push({ value, label });
+    }
+    return slots;
+  }
+
+  const cursor = new Date(earliest);
+  while (cursor < closing) {
+    const h = cursor.getHours();
+    const m = cursor.getMinutes();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    const mStr = m === 0 ? '00' : '30';
+
+    // Friendly label for the first slot
+    const isFirst = slots.length === 0;
+    const diffMins = Math.round((cursor.getTime() - now.getTime()) / 60000);
+    const label = isFirst
+      ? `⚡ Soonest · ${h12}:${mStr} ${ampm} (~${diffMins} min)`
+      : `${h12}:${mStr} ${ampm}`;
+
+    slots.push({ value: cursor.toISOString(), label });
+    cursor.setMinutes(cursor.getMinutes() + 30);
+  }
+
+  return slots;
+}
+
 // ── Success step with branch review ──────────────────────────────────────────
-function SuccessStep({ orderId, selectedBranch, totalPoints, t, onReset, pickupBranchId, language, depositAmount }: {
+function SuccessStep({ orderId, selectedBranch, totalPoints, t, onReset, pickupBranchId, language, depositAmount, paymentMethod }: {
   orderId: string;
   selectedBranch: ReturnType<typeof getBranchById>;
   totalPoints: number;
   t: any;
   onReset: () => void;
   pickupBranchId: string;
-  language: string;
+  language: Language;
   depositAmount: number;
+  paymentMethod: PaymentMethod;
 }) {
   const { submitBranchReview } = useSimbaStore();
   const [rating, setRating] = useState(0);
@@ -61,6 +125,9 @@ function SuccessStep({ orderId, selectedBranch, totalPoints, t, onReset, pickupB
       <p className="text-gray-400 font-medium mb-1">{t.orderIdLabel}: #{orderId}</p>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
         {t.pickupConfirmedAt} {selectedBranch?.name}. {t.depositPaid}: {depositAmount.toLocaleString()} RWF
+      </p>
+      <p className="text-xs text-gray-400 mb-4">
+        {getPaymentMethodNote(paymentMethod, language)}
       </p>
       <div className="flex items-center gap-2 px-4 py-2 bg-brand/20 rounded-full mb-6">
         <span className="text-sm font-black text-amber-700 dark:text-brand">+{totalPoints} {t.loyaltyPointsEarned}</span>
@@ -129,8 +196,6 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
     user,
     pickupBranchId,
     setPickupBranchModalOpen,
-    pickupSlot,
-    setPickupSlot,
     appliedPromo,
     promoDiscount,
     applyPromo,
@@ -140,16 +205,26 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
   } = useSimbaStore();
 
   const [step, setStep] = useState<CheckoutStep>('cart');
-  const [momoNumber, setMomoNumber] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
   const [fullName, setFullName] = useState('');
-  const [carrier, setCarrier] = useState<'mtn' | 'airtel'>('mtn');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('mtn');
   const [promoInput, setPromoInput] = useState('');
   const [orderId, setOrderId] = useState('');
   const [depositAmount, setDepositAmount] = useState(BASE_DEPOSIT);
   const [fulfillmentType, setFulfillmentType] = useState<'pickup' | 'delivery'>('pickup');
   const [deliveryAddress, setDeliveryAddress] = useState('');
+
+  // Dynamic pickup time slots — generated fresh each time the drawer opens
+  const pickupSlots = useMemo(() => generatePickupSlots(), [isOpen]);
+  const [pickupTime, setPickupTime] = useState('');
+  // Set default to first slot whenever drawer opens
+  useEffect(() => {
+    if (isOpen && pickupSlots.length > 0) {
+      setPickupTime(pickupSlots[0].value);
+    }
+  }, [isOpen, pickupSlots]);
+
   const selectedBranch = getBranchById(pickupBranchId);
-  const selectedPickupSlot = PICKUP_SLOTS.find((slot) => slot.id === pickupSlot) ?? PICKUP_SLOTS[0];
 
   const t = translations[language];
 
@@ -211,7 +286,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
     }
 
     if (step === 'payment') {
-      if (momoNumber.length < 8) {
+      if (contactPhone.length < 8) {
         toast.error(t.phoneNumber + ' — ' + t.phonePlaceholder);
         return;
       }
@@ -224,10 +299,10 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
           id,
           userId: user?.id,
           customerName: fullName.trim(),
-          customerPhone: `+250${momoNumber}`,
+          customerPhone: `+250${contactPhone}`,
           pickupBranch: selectedBranch?.name ?? '',
-          pickupSlot,
-          paymentMethod: carrier,
+          pickupSlot: pickupTime,
+          paymentMethod,
           depositAmount: depositAmount,
           items: cart,
           subtotal,
@@ -244,7 +319,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
           items: cart,
           total: orderTotal,
           pickupBranch: selectedBranch?.name ?? '',
-          pickupSlot,
+          pickupSlot: pickupTime as any,
           depositAmount: depositAmount,
         });
 
@@ -267,24 +342,26 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
     clearCart();
     setStep('cart');
     setFullName(user?.name ?? '');
-    setMomoNumber('');
+    setContactPhone('');
+    setPaymentMethod('mtn');
     setOrderId('');
     setFulfillmentType('pickup');
     setDeliveryAddress('');
+    setPickupTime(pickupSlots[0]?.value ?? '');
     onClose();
   };
 
   const canProceed = () => {
     if (step === 'cart') return cart.length > 0;
     if (step === 'details') return fullName.trim().length > 0 && !!selectedBranch;
-    if (step === 'payment') return momoNumber.length >= 8;
+    if (step === 'payment') return contactPhone.length >= 8;
     return false;
   };
 
   const stepLabels: Record<CheckoutStep, string> = {
     cart: t.cart,
     details: t.pickupDetails,
-    payment: t.momoDeposit,
+    payment: t.paymentMethod,
     tracking: t.branchPrep,
     success: t.success,
   };
@@ -494,25 +571,24 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{t.pickupTime} *</label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {PICKUP_SLOTS.map(slot => (
-                          <button
-                            key={slot.id}
-                            type="button"
-                            onClick={() => setPickupSlot(slot.id)}
-                            className={`flex flex-col items-start gap-1 p-3 rounded-xl border-2 transition-all ${
-                              pickupSlot === slot.id
-                                ? 'border-brand bg-brand-muted text-brand-dark'
-                                : 'border-gray-200 dark:border-gray-700 hover:border-brand/40 text-gray-700 dark:text-gray-300'
-                            }`}
-                          >
-                            <span className="text-lg">{slot.icon}</span>
-                            <span className="text-xs font-black">{slot.label}</span>
-                            <span className="text-[10px] text-gray-500 dark:text-gray-400">{slot.window}</span>
-                          </button>
-                        ))}
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
+                        <Clock className="w-3 h-3 inline-block mr-1" />{t.pickupTime} *
+                      </label>
+                      <div className="relative">
+                        <select
+                          value={pickupTime}
+                          onChange={e => setPickupTime(e.target.value)}
+                          className="w-full appearance-none px-4 py-3.5 pr-10 rounded-2xl bg-brand-muted border-2 border-brand/20 focus:border-brand outline-none transition-all font-bold text-sm text-gray-900 dark:text-white dark:bg-gray-900 dark:border-brand/30 cursor-pointer"
+                        >
+                          {pickupSlots.map(slot => (
+                            <option key={slot.value} value={slot.value}>{slot.label}</option>
+                          ))}
+                        </select>
+                        <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand rotate-90 pointer-events-none" />
                       </div>
+                      <p className="text-[10px] text-gray-400 mt-1.5 font-medium">
+                        ⚡ {language === 'fr' ? 'Prêt en 20-45 min après commande' : language === 'rw' ? 'Bitegurwa mu minota 20-45' : 'Ready 20–45 min after ordering'}
+                      </p>
                     </div>
 
                     <div>
@@ -554,34 +630,35 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                     </div>
 
                     <div className="space-y-3">
-                      <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400">{t.selectProvider}</label>
-                      {[
-                        { id: 'mtn', label: 'MTN MoMo', sub: 'Mobile Money Rwanda', activeBg: 'bg-[#FFCC00]', activeText: 'text-black', activeBorder: 'border-[#FFCC00]' },
-                        { id: 'airtel', label: 'Airtel Money', sub: 'Airtel Rwanda', activeBg: 'bg-[#ED1C24]', activeText: 'text-white', activeBorder: 'border-[#ED1C24]' },
-                      ].map((option) => (
-                        <button
-                          key={option.id}
-                          onClick={() => setCarrier(option.id as 'mtn' | 'airtel')}
-                          className={`w-full p-4 rounded-2xl font-bold flex items-center justify-between transition-all border-2 ${
-                            carrier === option.id
-                              ? `${option.activeBg} ${option.activeText} ${option.activeBorder} shadow-lg`
-                              : 'bg-gray-50 dark:bg-gray-900 text-gray-500 border-transparent hover:border-gray-200 dark:hover:border-gray-700'
-                          }`}
-                        >
-                          <span className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[10px] font-black shadow-sm text-gray-800">
-                              {option.id.toUpperCase()}
-                            </div>
-                            <div className="text-left">
-                              <p className="font-black text-sm">{option.label}</p>
-                              <p className="text-[10px] opacity-60">{option.sub}</p>
-                            </div>
-                          </span>
-                          <div className={`w-5 h-5 rounded-full border-2 transition-colors ${
-                            carrier === option.id ? (option.id === 'mtn' ? 'border-black bg-black' : 'border-white bg-white') : 'border-gray-300'
-                          }`} />
-                        </button>
-                      ))}
+                      <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400">{t.paymentMethod}</label>
+                      {PAYMENT_METHODS.map((option) => {
+                        const theme = PAYMENT_METHOD_THEMES[option];
+                        const isActive = paymentMethod === option;
+                        return (
+                          <button
+                            key={option}
+                            onClick={() => setPaymentMethod(option)}
+                            className={`w-full p-4 rounded-2xl font-bold flex items-center justify-between transition-all border-2 ${
+                              isActive
+                                ? `${theme.activeBg} ${theme.activeText} ${theme.activeBorder} shadow-lg`
+                                : 'bg-gray-50 dark:bg-gray-900 text-gray-500 border-transparent hover:border-gray-200 dark:hover:border-gray-700'
+                            }`}
+                          >
+                            <span className="flex items-center gap-3">
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-[10px] font-black shadow-sm ${isActive ? `${theme.badgeBg} ${theme.badgeText}` : 'bg-white text-gray-800'}`}>
+                                {option.toUpperCase()}
+                              </div>
+                              <div className="text-left">
+                                <p className="font-black text-sm">{getPaymentMethodLabel(option, language)}</p>
+                                <p className="text-[10px] opacity-60">{getPaymentMethodSubLabel(option, language)}</p>
+                              </div>
+                            </span>
+                            <div className={`w-5 h-5 rounded-full border-2 transition-colors ${
+                              isActive ? (option === 'mtn' ? 'border-black bg-black' : option === 'airtel' ? 'border-white bg-white' : 'border-white bg-white') : 'border-gray-300'
+                            }`} />
+                          </button>
+                        );
+                      })}
                     </div>
 
                     <div>
@@ -591,14 +668,14 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                         <div className="w-px h-5 bg-gray-200 dark:bg-gray-700" />
                         <input
                           type="tel"
-                          value={momoNumber}
-                          onChange={(e) => setMomoNumber(e.target.value.replace(/\D/g, '').slice(0, 9))}
-                          placeholder={carrier === 'mtn' ? '78X XXX XXX' : '73X XXX XXX'}
+                          value={contactPhone}
+                          onChange={(e) => setContactPhone(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                          placeholder={paymentMethod === 'card' ? '7XX XXX XXX' : paymentMethod === 'mtn' ? '78X XXX XXX' : '73X XXX XXX'}
                           className="flex-1 bg-transparent outline-none font-black text-lg tracking-widest text-gray-900 dark:text-white placeholder:text-gray-300 placeholder:font-normal placeholder:text-sm placeholder:tracking-normal"
                         />
                       </div>
                       <p className="text-[11px] text-gray-400 font-medium mt-2 text-center">
-                        {t.momoNotification.replace('push notification', `${carrier.toUpperCase()} push notification`).replace('your payment', `${depositAmount.toLocaleString()} RWF`)}
+                        {getPaymentMethodNote(paymentMethod, language)}
                       </p>
                     </div>
                   </motion.div>
@@ -676,6 +753,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                     pickupBranchId={pickupBranchId}
                     language={language}
                     depositAmount={depositAmount}
+                    paymentMethod={paymentMethod}
                   />
                 )}
               </AnimatePresence>
@@ -705,7 +783,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                 </div>
                 <button onClick={handleNext} disabled={!canProceed()} className="w-full py-4 bg-brand hover:bg-brand-dark disabled:bg-gray-200 dark:disabled:bg-gray-800 disabled:text-gray-400 text-white rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg shadow-brand/20 disabled:shadow-none flex items-center justify-center gap-2">
                   {step === 'payment'
-                    ? `${carrier === 'mtn' ? 'MTN MoMo' : 'Airtel Money'} — ${depositAmount.toLocaleString()} RWF`
+                    ? `${getPaymentMethodLabel(paymentMethod, language)} — ${depositAmount.toLocaleString()} RWF`
                     : step === 'details'
                     ? t.checkout
                     : !user
@@ -727,4 +805,3 @@ const PROMO_PREVIEW: Record<string, number> = {
   WELCOME: 15,
   KIGALI5: 5,
 };
-
