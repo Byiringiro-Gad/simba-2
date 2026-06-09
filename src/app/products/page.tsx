@@ -19,7 +19,7 @@ export default function ProductsPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="sticky top-0 z-40 bg-brand-dark shadow-lg shadow-black/20 px-4 py-4">
         <div className="max-w-screen-xl mx-auto flex items-center justify-between gap-4">
-          <HomeBrandLink className="flex-shrink-0" iconWrapperClassName="w-10 h-10 rounded-xl" />
+          <HomeBrandLink className="flex-shrink-0" />
           <p className="text-white/60 text-sm text-right">
             Browse {products.length} products across {categories.length} categories
           </p>

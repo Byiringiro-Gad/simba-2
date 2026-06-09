@@ -49,7 +49,6 @@ export default function BranchLoginPage() {
             <HomeBrandLink
               showText={false}
               className="w-fit mx-auto mb-4"
-              iconWrapperClassName="w-14 h-14 rounded-2xl"
             />
             <div className="flex items-center justify-center gap-2 mb-1">
               <Store className="w-5 h-5 text-brand" />

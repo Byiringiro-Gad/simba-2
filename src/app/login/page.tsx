@@ -22,7 +22,6 @@ export default function LoginPage() {
           <HomeBrandLink
             showText={false}
             className="w-fit mx-auto mb-4"
-            iconWrapperClassName="w-16 h-16 rounded-2xl"
           />
           <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-1">
             {isFr ? 'Connexion' : isRw ? 'Injira' : 'Sign In'}
