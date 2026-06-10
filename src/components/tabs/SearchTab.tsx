@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import { getSimbaData, getCategories } from '@/lib/data';
+import { smartSearchProducts } from '@/lib/smartSearch';
 import { Search, X, SlidersHorizontal, Sparkles, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProductCard from '../ProductCard';
@@ -17,6 +18,9 @@ export default function SearchTab() {
   const [localCategory, setLocalCategory] = useState<string | null>(null);
   const allProducts = useMemo(() => getSimbaData().products, []);
   const categories = useMemo(() => getCategories(), []);
+  const [smartResults, setSmartResults] = useState<typeof allProducts>(allProducts);
+  const [smartMessage, setSmartMessage] = useState('');
+  const [smartLoading, setSmartLoading] = useState(false);
 
   const [aiQuery, setAiQuery] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
@@ -31,17 +35,64 @@ export default function SearchTab() {
     { id: 'name',       label: t.nameAZ },
   ];
 
+  useEffect(() => {
+    const query = searchQuery.trim();
+
+    if (!query) {
+      setSmartResults(allProducts);
+      setSmartMessage('');
+      setSmartLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      if (cancelled) return;
+
+      setSmartLoading(true);
+
+      try {
+        const res = await fetch('/api/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, language }),
+        });
+        const data = await res.json();
+
+        if (cancelled) return;
+
+        if (data.ok) {
+          setSmartResults(data.products ?? []);
+          setSmartMessage(data.message ?? '');
+        } else {
+          const fallback = smartSearchProducts(query, allProducts, language);
+          setSmartResults(fallback.products);
+          setSmartMessage(fallback.message);
+        }
+      } catch {
+        if (cancelled) return;
+        const fallback = smartSearchProducts(query, allProducts, language);
+        setSmartResults(fallback.products);
+        setSmartMessage(fallback.message);
+      } finally {
+        if (!cancelled) setSmartLoading(false);
+      }
+    }, 350);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [searchQuery, language, allProducts]);
+
   const results = useMemo(() => {
-    let list = allProducts.filter(p => {
-      const matchQ = !searchQuery.trim() || p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.category.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchC = !localCategory || p.category === localCategory;
-      return matchQ && matchC;
-    });
+    const base = searchQuery.trim() ? (smartLoading ? [] : smartResults) : allProducts;
+    let list = base.filter(p => !localCategory || p.category === localCategory);
     if (sort === 'price-asc') list = [...list].sort((a, b) => a.price - b.price);
     if (sort === 'price-desc') list = [...list].sort((a, b) => b.price - a.price);
     if (sort === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name));
     return list;
-  }, [allProducts, searchQuery, localCategory, sort]);
+  }, [allProducts, smartResults, searchQuery, localCategory, sort, smartLoading]);
 
   const handleAiSearch = async (q?: string) => {
     const query = (q ?? aiQuery).trim();
@@ -166,7 +217,7 @@ export default function SearchTab() {
         </AnimatePresence>
       </div>
 
-      {/* ── Keyword search ── */}
+      {/* ── Smart search ── */}
       <div className="flex gap-2">
         <div className="flex-1 flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-900 rounded-2xl border-2 border-transparent focus-within:border-brand transition-all shadow-sm">
           <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -227,6 +278,26 @@ export default function SearchTab() {
         )}
       </AnimatePresence>
 
+      {searchQuery.trim() && smartLoading && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-brand-muted rounded-xl">
+          <div className="flex gap-1">
+            {[0,1,2].map(i => (
+              <div key={i} className="w-1.5 h-1.5 bg-brand-dark rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 font-medium">{t.aiSearching}</p>
+        </div>
+      )}
+
+      {searchQuery.trim() && !smartLoading && smartMessage && (
+        <div className="flex items-start gap-2 px-3 py-2 bg-brand-muted rounded-xl">
+          <div className="w-6 h-6 bg-brand-dark rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+            <Sparkles className="w-3 h-3 text-white" />
+          </div>
+          <p className="text-xs text-gray-700 dark:text-gray-300 font-medium leading-relaxed">{smartMessage}</p>
+        </div>
+      )}
+
       <p className="text-sm font-bold text-gray-400 uppercase tracking-wider">
         {results.length} {t.results}
         {searchQuery ? ` for "${searchQuery}"` : ''}
@@ -236,7 +307,7 @@ export default function SearchTab() {
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Search className="w-12 h-12 text-gray-200 dark:text-gray-700 mb-4" />
           <p className="font-black text-gray-900 dark:text-white mb-1">{t.noProducts}</p>
-          <p className="text-sm text-gray-400">{t.trySearch}</p>
+          <p className="text-sm text-gray-400">{searchQuery.trim() && smartMessage ? smartMessage : t.trySearch}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
