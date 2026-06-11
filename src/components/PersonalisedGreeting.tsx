@@ -17,13 +17,13 @@ function getTimeOfDay(): TimeOfDay {
 
 export default function PersonalisedGreeting() {
   const { user, orders, language } = useSimbaStore();
-  const [timeLabel, setTimeLabel] = useState<TimeOfDay>('morning');
+  const [timeLabel, setTimeLabel] = useState<TimeOfDay | null>(null);
 
   useEffect(() => {
     setTimeLabel(getTimeOfDay());
   }, []);
 
-  if (!user) return null;
+  if (!user || timeLabel === null) return null;
 
   const icons = {
     morning: Sunrise,

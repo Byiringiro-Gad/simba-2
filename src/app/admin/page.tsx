@@ -231,7 +231,7 @@ export default function AdminDashboard() {
   const [branchFilter, setBranchFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
-  const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Products state
@@ -703,8 +703,8 @@ export default function AdminDashboard() {
                 {activeView === 'orders' ? `Orders` : activeView === 'products' ? 'Products' : activeView === 'branches' ? 'Branches' : activeView === 'promos' ? 'Promo Codes' : activeView === 'users' ? 'Users' : 'Settings'}
               </h1>
               <p className="text-sm text-gray-400 mt-0.5">
-                {activeView === 'orders' && `Last updated: ${lastRefresh.toLocaleTimeString()} Â· Auto-refreshes every 30s`}
-                {activeView === 'products' && `${prodStats.inStock} in stock Â· ${prodStats.outOfStock} out of stock`}
+                {activeView === 'orders' && `Last updated: ${lastRefresh ? lastRefresh.toLocaleTimeString() : '--'} · Auto-refreshes every 30s`}
+                {activeView === 'products' && `${prodStats.inStock} in stock · ${prodStats.outOfStock} out of stock`}
                 {activeView === 'branches' && `${branchStats.length} branches with order activity`}
                 {activeView === 'promos' && `${promos.filter(p => p.active).length} active codes`}
                 {activeView === 'users' && `${users.length} registered users`}

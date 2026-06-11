@@ -52,7 +52,7 @@ function StarRating({
 
 function formatDate(dateStr: string) {
   try {
-    return new Date(dateStr).toLocaleDateString(undefined, {
+    return new Date(dateStr).toLocaleDateString('en-RW', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
