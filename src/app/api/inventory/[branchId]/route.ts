@@ -17,8 +17,9 @@ async function ensureInventoryTable(conn: any) {
   `);
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { branchId: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ branchId: string }> }) {
   try {
+    const { branchId } = await params;
     const pool = getPool();
     const conn = await pool.getConnection();
     try {
@@ -26,7 +27,7 @@ export async function GET(_req: NextRequest, { params }: { params: { branchId: s
       const [rows] = await conn.execute(
         `SELECT product_id, stock_count AS "stockCount", is_available AS "isAvailable"
          FROM branch_inventory WHERE branch_id = ?`,
-        [params.branchId]
+        [branchId]
       ) as any[];
 
       const inventory: Record<number, { stockCount: number; isAvailable: boolean }> = {};
@@ -40,8 +41,9 @@ export async function GET(_req: NextRequest, { params }: { params: { branchId: s
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { branchId: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ branchId: string }> }) {
   try {
+    const { branchId } = await params;
     const { productId, stockCount, isAvailable } = await req.json();
     const pool = getPool();
     const conn = await pool.getConnection();
@@ -52,7 +54,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { branchId: 
          VALUES (?, ?, ?, ?)
          ON CONFLICT (branch_id, product_id) DO UPDATE
            SET stock_count = EXCLUDED.stock_count, is_available = EXCLUDED.is_available, updated_at = NOW()`,
-        [params.branchId, productId, stockCount, isAvailable ? true : false]
+        [branchId, productId, stockCount, isAvailable ? true : false]
       );
       return NextResponse.json({ ok: true });
     } finally { conn.release(); }

@@ -4,19 +4,21 @@ import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
-function verifyAdmin() {
-  const session = cookies().get('admin_session');
+async function verifyAdmin() {
+  const jar = await cookies();
+  const session = jar.get('admin_session');
   return session?.value === 'authenticated';
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { code: string } }) {
-  if (!verifyAdmin()) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ code: string }> }) {
+  if (!await verifyAdmin()) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 
   try {
+    const { code } = await params;
     const pool = getPool();
     const conn = await pool.getConnection();
     try {
-      await conn.execute('DELETE FROM promo_codes WHERE code = ?', [params.code]);
+      await conn.execute('DELETE FROM promo_codes WHERE code = ?', [code]);
       return NextResponse.json({ ok: true });
     } finally { conn.release(); }
   } catch (err: any) {
@@ -24,15 +26,16 @@ export async function DELETE(_req: NextRequest, { params }: { params: { code: st
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { code: string } }) {
-  if (!verifyAdmin()) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ code: string }> }) {
+  if (!await verifyAdmin()) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 
   try {
+    const { code } = await params;
     const { active } = await req.json();
     const pool = getPool();
     const conn = await pool.getConnection();
     try {
-      await conn.execute('UPDATE promo_codes SET active = ? WHERE code = ?', [active, params.code]);
+      await conn.execute('UPDATE promo_codes SET active = ? WHERE code = ?', [active, code]);
       return NextResponse.json({ ok: true });
     } finally { conn.release(); }
   } catch (err: any) {

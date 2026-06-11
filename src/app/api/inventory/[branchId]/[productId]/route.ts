@@ -5,9 +5,10 @@ export const dynamic = 'force-dynamic';
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { branchId: string; productId: string } }
+  { params }: { params: Promise<{ branchId: string; productId: string }> }
 ) {
   try {
+    const { branchId, productId } = await params;
     const { stockCount, isAvailable } = await req.json();
     const pool = getPool();
     const conn = await pool.getConnection();
@@ -17,12 +18,10 @@ export async function PATCH(
          VALUES (?, ?, ?, ?)
          ON CONFLICT (branch_id, product_id) DO UPDATE
            SET stock_count = EXCLUDED.stock_count, is_available = EXCLUDED.is_available, updated_at = NOW()`,
-        [params.branchId, Number(params.productId), stockCount, isAvailable ? 1 : 0]
+        [branchId, Number(productId), stockCount, isAvailable ? 1 : 0]
       );
       return NextResponse.json({ ok: true });
-    } finally {
-      conn.release();
-    }
+    } finally { conn.release(); }
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }

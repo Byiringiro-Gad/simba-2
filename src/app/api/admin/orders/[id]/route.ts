@@ -3,19 +3,18 @@ import { getPool } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const pool = getPool();
   const conn = await pool.getConnection();
 
   try {
     const { status } = await req.json();
-    const { id } = params;
+    const { id } = await params;
 
     if (!['processing', 'delivered', 'cancelled'].includes(status)) {
       return NextResponse.json({ ok: false, error: 'Invalid status' }, { status: 400 });
     }
 
-    // Demo orders — return success without DB
     if (id.startsWith('DEMO-')) {
       return NextResponse.json({ ok: true });
     }

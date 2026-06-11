@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 const JWT_SECRET = process.env.JWT_SECRET ?? 'simba_secret_2026';
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = req.headers.get('authorization') ?? '';
   if (!auth.startsWith('Bearer ')) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 
@@ -16,15 +16,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   try {
     const { branchStatus } = await req.json();
-    const validStatuses = ['pending', 'preparing', 'ready', 'picked_up'];
+    const { id } = await params;
+
+    const validStatuses = ['pending', 'preparing', 'ready', 'picked_up', 'cancelled'];
     if (!validStatuses.includes(branchStatus)) {
       return NextResponse.json({ ok: false, error: 'Invalid status' }, { status: 400 });
     }
 
-    // Demo orders — return success without DB (UI updates optimistically)
-    if (params.id.startsWith('DEMO-')) {
-      return NextResponse.json({ ok: true });
-    }
+    if (id.startsWith('DEMO-')) return NextResponse.json({ ok: true });
 
     const pool = getPool();
     const conn = await pool.getConnection();
@@ -32,20 +31,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       if (branchStatus === 'picked_up') {
         await conn.execute(
           `UPDATE orders SET branch_status = ?, status = 'delivered', updated_at = NOW() WHERE id = ?`,
-          [branchStatus, params.id]
+          [branchStatus, id]
         );
       } else {
         await conn.execute(
           `UPDATE orders SET branch_status = ?, updated_at = NOW() WHERE id = ?`,
-          [branchStatus, params.id]
+          [branchStatus, id]
         );
       }
       return NextResponse.json({ ok: true });
-    } finally {
-      conn.release();
-    }
+    } finally { conn.release(); }
   } catch (err: any) {
-    console.error('[PATCH /api/branch/orders/[id]/status]', err.message);
     return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }
 }
