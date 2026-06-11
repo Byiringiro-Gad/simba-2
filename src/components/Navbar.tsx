@@ -27,7 +27,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
     pickupBranchId, setPickupBranchModalOpen,
     setActiveTab, user, logout, setCartOpen,
     setSelectedCategory, isDarkMode, toggleDarkMode,
-    setShopNowOpen,
+    setShopNowOpen, goHome,
   } = useSimbaStore();
 
   const t = translations[language];
@@ -152,7 +152,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
               {/* Logo */}
               <Link
                 href="/"
-                onClick={() => { setActiveTab('home'); setSearchQuery(''); setSelectedCategory(null); }}
+                onClick={() => goHome()}
                 className="flex items-center gap-2 flex-shrink-0"
               >
                 <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
@@ -306,7 +306,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           {/* ── Secondary nav: Categories drawer + page links ── */}
           <div className="bg-[#E05500] border-t border-white/10 hidden md:block">
             <div className="max-w-screen-2xl mx-auto px-3 sm:px-4 lg:px-6">
-              <div className="flex items-center overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+              <div className="flex items-center">
 
                 {/* Browse Categories — opens sidebar drawer */}
                 <button
@@ -319,7 +319,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
                 {/* Home */}
                 <button
-                  onClick={() => { setActiveTab('home'); setSelectedCategory(null); setSearchQuery(''); }}
+                  onClick={() => goHome()}
                   className="flex items-center gap-1.5 px-4 py-2.5 text-white/90 hover:text-white hover:bg-white/10 transition-colors text-xs font-semibold whitespace-nowrap"
                 >
                   <Home className="w-3.5 h-3.5" />
@@ -334,9 +334,6 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                   <ShoppingBag className="w-3.5 h-3.5" />
                   {L('Shop', 'Boutique', 'Kugura')}
                 </button>
-
-                {/* Spacer pushes right links to the end */}
-                <div className="flex-1" />
 
                 <Link href="/about"
                   className="px-4 py-2.5 text-white/90 hover:text-white hover:bg-white/10 transition-colors text-xs font-semibold whitespace-nowrap">

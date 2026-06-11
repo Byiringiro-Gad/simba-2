@@ -26,7 +26,7 @@ import ScrollReveal, { StaggerReveal, StaggerItem } from '@/components/ScrollRev
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import {
-  ArrowLeft, X, ShoppingCart,
+  ArrowLeft, X,
   Store as StoreIcon, CreditCard, CheckCircle2 as CheckIcon, ShoppingBag as CartIcon,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -117,7 +117,7 @@ export default function Home() {
 
   const {
     language, isCartOpen, setCartOpen,
-    activeTab, setActiveTab,
+    activeTab, setActiveTab, goHome,
     selectedCategory, setSelectedCategory,
     searchQuery,
     cart, isShopNowOpen, setShopNowOpen,
@@ -125,7 +125,6 @@ export default function Home() {
 
   const t = translations[language];
   const cartCount = cart.reduce((a, i) => a + i.quantity, 0);
-  const subtotal  = cart.reduce((s, i) => s + i.price * i.quantity, 0);
 
   const [sidebarOpen, setSidebarOpen]         = useState(false);
   const [selectedBranchMap, setSelectedBranchMap] = useState<SimbaBranch | null>(null);
@@ -218,7 +217,7 @@ export default function Home() {
 
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-24 sm:pb-10 space-y-8">
 
-                  {/* Flash Deals — title left + "View all" right → horizontal product scroll */}
+                  {/* Flash Deals — title left, no "View all" (Flash Deals button leads to shop) */}
                   <section>
                     <div className="flex items-end justify-between mb-3">
                       <div>
@@ -229,22 +228,16 @@ export default function Home() {
                           {language === 'fr' ? 'Jusqu\'à 25% de réduction' : language === 'rw' ? 'Kugeza 25% igabanywa' : 'Up to 25% off'}
                         </p>
                       </div>
-                      <button
-                        onClick={() => setShopNowOpen(true)}
-                        className="text-sm font-black text-brand-dark dark:text-brand hover:underline flex-shrink-0"
-                      >
-                        {language === 'fr' ? 'Voir tout' : language === 'rw' ? 'Reba byose' : 'View all'}
-                      </button>
                     </div>
                     <FlashSalesBanner />
                   </section>
 
-                  {/* 3. SHOP BY CATEGORY — grid of visual aisle tiles */}
+                  {/* 3. SHOP BY CATEGORY */}
                   <ScrollReveal direction="up">
                     <section>
                       <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-black text-gray-900 dark:text-white">{t.shopByCategory}</h2>
-                        <button onClick={() => setShopNowOpen(true)} className="text-xs font-black text-brand-dark dark:text-brand hover:underline">
+                        <button onClick={() => setSidebarOpen(true)} className="text-xs font-black text-brand-dark dark:text-brand hover:underline">
                           {t.viewAll} →
                         </button>
                       </div>
@@ -255,7 +248,7 @@ export default function Home() {
                   {/* 4. BUY IT AGAIN — for returning customers */}
                   <BuyItAgain />
 
-                  {/* 5. POPULAR PRODUCTS — horizontal-scroll product row */}
+                  {/* 5. POPULAR PRODUCTS */}
                   <ScrollReveal direction="up">
                     <section>
                       <div className="flex items-center justify-between mb-4">
@@ -267,9 +260,6 @@ export default function Home() {
                             {language === 'fr' ? 'Les plus vendus cette semaine' : language === 'rw' ? 'Ibyaguriwe kenshi' : 'Best sellers this week'}
                           </p>
                         </div>
-                        <button onClick={() => handleCategorySelect('Groceries')} className="text-xs font-black text-brand-dark dark:text-brand hover:underline">
-                          {t.viewAll} →
-                        </button>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
                         {data.products.filter(p => p.inStock).slice(0, 10).map((p, i) => (
@@ -386,28 +376,6 @@ export default function Home() {
       <BottomNav />
       <AddressModal />
       <CartDrawer isOpen={isCartOpen} onClose={() => setCartOpen(false)} />
-
-      {/* Floating cart — desktop */}
-      {cartCount > 0 && (
-        <motion.button
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          onClick={() => setCartOpen(true)}
-          className="fixed bottom-8 right-8 z-[56] hidden sm:flex items-center gap-3 px-6 py-4 bg-brand text-gray-900 rounded-2xl shadow-2xl font-black text-sm hover:bg-brand-dark hover:text-white transition-all"
-          style={{ boxShadow: '0 8px 40px rgba(255,102,0,0.45)' }}
-        >
-          <div className="relative">
-            <ShoppingCart className="w-6 h-6" />
-            <span className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">
-              {cartCount}
-            </span>
-          </div>
-          <div className="text-left">
-            <p className="text-xs font-black leading-none">{t.cart}</p>
-            <p className="text-sm font-black leading-none mt-0.5">{subtotal.toLocaleString()} RWF</p>
-          </div>
-        </motion.button>
-      )}
 
       <BranchMapModal branch={selectedBranchMap} onClose={() => setSelectedBranchMap(null)} />
       <ShopNowPanel isOpen={isShopNowOpen} onClose={() => setShopNowOpen(false)} onCategorySelect={handleCategorySelect} />

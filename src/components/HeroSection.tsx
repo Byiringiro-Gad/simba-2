@@ -67,7 +67,7 @@ export default function HeroSection({ onShopNow }: { onShopNow: () => void }) {
   };
 
   return (
-    <section className="w-full bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+    <section className="w-full bg-gray-100 dark:bg-gray-900 border-y border-gray-200 dark:border-gray-800">
       <div
         className="relative w-full overflow-hidden"
         style={{ height: 'clamp(180px, 22vw, 260px)' }}
