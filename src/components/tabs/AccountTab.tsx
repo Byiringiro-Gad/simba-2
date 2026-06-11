@@ -7,7 +7,7 @@ import {
   Star, LogOut, LogIn, Package, ShoppingBag,
   ChevronRight, Phone, Shield, Moon, Sun,
   Globe, FileText, Lock, HelpCircle, MessageCircle,
-  Gift, TrendingUp, Award,
+  TrendingUp, Award,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
@@ -314,25 +314,19 @@ export default function AccountTab() {
         {[
           { icon: FileText, label: language === 'fr' ? 'Conditions d\'utilisation' : language === 'rw' ? 'Amategeko y\'ikoreshwa' : 'Terms of Service', href: '/terms' },
           { icon: Lock,     label: language === 'fr' ? 'Politique de confidentialité' : language === 'rw' ? 'Politiki y\'Ibanga' : 'Privacy Policy', href: '/privacy' },
-          { icon: Gift,     label: language === 'fr' ? 'Code promo' : language === 'rw' ? 'Kode ya promo' : 'Promo Codes', sub: 'SIMBA10 · WELCOME · KIGALI5' },
         ].map((item, i, arr) => {
           const Icon = item.icon;
           const isLast = i === arr.length - 1;
           const cls = clsx('w-full flex items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left', !isLast && 'border-b border-gray-100 dark:border-gray-800');
-          const content = (
-            <>
+          return (
+            <Link key={item.label} href={item.href} className={cls}>
               <Icon className="w-5 h-5 text-gray-400 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-sm text-gray-900 dark:text-white">{item.label}</p>
-                {'sub' in item && item.sub && <p className="text-xs text-gray-400 font-mono">{item.sub}</p>}
               </div>
               <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
-            </>
+            </Link>
           );
-          if ('href' in item && item.href) {
-            return <Link key={item.label} href={item.href} className={cls}>{content}</Link>;
-          }
-          return <div key={item.label} className={cls}>{content}</div>;
         })}
       </motion.div>
 

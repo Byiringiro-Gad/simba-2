@@ -2,7 +2,7 @@
 
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { motion } from 'framer-motion';
-import { PiggyBank, TrendingDown } from 'lucide-react';
+import { PiggyBank } from 'lucide-react';
 
 export default function SavingsTracker() {
   const { cart, appliedPromo, promoDiscount, language } = useSimbaStore();
@@ -10,9 +10,6 @@ export default function SavingsTracker() {
   const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const discountAmount = appliedPromo ? Math.floor(subtotal * (promoDiscount / 100)) : 0;
   const loyaltyPoints = Math.floor(subtotal / 100);
-
-  // Suggest next promo if none applied
-  const savingsPotential = appliedPromo ? 0 : Math.floor(subtotal * 0.1); // suggest 10% potential
 
   if (subtotal === 0) return null;
 
@@ -39,12 +36,6 @@ export default function SavingsTracker() {
           ) : (
             <p className="text-xs font-bold text-green-700 dark:text-green-400">
               +{loyaltyPoints} {L.points}
-            </p>
-          )}
-          {!appliedPromo && savingsPotential > 0 && (
-            <p className="text-[10px] text-green-600 dark:text-green-500 font-medium">
-              <TrendingDown className="w-2.5 h-2.5 inline mr-0.5" />
-              {L.potential} {savingsPotential.toLocaleString()} RWF {L.withPromo}
             </p>
           )}
         </div>

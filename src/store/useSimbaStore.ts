@@ -128,20 +128,13 @@ interface SimbaState {
   submitBranchReview: (review: { branchId: string; branchName: string; orderId: string; rating: number; comment?: string }) => Promise<boolean>;
 
   // Actions — Promo
-  applyPromo: (code: string) => boolean;
+  applyPromo: (code: string) => Promise<boolean>;
   removePromo: () => void;
 }
 
-const DEFAULT_ADDRESSES: Address[] = [
-  { id: '1', label: 'Home', full: 'KG 11 Ave, Kigali City Center, Rwanda' },
-  { id: '2', label: 'Work', full: 'KN 3 Rd, Nyarugenge, Kigali, Rwanda' },
-];
+const DEFAULT_ADDRESSES: Address[] = [];
 
-const PROMO_CODES: Record<string, number> = {
-  'SIMBA10': 10,
-  'WELCOME': 15,
-  'KIGALI5': 5,
-};
+
 
 export const useSimbaStore = create<SimbaState>()(
   persist(
@@ -157,8 +150,7 @@ export const useSimbaStore = create<SimbaState>()(
       favorites: [],
       recentlyViewed: [],
       addresses: DEFAULT_ADDRESSES,
-      selectedAddressId: '1',
-      isAddressModalOpen: false,
+      selectedAddressId: null,
       searchQuery: '',
       selectedCategory: null,
       language: 'en',
@@ -196,7 +188,7 @@ export const useSimbaStore = create<SimbaState>()(
         favorites: [],
         recentlyViewed: [],
         addresses: DEFAULT_ADDRESSES,
-        selectedAddressId: '1',
+        selectedAddressId: null,
         appliedPromo: null,
         promoDiscount: 0,
         isCartOpen: false,
@@ -359,10 +351,17 @@ export const useSimbaStore = create<SimbaState>()(
       },
 
       // Promo
-      applyPromo: (code) => {
-        const discount = PROMO_CODES[code.toUpperCase()];
-        if (discount) { set({ appliedPromo: code.toUpperCase(), promoDiscount: discount }); return true; }
-        return false;
+      applyPromo: async (code: string) => {
+        try {
+          const res = await fetch('/api/admin/promos');
+          const data = await res.json();
+          const promo = (data.promos ?? []).find((p: any) => p.code === code.toUpperCase() && p.active);
+          if (promo) {
+            set({ appliedPromo: promo.code, promoDiscount: promo.discount });
+            return true;
+          }
+          return false;
+        } catch { return false; }
       },
       removePromo: () => set({ appliedPromo: null, promoDiscount: 0 }),
     }),

@@ -1,83 +1,78 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
-import { getSimbaData } from '@/lib/data';
+import { Product } from '@/types';
 import { motion } from 'framer-motion';
 import { Tag } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 
-function getKigaliDateString(now = new Date()) {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Africa/Kigali',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(now);
-}
-
-function buildSeed(dateString: string) {
-  return dateString.replace(/-/g, '').split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-}
-
-// Deals of the day: lowest-priced in-stock items that change daily
-function getDailyDeals(seed: number) {
-  const { products } = getSimbaData();
-  const shuffled = [...products.filter(p => p.inStock)]
-    .sort((a, b) => ((a.id * seed) % 97) - ((b.id * seed) % 97));
-  return shuffled.slice(0, 8);
-}
-
-// Midnight countdown in Kigali time
-function getMidnightMs(now = new Date()) {
-  const kigaliNow = new Date(now.toLocaleString('en-US', { timeZone: 'Africa/Kigali' }));
-  const midnight = new Date(kigaliNow);
+function getMidnightMs() {
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Africa/Kigali' }));
+  const midnight = new Date(now);
   midnight.setDate(midnight.getDate() + 1);
   midnight.setHours(0, 0, 0, 0);
-  return midnight.getTime() - kigaliNow.getTime();
+  return Math.max(0, midnight.getTime() - now.getTime());
 }
 
-function pad(n: number) {
-  return String(n).padStart(2, '0');
-}
-
-type ClockState = {
-  seed: number;
-  ms: number | null;
-};
+function pad(n: number) { return String(n).padStart(2, '0'); }
 
 export default function DealsOfTheDay() {
   const { language } = useSimbaStore();
-  const [clock, setClock] = useState<ClockState>({ seed: 0, ms: null });
-  const deals = useMemo(() => getDailyDeals(clock.seed), [clock.seed]);
+  const [deals, setDeals] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [ms, setMs] = useState<number | null>(null);
 
   useEffect(() => {
-    const updateClock = () => {
-      const now = new Date();
-      setClock({
-        seed: buildSeed(getKigaliDateString(now)),
-        ms: getMidnightMs(now),
-      });
+    const load = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/admin/promos?type=daily');
+        const data = await res.json();
+        if (data.ok && Array.isArray(data.deals) && data.deals.length > 0) {
+          setDeals(data.deals);
+        } else {
+          setDeals([]);
+        }
+      } catch {
+        setDeals([]);
+      }
+      setLoading(false);
     };
+    load();
+  }, []);
 
-    updateClock();
-    const t = setInterval(updateClock, 1000);
+  useEffect(() => {
+    const tick = () => setMs(getMidnightMs());
+    tick();
+    const t = setInterval(tick, 1000);
     return () => clearInterval(t);
   }, []);
 
-  const countdownUnits = clock.ms === null
+  const countdownUnits = ms === null
     ? ['--', '--', '--']
-    : [
-        pad(Math.floor(clock.ms / 3600000)),
-        pad(Math.floor((clock.ms % 3600000) / 60000)),
-        pad(Math.floor((clock.ms % 60000) / 1000)),
-      ];
+    : [pad(Math.floor(ms / 3600000)), pad(Math.floor((ms % 3600000) / 60000)), pad(Math.floor((ms % 60000) / 1000))];
 
   const L = {
-    title: language === 'fr' ? 'Offres du jour' : language === 'rw' ? 'Ibiciro Byo Uyu Munsi' : 'Deals of the Day',
-    sub: language === 'fr' ? 'Expire à minuit' : language === 'rw' ? 'Birangira bwa saa sita' : 'Expires at midnight',
-    endsIn: language === 'fr' ? 'Expire dans' : language === 'rw' ? 'Birangira mu' : 'Ends in',
+    title:   language === 'fr' ? 'Offres du jour' : language === 'rw' ? 'Ibiciro Byo Uyu Munsi' : 'Deals of the Day',
+    endsIn:  language === 'fr' ? 'Expire dans' : language === 'rw' ? 'Birangira mu' : 'Ends in',
+    none:    language === 'fr' ? "Aucune offre du jour configurée" : language === 'rw' ? 'Nta mabi ya none yashyizweho' : 'No deals configured for today',
+    noneSub: language === 'fr' ? "L'administrateur peut les configurer depuis le panneau admin" : language === 'rw' ? 'Umuyobozi ashobora gubishyiraho' : 'The admin can set these from the admin panel',
   };
+
+  if (loading) {
+    return (
+      <section>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 bg-purple-500 rounded-2xl animate-pulse" />
+          <div className="h-5 w-40 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+          {[1,2,3,4,5].map(i => <div key={i} className="h-56 rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />)}
+        </div>
+      </section>
+    );
+  }
 
   if (deals.length === 0) return null;
 
@@ -104,7 +99,6 @@ export default function DealsOfTheDay() {
           </div>
         </div>
       </div>
-
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
         {deals.slice(0, 5).map((p, i) => (
           <ProductCard key={p.id} product={p} index={i} />

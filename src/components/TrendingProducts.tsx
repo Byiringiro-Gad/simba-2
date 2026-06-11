@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { getSimbaData } from '@/lib/data';
 import { getProductRating } from '@/lib/reviews';
@@ -9,39 +9,24 @@ import { TrendingUp, Flame, Plus, Minus } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-function getKigaliHour(now = new Date()) {
-  return Number(new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Africa/Kigali',
-    hour: '2-digit',
-    hour12: false,
-  }).format(now));
-}
-
 export default function TrendingProducts() {
   const { cart, addToCart, updateQuantity, language } = useSimbaStore();
   const { products } = useMemo(() => getSimbaData(), []);
-  const [hourSeed, setHourSeed] = useState(0);
 
-  useEffect(() => {
-    setHourSeed(getKigaliHour());
-  }, []);
-
-  // "Trending" = weighted mix of high rating, good price range, in-stock
+  // Trending = highest rated in-stock products with most reviews (real data only)
   const trending = useMemo(() => {
-    const hour = hourSeed;
-
     return [...products]
       .filter(p => p.inStock)
       .map(p => {
         const { avg, count } = getProductRating(p.id);
-        const priceScore = p.price >= 800 && p.price <= 5000 ? 2 : 1;
-        const ratingScore = avg * count * 0.5;
-        const freshness = ((p.id * 11 + hour) % 20);
-        return { ...p, score: ratingScore + priceScore + freshness };
+        // Score based purely on real rating × review count
+        const score = avg * Math.sqrt(count + 1);
+        return { ...p, score };
       })
+      .filter(p => p.score > 0)
       .sort((a, b) => b.score - a.score)
       .slice(0, 12);
-  }, [products, hourSeed]);
+  }, [products]);
 
   const L = {
     title: language === 'fr' ? 'Tendances du moment' : language === 'rw' ? 'Ibicuruzwa Bikunzwe' : 'Trending Now',

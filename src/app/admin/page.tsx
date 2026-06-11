@@ -8,7 +8,7 @@ import {
   ShoppingBag, Clock, CheckCircle2, XCircle, LogOut, Search, Eye, Store,
   TrendingUp, Package, DollarSign, RefreshCw, X, Bike, Star,
   Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Image as ImageIcon,
-  ChevronDown, AlertTriangle, Users, Tag
+  ChevronDown, AlertTriangle, Users, Tag, Settings
 } from 'lucide-react';
 import Image from 'next/image';
 import { clsx } from 'clsx';
@@ -31,7 +31,7 @@ interface Product {
   description?: string | null; source: 'json' | 'override' | 'addition';
 }
 
-type AdminView = 'orders' | 'products' | 'branches' | 'promos' | 'users';
+type AdminView = 'orders' | 'products' | 'branches' | 'promos' | 'users' | 'settings';
 type StatusFilter = 'all' | 'processing' | 'delivered' | 'cancelled';
 
 const CATEGORIES = [
@@ -249,14 +249,16 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<any[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
 
-  // Promo codes state
-  const [promos, setPromos] = useState([
-    { code: 'SIMBA10', discount: 10, uses: 0, active: true },
-    { code: 'WELCOME', discount: 15, uses: 0, active: true },
-    { code: 'KIGALI5', discount: 5,  uses: 0, active: true },
-  ]);
+  // Promo codes state — loaded from real API
+  const [promos, setPromos] = useState<{ code: string; discount: number; uses: number; active: boolean }[]>([]);
+  const [promosLoading, setPromosLoading] = useState(false);
   const [newPromoCode, setNewPromoCode] = useState('');
   const [newPromoDiscount, setNewPromoDiscount] = useState(10);
+
+  // Site settings state
+  const [settings, setSettings] = useState<Record<string, string>>({});
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [settingsSaved, setSettingsSaved] = useState(false);
 
   // Bulk selection
   const [selectedOrderIds, setSelectedOrderIds] = useState<Set<string>>(new Set());
@@ -275,7 +277,44 @@ export default function AdminDashboard() {
     cancelled:  { label: language === 'fr' ? 'Annulé'      : language === 'rw' ? 'Ryahagaritswe'  : 'Cancelled',  color: 'text-red-600',   bg: 'bg-red-50',    border: 'border-red-200',   icon: XCircle },
   };
 
-  /* ── Load orders ── */
+  /* ── Load promos from real API ── */
+  const loadPromos = async () => {
+    setPromosLoading(true);
+    try {
+      const res = await fetch('/api/admin/promos');
+      const data = await res.json();
+      if (data.ok) setPromos(data.promos ?? []);
+    } catch { /* silent */ }
+    setPromosLoading(false);
+  };
+
+  /* ── Load site settings ── */
+  const loadSettings = async () => {
+    try {
+      const res = await fetch('/api/admin/settings');
+      const data = await res.json();
+      if (data.ok) setSettings(data.settings ?? {});
+    } catch { /* silent */ }
+  };
+
+  /* ── Save site settings ── */
+  const saveSettings = async (updates: Record<string, string>) => {
+    setSettingsSaving(true);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setSettings(prev => ({ ...prev, ...updates }));
+        setSettingsSaved(true);
+        setTimeout(() => setSettingsSaved(false), 2000);
+      }
+    } catch { /* silent */ }
+    setSettingsSaving(false);
+  };
   const loadOrders = async () => {
     try {
       const token = localStorage.getItem('admin_token') ?? '';
@@ -331,6 +370,8 @@ export default function AdminDashboard() {
     loadOrders();
     loadProducts();
     loadUsers();
+    loadPromos();
+    loadSettings();
     const iv = setInterval(loadOrders, 30000);
     return () => clearInterval(iv);
   }, []);
@@ -421,20 +462,39 @@ export default function AdminDashboard() {
     });
   };
 
-  const addPromo = () => {
+  const addPromo = async () => {
     const code = newPromoCode.trim().toUpperCase();
-    if (!code || promos.find(p => p.code === code)) return;
-    setPromos(prev => [...prev, { code, discount: newPromoDiscount, uses: 0, active: true }]);
-    setNewPromoCode('');
-    setNewPromoDiscount(10);
+    if (!code) return;
+    try {
+      const res = await fetch('/api/admin/promos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, discount: newPromoDiscount, active: true }),
+      });
+      const data = await res.json();
+      if (data.ok) { setNewPromoCode(''); setNewPromoDiscount(10); await loadPromos(); }
+    } catch { /* silent */ }
   };
 
-  const togglePromo = (code: string) => {
-    setPromos(prev => prev.map(p => p.code === code ? { ...p, active: !p.active } : p));
+  const togglePromo = async (code: string) => {
+    const promo = promos.find(p => p.code === code);
+    if (!promo) return;
+    try {
+      await fetch(`/api/admin/promos/${code}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: !promo.active }),
+      });
+      await loadPromos();
+    } catch { /* silent */ }
   };
 
-  const deletePromo = (code: string) => {
-    setPromos(prev => prev.filter(p => p.code !== code));
+  const deletePromo = async (code: string) => {
+    if (!confirm(`Delete promo code ${code}?`)) return;
+    try {
+      await fetch(`/api/admin/promos/${code}`, { method: 'DELETE' });
+      await loadPromos();
+    } catch { /* silent */ }
   };
 
   /* ── Computed ── */
@@ -564,6 +624,7 @@ export default function AdminDashboard() {
             { id: 'branches', label: `${language === 'fr' ? 'Agences' : language === 'rw' ? 'Amashami' : 'Branches'} (${branchStats.length})` },
             { id: 'promos',   label: `${language === 'fr' ? 'Promos' : language === 'rw' ? 'Promo' : 'Promos'} (${promos.filter(p => p.active).length})` },
             { id: 'users',    label: `${language === 'fr' ? 'Utilisateurs' : language === 'rw' ? 'Abakoresha' : 'Users'} (${users.length})` },
+            { id: 'settings', label: language === 'fr' ? 'Paramètres' : language === 'rw' ? 'Igenamiterere' : 'Settings' },
           ] as { id: AdminView; label: string }[]).map(tab => (
             <button key={tab.id} onClick={() => setActiveView(tab.id)}
               className={clsx('flex-shrink-0 px-4 py-2.5 text-xs font-black border-b-2 transition-colors',
@@ -977,6 +1038,154 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════════
+            SETTINGS VIEW
+        ══════════════════════════════════════════════════════════════════ */}
+        {activeView === 'settings' && (
+          <div className="space-y-6 max-w-2xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-black text-gray-900 dark:text-white text-lg">Site Settings</h2>
+                <p className="text-sm text-gray-400">Control features and configuration for the whole site</p>
+              </div>
+              {settingsSaved && (
+                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-xl text-xs font-black border border-green-200">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Saved
+                </span>
+              )}
+            </div>
+
+            {/* ── Pickup & Payments ── */}
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
+                <p className="text-xs font-black uppercase tracking-widest text-gray-400">Pickup &amp; Payments</p>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {[
+                  { key: 'deposit_amount',    label: 'Pickup Deposit (RWF)',    type: 'number', hint: 'Amount paid upfront to confirm order' },
+                  { key: 'pickup_time_min',   label: 'Pickup Time Min (min)',   type: 'number', hint: 'Minimum estimated pickup time' },
+                  { key: 'pickup_time_max',   label: 'Pickup Time Max (min)',   type: 'number', hint: 'Maximum estimated pickup time' },
+                  { key: 'store_open_hour',   label: 'Store Opens (24h)',       type: 'number', hint: 'Hour the store opens (Kigali time)' },
+                  { key: 'store_close_hour',  label: 'Store Closes (24h)',      type: 'number', hint: 'Hour the store closes (Kigali time)' },
+                ].map(({ key, label, type, hint }) => (
+                  <div key={key} className="flex items-center justify-between px-5 py-4 gap-4">
+                    <div>
+                      <p className="font-bold text-sm text-gray-900">{label}</p>
+                      <p className="text-xs text-gray-400">{hint}</p>
+                    </div>
+                    <input
+                      type={type}
+                      value={settings[key] ?? ''}
+                      onChange={e => setSettings(prev => ({ ...prev, [key]: e.target.value }))}
+                      onBlur={e => saveSettings({ [key]: e.target.value })}
+                      className="w-24 px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-black text-right outline-none focus:border-brand transition-colors"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Loyalty Program ── */}
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
+                <p className="text-xs font-black uppercase tracking-widest text-gray-400">Loyalty Program</p>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {[
+                  { key: 'loyalty_earn_rate',   label: '1 Point Per X RWF Spent', hint: 'e.g. 100 = earn 1 pt per 100 RWF' },
+                  { key: 'loyalty_bronze_max',  label: 'Bronze Tier Max Points',  hint: 'Points threshold to exit Bronze' },
+                  { key: 'loyalty_silver_max',  label: 'Silver Tier Max Points',  hint: 'Points threshold to exit Silver' },
+                ].map(({ key, label, hint }) => (
+                  <div key={key} className="flex items-center justify-between px-5 py-4 gap-4">
+                    <div>
+                      <p className="font-bold text-sm text-gray-900">{label}</p>
+                      <p className="text-xs text-gray-400">{hint}</p>
+                    </div>
+                    <input
+                      type="number"
+                      value={settings[key] ?? ''}
+                      onChange={e => setSettings(prev => ({ ...prev, [key]: e.target.value }))}
+                      onBlur={e => saveSettings({ [key]: e.target.value })}
+                      className="w-24 px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-black text-right outline-none focus:border-brand transition-colors"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Feature Flags ── */}
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
+                <p className="text-xs font-black uppercase tracking-widest text-gray-400">Feature Flags</p>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {[
+                  { key: 'feature_flash_deals',  label: 'Flash Deals Banner',     hint: 'Show / hide the Flash Deals section' },
+                  { key: 'feature_deals_of_day', label: 'Deals of the Day',        hint: 'Show / hide the Deals of the Day section' },
+                  { key: 'feature_trending',     label: 'Trending Products',       hint: 'Show / hide the Trending Now section' },
+                  { key: 'feature_buy_it_again', label: 'Buy It Again',            hint: 'Show / hide Buy It Again for returning customers' },
+                  { key: 'feature_compare',      label: 'Product Compare',         hint: 'Allow customers to compare products' },
+                  { key: 'feature_reviews',      label: 'Product Reviews',         hint: 'Allow customers to leave product reviews' },
+                  { key: 'feature_referrals',    label: 'Referral Program',        hint: 'Show referral card and track referrals' },
+                ].map(({ key, label, hint }) => {
+                  const enabled = settings[key] !== 'false';
+                  return (
+                    <div key={key} className="flex items-center justify-between px-5 py-4">
+                      <div>
+                        <p className="font-bold text-sm text-gray-900">{label}</p>
+                        <p className="text-xs text-gray-400">{hint}</p>
+                      </div>
+                      <button
+                        onClick={() => saveSettings({ [key]: enabled ? 'false' : 'true' })}
+                        disabled={settingsSaving}
+                        className={clsx('w-12 h-6 rounded-full transition-all relative flex-shrink-0', enabled ? 'bg-brand' : 'bg-gray-200')}
+                      >
+                        <span className={clsx('absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all', enabled ? 'left-6' : 'left-0.5')} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ── Flash Deal Config ── */}
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
+                <p className="text-xs font-black uppercase tracking-widest text-gray-400">Flash Deals</p>
+              </div>
+              <div className="divide-y divide-gray-50">
+                <div className="flex items-center justify-between px-5 py-4 gap-4">
+                  <div>
+                    <p className="font-bold text-sm text-gray-900">Rotation Every X Hours</p>
+                    <p className="text-xs text-gray-400">How often flash deals rotate</p>
+                  </div>
+                  <input
+                    type="number" min={1} max={24}
+                    value={settings['flash_deal_duration_h'] ?? '4'}
+                    onChange={e => setSettings(prev => ({ ...prev, flash_deal_duration_h: e.target.value }))}
+                    onBlur={e => saveSettings({ flash_deal_duration_h: e.target.value })}
+                    className="w-24 px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm font-black text-right outline-none focus:border-brand transition-colors"
+                  />
+                </div>
+                <div className="px-5 py-4">
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    To set flash deal products and real discounts, create promo codes of type <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-brand-dark">flash</span> in the Promos tab. Products with active flash promos appear in the Flash Deals banner automatically.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => saveSettings(settings)}
+              disabled={settingsSaving}
+              className="w-full py-3.5 bg-brand-dark text-white rounded-2xl font-black text-sm hover:bg-gray-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <Settings className="w-4 h-4" />
+              {settingsSaving ? 'Saving...' : 'Save All Settings'}
+            </button>
           </div>
         )}
 
