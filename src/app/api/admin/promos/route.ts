@@ -4,8 +4,9 @@ import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
-function verifyAdmin() {
-  const session = cookies().get('admin_session');
+async function verifyAdmin() {
+  const jar = await cookies();
+  const session = jar.get('admin_session');
   return session?.value === 'authenticated';
 }
 
@@ -23,7 +24,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  if (!verifyAdmin()) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  if (!await verifyAdmin()) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 
   try {
     const { code, discount, active } = await req.json();
