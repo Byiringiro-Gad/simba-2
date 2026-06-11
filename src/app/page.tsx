@@ -35,6 +35,54 @@ import Link from 'next/link';
 import { SimbaData } from '@/types';
 import { SIMBA_BRANCHES, SimbaBranch } from '@/lib/branches';
 
+import { LayoutGrid, List } from 'lucide-react';
+
+// ── Popular Products with grid/list toggle ────────────────────────────────────
+function PopularProductsSection({ data }: { data: SimbaData }) {
+  const { language } = useSimbaStore();
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const popular = data.products.filter(p => p.inStock).slice(0, 10);
+  return (
+    <>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-xl font-black text-gray-900 dark:text-white">
+            {language === 'fr' ? 'Produits populaires' : language === 'rw' ? 'Ibicuruzwa bikunzwe' : 'Popular Products'}
+          </h2>
+          <p className="text-sm text-gray-400 mt-0.5">
+            {language === 'fr' ? 'Les plus vendus cette semaine' : language === 'rw' ? 'Ibyaguriwe kenshi' : 'Best sellers this week'}
+          </p>
+        </div>
+        {/* Grid / List toggle */}
+        <div className="flex items-center bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`p-2 transition-colors ${viewMode === 'grid' ? 'bg-brand-dark text-white' : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+            title="Grid view"
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`p-2 transition-colors ${viewMode === 'list' ? 'bg-brand-dark text-white' : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+            title="List view"
+          >
+            <List className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+      <div className={viewMode === 'list'
+        ? 'flex flex-col gap-2'
+        : 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3'
+      }>
+        {popular.map((p, i) => (
+          <ProductCard key={p.id} product={p} index={i} viewMode={viewMode} />
+        ))}
+      </div>
+    </>
+  );
+}
+
 // ── How it works ─────────────────────────────────────────────────────────────
 function HowItWorksSection() {
   const { language } = useSimbaStore();
@@ -211,7 +259,8 @@ export default function Home() {
               /* ── HOME LANDING ── */
               <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 
-                {/* 1. HERO BANNER — full width */}
+                {/* 1. HERO BANNER — full width, separated from nav with a gap */}
+                <div className="h-2 bg-gray-100 dark:bg-gray-900" />
                 <HeroSection onShopNow={() => setShopNowOpen(true)} />
 
                 {/* 2. FLASH DEALS — full width strip, outside the padded container */}
@@ -250,21 +299,7 @@ export default function Home() {
                   {/* 5. POPULAR PRODUCTS */}
                   <ScrollReveal direction="up">
                     <section>
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h2 className="text-xl font-black text-gray-900 dark:text-white">
-                            {language === 'fr' ? 'Produits populaires' : language === 'rw' ? 'Ibicuruzwa bikunzwe' : 'Popular Products'}
-                          </h2>
-                          <p className="text-sm text-gray-400 mt-0.5">
-                            {language === 'fr' ? 'Les plus vendus cette semaine' : language === 'rw' ? 'Ibyaguriwe kenshi' : 'Best sellers this week'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
-                        {data.products.filter(p => p.inStock).slice(0, 10).map((p, i) => (
-                          <ProductCard key={p.id} product={p} index={i} />
-                        ))}
-                      </div>
+                      <PopularProductsSection data={data} />
                     </section>
                   </ScrollReveal>
 
