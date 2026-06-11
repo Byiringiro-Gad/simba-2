@@ -88,27 +88,7 @@ export default function FlashSalesBanner() {
     noneSub: language === 'fr' ? "L'administrateur peut en configurer depuis le panneau admin" : language === 'rw' ? 'Umuyobozi ashobora gubishyiraho' : 'The admin can configure deals from the admin panel',
   };
 
-  if (loading) {
-    return (
-      <div className="rounded-2xl bg-gradient-to-r from-red-600 via-red-500 to-orange-500 px-4 py-5">
-        <div className="flex gap-3 overflow-x-auto">
-          {[1,2,3,4].map(i => (
-            <div key={i} className="w-32 flex-shrink-0 h-44 rounded-2xl bg-white/20 animate-pulse" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (products.length === 0) {
-    return (
-      <div className="rounded-2xl border-2 border-dashed border-red-200 dark:border-red-900/40 px-6 py-8 text-center">
-        <Zap className="w-8 h-8 text-red-300 mx-auto mb-2" />
-        <p className="text-sm font-black text-gray-500 dark:text-gray-400">{L.none}</p>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{L.noneSub}</p>
-      </div>
-    );
-  }
+  if (loading || products.length === 0) return null;
 
   return (
     <motion.section

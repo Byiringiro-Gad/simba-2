@@ -589,9 +589,824 @@ export default function AdminDashboard() {
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* ── Header ── */}
-      <header className="sticky top-0 z-40 bg-brand-dark shadow-lg">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
+
+      {/* ── SIDEBAR ── */}
+      <aside className="hidden lg:flex flex-col w-56 flex-shrink-0 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 sticky top-0 h-screen overflow-y-auto">
+        {/* Logo */}
+        <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-100 dark:border-gray-800">
+          <div className="w-8 h-8 bg-brand rounded-xl flex items-center justify-center flex-shrink-0">
+            <ShoppingBag className="w-4 h-4 text-gray-900" />
+          </div>
+          <div>
+            <p className="font-black text-gray-900 dark:text-white text-sm leading-none">Simba Admin</p>
+            <p className="text-gray-400 text-[10px] mt-0.5">Central Operations</p>
+          </div>
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 py-4 px-3 space-y-0.5">
+          {([
+            { id: 'orders',   label: 'Orders',   icon: Package,    badge: stats.processing > 0 ? stats.processing : undefined },
+            { id: 'products', label: 'Products', icon: ShoppingBag },
+            { id: 'branches', label: 'Branches', icon: Store },
+            { id: 'promos',   label: 'Promos',   icon: Tag,        badge: promos.filter(p => p.active).length > 0 ? promos.filter(p => p.active).length : undefined },
+            { id: 'users',    label: 'Users',    icon: Users },
+            { id: 'settings', label: 'Settings', icon: Settings },
+          ] as { id: AdminView; label: string; icon: any; badge?: number }[]).map(item => {
+            const Icon = item.icon;
+            const active = activeView === item.id;
+            return (
+              <button key={item.id} onClick={() => setActiveView(item.id)}
+                className={clsx('w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all text-left',
+                  active ? 'bg-brand text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                )}>
+                <Icon className="w-4 h-4 flex-shrink-0" />
+                <span className="flex-1">{item.label}</span>
+                {item.badge !== undefined && (
+                  <span className={clsx('text-[10px] font-black px-1.5 py-0.5 rounded-full',
+                    active ? 'bg-white/25 text-white' : 'bg-brand/10 text-brand-dark dark:text-brand'
+                  )}>{item.badge}</span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Bottom actions */}
+        <div className="px-3 py-4 border-t border-gray-100 dark:border-gray-800 space-y-1">
+          <button onClick={() => { loadOrders(); loadProducts(); loadPromos(); }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
+          <button onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+            <LogOut className="w-4 h-4" />
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      {/* ── MAIN CONTENT ── */}
+      <div className="flex-1 min-w-0 flex flex-col">
+
+        {/* Mobile header */}
+        <header className="lg:hidden sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-4 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 bg-brand rounded-lg flex items-center justify-center">
+              <ShoppingBag className="w-3.5 h-3.5 text-gray-900" />
+            </div>
+            <span className="font-black text-gray-900 dark:text-white text-sm">Simba Admin</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => { loadOrders(); loadProducts(); }} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+              <RefreshCw className="w-4 h-4 text-gray-500" />
+            </button>
+            <button onClick={handleLogout} className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
+              <LogOut className="w-4 h-4 text-red-500" />
+            </button>
+          </div>
+        </header>
+
+        {/* Mobile tab bar */}
+        <div className="lg:hidden flex overflow-x-auto bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-2" style={{ scrollbarWidth: 'none' }}>
+          {([
+            { id: 'orders',   label: 'Orders',   icon: Package },
+            { id: 'products', label: 'Products', icon: ShoppingBag },
+            { id: 'branches', label: 'Branches', icon: Store },
+            { id: 'promos',   label: 'Promos',   icon: Tag },
+            { id: 'users',    label: 'Users',    icon: Users },
+            { id: 'settings', label: 'Settings', icon: Settings },
+          ] as { id: AdminView; label: string; icon: any }[]).map(item => {
+            const Icon = item.icon;
+            const active = activeView === item.id;
+            return (
+              <button key={item.id} onClick={() => setActiveView(item.id)}
+                className={clsx('flex-shrink-0 flex flex-col items-center gap-0.5 px-4 py-2.5 text-[10px] font-bold border-b-2 transition-colors',
+                  active ? 'border-brand text-brand-dark dark:text-brand' : 'border-transparent text-gray-400 hover:text-gray-600'
+                )}>
+                <Icon className="w-4 h-4" />
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Page content */}
+        <main className="flex-1 p-4 sm:p-6 space-y-6">
+
+          {/* ── Page header ── */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-black text-gray-900 dark:text-white capitalize">
+                {activeView === 'orders' ? `Orders` : activeView === 'products' ? 'Products' : activeView === 'branches' ? 'Branches' : activeView === 'promos' ? 'Promo Codes' : activeView === 'users' ? 'Users' : 'Settings'}
+              </h1>
+              <p className="text-sm text-gray-400 mt-0.5">
+                {activeView === 'orders' && `Last updated: ${lastRefresh.toLocaleTimeString()} · Auto-refreshes every 30s`}
+                {activeView === 'products' && `${prodStats.inStock} in stock · ${prodStats.outOfStock} out of stock`}
+                {activeView === 'branches' && `${branchStats.length} branches with order activity`}
+                {activeView === 'promos' && `${promos.filter(p => p.active).length} active codes`}
+                {activeView === 'users' && `${users.length} registered users`}
+                {activeView === 'settings' && 'Site configuration and feature flags'}
+              </p>
+            </div>
+            {activeView === 'products' && (
+              <button onClick={() => { setEditProduct(null); setIsNewProduct(true); setShowProductModal(true); }}
+                className="flex items-center gap-2 px-4 py-2.5 bg-brand-dark text-white rounded-xl text-sm font-black hover:bg-gray-800 transition-colors shadow-sm">
+                <Plus className="w-4 h-4" />
+                Add Product
+              </button>
+            )}
+          </div>
+
+          {/* ── KPI Cards (orders view) ── */}
+          {activeView === 'orders' && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+              {[
+                { label: 'Total',      value: stats.total,                            color: 'text-gray-900 dark:text-white',   bg: 'bg-white dark:bg-gray-900', icon: Package },
+                { label: 'Today',      value: stats.todayOrders,                      color: 'text-blue-600',                   bg: 'bg-blue-50 dark:bg-blue-900/20', icon: TrendingUp },
+                { label: 'Processing', value: stats.processing,                       color: 'text-amber-600',                  bg: 'bg-amber-50 dark:bg-amber-900/20', icon: Clock },
+                { label: 'Delivered',  value: stats.delivered,                        color: 'text-green-600',                  bg: 'bg-green-50 dark:bg-green-900/20', icon: CheckCircle2 },
+                { label: 'Cancelled',  value: stats.cancelled,                        color: 'text-red-500',                    bg: 'bg-red-50 dark:bg-red-900/20', icon: XCircle },
+                { label: 'Revenue',    value: `${(stats.revenue/1000).toFixed(0)}K`,  color: 'text-brand-dark dark:text-brand', bg: 'bg-brand-muted dark:bg-brand/10', icon: DollarSign },
+                { label: 'Deposits',   value: `${(stats.deposits/1000).toFixed(0)}K`, color: 'text-purple-600',                 bg: 'bg-purple-50 dark:bg-purple-900/20', icon: Bike },
+              ].map(({ label, value, icon: Icon, color, bg }) => (
+                <div key={label} className={`${bg} rounded-2xl border border-gray-100 dark:border-gray-800 p-4`}>
+                  <Icon className={`w-4 h-4 ${color} mb-3 opacity-70`} />
+                  <p className={`font-black text-2xl leading-none ${color}`}>{value}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1.5">{label}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ══ ORDERS VIEW ══ */}
+          {activeView === 'orders' && (
+            <div className="space-y-4">
+              {/* Toolbar */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-1 flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 focus-within:border-brand transition-colors">
+                  <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <input value={search} onChange={e => setSearch(e.target.value)}
+                    placeholder="Search by order ID, customer or product..."
+                    className="flex-1 bg-transparent outline-none text-sm text-gray-900 dark:text-white placeholder:text-gray-400" />
+                  {search && <button onClick={() => setSearch('')}><X className="w-4 h-4 text-gray-400" /></button>}
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  {(['all','processing','delivered','cancelled'] as StatusFilter[]).map(s => (
+                    <button key={s} onClick={() => setStatusFilter(s)}
+                      className={clsx('px-3 py-2 rounded-xl text-xs font-bold capitalize transition-all border',
+                        statusFilter === s ? 'bg-brand-dark text-white border-brand-dark dark:bg-brand dark:text-gray-900' : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-brand-dark'
+                      )}>
+                      {s === 'all' ? `All (${orders.length})` : `${s.charAt(0).toUpperCase()+s.slice(1)} (${orders.filter(o=>o.status===s).length})`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {branchFilter !== 'all' && (
+                <div className="flex items-center gap-2 px-3 py-2 bg-brand-muted dark:bg-brand/10 rounded-xl w-fit">
+                  <Store className="w-3.5 h-3.5 text-brand" />
+                  <span className="text-xs font-bold text-brand-dark dark:text-brand">{branchFilter}</span>
+                  <button onClick={() => setBranchFilter('all')}><X className="w-3.5 h-3.5 text-brand-dark" /></button>
+                </div>
+              )}
+
+              {/* Bulk actions */}
+              {selectedOrderIds.size > 0 && (
+                <div className="flex items-center gap-3 px-4 py-3 bg-brand-dark rounded-xl">
+                  <span className="text-white font-black text-sm">{selectedOrderIds.size} selected</span>
+                  <div className="flex gap-2 ml-auto">
+                    <select value={bulkAction} onChange={e => setBulkAction(e.target.value as any)}
+                      className="px-3 py-1.5 rounded-lg bg-white/10 text-white text-xs font-bold border border-white/20 outline-none">
+                      <option value="">Choose action...</option>
+                      <option value="delivered">Mark Delivered</option>
+                      <option value="cancelled">Mark Cancelled</option>
+                    </select>
+                    <button onClick={handleBulkAction} disabled={!bulkAction || bulkUpdating}
+                      className="px-4 py-1.5 bg-brand text-gray-900 rounded-lg text-xs font-black hover:bg-brand-light disabled:opacity-50 transition-colors">
+                      {bulkUpdating ? 'Updating...' : 'Apply'}
+                    </button>
+                    <button onClick={() => setSelectedOrderIds(new Set())}
+                      className="px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20 transition-colors">
+                      Clear
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Orders table */}
+              {loading ? (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-16 flex justify-center">
+                  <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : filteredOrders.length === 0 ? (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-16 text-center">
+                  <Package className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
+                  <p className="font-black text-gray-900 dark:text-white mb-1">No orders found</p>
+                  <p className="text-sm text-gray-400">{orders.length === 0 ? 'Orders will appear here once customers place them.' : 'Try a different filter.'}</p>
+                </div>
+              ) : (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                  {/* Table header */}
+                  <div className="hidden sm:grid grid-cols-[32px_1fr_160px_100px_120px_140px_80px] gap-4 px-5 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+                    {['', 'Order', 'Branch', 'Total', 'Date', 'Status', ''].map((h,i) => (
+                      <p key={i} className="text-[10px] font-black uppercase tracking-widest text-gray-400">{h}</p>
+                    ))}
+                  </div>
+                  <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                    {filteredOrders.map((order, i) => {
+                      const cfg = STATUS[order.status];
+                      const StatusIcon = cfg.icon;
+                      return (
+                        <motion.div key={order.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: Math.min(i * 0.01, 0.2) }}
+                          className="grid grid-cols-1 sm:grid-cols-[32px_1fr_160px_100px_120px_140px_80px] gap-3 sm:gap-4 px-5 py-3.5 hover:bg-gray-50/70 dark:hover:bg-gray-800/40 transition-colors cursor-pointer"
+                          onClick={() => setSelectedOrder(order)}>
+                          <div className="hidden sm:flex items-center" onClick={e => e.stopPropagation()}>
+                            <input type="checkbox" checked={selectedOrderIds.has(order.id)} onChange={() => toggleOrderSelect(order.id)}
+                              className="w-4 h-4 rounded accent-brand cursor-pointer" />
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex gap-1 flex-shrink-0">
+                              {order.items.slice(0,2).map(item => (
+                                <div key={item.id} className="relative w-8 h-8 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+                                  <Image src={item.image} alt={item.name} fill className="object-cover" sizes="32px" />
+                                </div>
+                              ))}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-black text-sm text-gray-900 dark:text-white">#{order.id}</p>
+                              <p className="text-xs text-gray-400 truncate">{order.customer_name ?? `${order.items.length} item${order.items.length!==1?'s':''}`}</p>
+                            </div>
+                          </div>
+                          <div className="hidden sm:flex items-center">
+                            <p className="text-xs font-medium text-gray-600 dark:text-gray-300 truncate">{order.pickup_branch?.replace('Simba Supermarket ','') ?? '—'}</p>
+                          </div>
+                          <div className="hidden sm:flex items-center">
+                            <p className="font-bold text-sm text-gray-900 dark:text-white">{order.total.toLocaleString()}<span className="text-xs text-gray-400 font-normal ml-1">RWF</span></p>
+                          </div>
+                          <div className="hidden sm:flex items-center">
+                            <div>
+                              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{new Date(order.date).toLocaleDateString('en-RW',{day:'numeric',month:'short'})}</p>
+                              <p className="text-xs text-gray-400">{new Date(order.date).toLocaleTimeString('en-RW',{hour:'2-digit',minute:'2-digit'})}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center">
+                            <span className={clsx('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-black border', cfg.bg, cfg.color, cfg.border)}>
+                              <StatusIcon className="w-3 h-3" />
+                              {cfg.label}
+                            </span>
+                          </div>
+                          <div className="hidden sm:flex items-center justify-end">
+                            <button onClick={e => { e.stopPropagation(); setSelectedOrder(order); }}
+                              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                              <Eye className="w-4 h-4 text-gray-400" />
+                            </button>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ══ PRODUCTS VIEW ══ */}
+          {activeView === 'products' && (
+            <div className="space-y-4">
+              {/* Product KPIs */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: 'Total', value: prodStats.total, color: 'text-gray-900 dark:text-white', bg: 'bg-white dark:bg-gray-900', icon: Package },
+                  { label: 'In Stock', value: prodStats.inStock, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', icon: CheckCircle2 },
+                  { label: 'Out of Stock', value: prodStats.outOfStock, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20', icon: XCircle },
+                  { label: 'Added by Admin', value: prodStats.additions, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20', icon: Plus },
+                ].map(({ label, value, color, bg, icon: Icon }) => (
+                  <div key={label} className={`${bg} rounded-2xl border border-gray-100 dark:border-gray-800 p-4`}>
+                    <Icon className={`w-4 h-4 ${color} mb-3 opacity-70`} />
+                    <p className={`font-black text-2xl leading-none ${color}`}>{value}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1.5">{label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Toolbar */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-1 flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 focus-within:border-brand transition-colors">
+                  <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <input value={prodSearch} onChange={e => setProdSearch(e.target.value)}
+                    placeholder="Search products by name or category..."
+                    className="flex-1 bg-transparent outline-none text-sm text-gray-900 dark:text-white placeholder:text-gray-400" />
+                  {prodSearch && <button onClick={() => setProdSearch('')}><X className="w-4 h-4 text-gray-400" /></button>}
+                </div>
+                <div className="flex gap-2">
+                  <select value={prodCategory} onChange={e => setProdCategory(e.target.value)}
+                    className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-300 outline-none focus:border-brand transition-colors">
+                    <option value="all">All Categories</option>
+                    {productCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                  <select value={prodStockFilter} onChange={e => setProdStockFilter(e.target.value as any)}
+                    className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-300 outline-none focus:border-brand transition-colors">
+                    <option value="all">All Stock</option>
+                    <option value="in">In Stock</option>
+                    <option value="out">Out of Stock</option>
+                  </select>
+                </div>
+              </div>
+              <p className="text-xs text-gray-400">{filteredProducts.length} products shown</p>
+
+              {prodLoading ? (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-16 flex justify-center">
+                  <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-16 text-center">
+                  <Package className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
+                  <p className="font-black text-gray-900 dark:text-white mb-1">No products found</p>
+                  <p className="text-sm text-gray-400">Try a different search or filter.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {filteredProducts.map((product, i) => (
+                    <motion.div key={product.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i*0.02, 0.3) }}
+                      className={clsx('bg-white dark:bg-gray-900 rounded-2xl border overflow-hidden group hover:shadow-md transition-all',
+                        !product.inStock ? 'border-red-200 dark:border-red-900/50' : product.source==='addition' ? 'border-blue-200 dark:border-blue-900/50' : product.source==='override' ? 'border-amber-200 dark:border-amber-900/50' : 'border-gray-100 dark:border-gray-800'
+                      )}>
+                      <div className="relative aspect-square bg-gray-50 dark:bg-gray-800 overflow-hidden">
+                        {product.image
+                          ? <Image src={product.image} alt={product.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="300px" />
+                          : <div className="w-full h-full flex items-center justify-center"><ImageIcon className="w-12 h-12 text-gray-200" /></div>
+                        }
+                        <div className="absolute top-2 left-2 flex flex-col gap-1">
+                          {!product.inStock && <span className="px-2 py-0.5 bg-red-500 text-white text-[9px] font-black rounded-full uppercase">Out of stock</span>}
+                          {product.source==='addition' && <span className="px-2 py-0.5 bg-blue-500 text-white text-[9px] font-black rounded-full uppercase">New</span>}
+                          {product.source==='override' && <span className="px-2 py-0.5 bg-amber-500 text-white text-[9px] font-black rounded-full uppercase">Edited</span>}
+                        </div>
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                          <button onClick={() => { setEditProduct(product); setIsNewProduct(false); setShowProductModal(true); }}
+                            className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-lg hover:bg-brand hover:text-gray-900 transition-colors">
+                            <Pencil className="w-4 h-4 text-gray-700" />
+                          </button>
+                          <button onClick={() => handleDeleteProduct(product)} disabled={deletingId===product.id}
+                            className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-lg hover:bg-red-500 transition-colors">
+                            {deletingId===product.id ? <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"/> : <Trash2 className="w-4 h-4 text-red-500" />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="p-3">
+                        <p className="font-black text-sm text-gray-900 dark:text-white line-clamp-1 mb-0.5">{product.name}</p>
+                        <p className="text-xs text-gray-400 mb-2">{product.category} · {product.unit}</p>
+                        <div className="flex items-center justify-between">
+                          <p className="font-black text-brand-dark dark:text-brand">{product.price.toLocaleString()} <span className="text-xs text-gray-400 font-normal">RWF</span></p>
+                          <span className={clsx('text-[10px] font-black px-2 py-0.5 rounded-full', product.inStock ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-600')}>
+                            {product.inStock ? `${product.stockCount??'—'} left` : 'Out'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="px-3 pb-3 grid grid-cols-2 gap-2">
+                        <button onClick={() => { setEditProduct(product); setIsNewProduct(false); setShowProductModal(true); }}
+                          className="py-2 bg-gray-50 dark:bg-gray-800 hover:bg-brand-muted dark:hover:bg-brand/10 rounded-xl text-xs font-black text-gray-600 dark:text-gray-300 hover:text-brand-dark dark:hover:text-brand transition-colors flex items-center justify-center gap-1.5">
+                          <Pencil className="w-3.5 h-3.5" /> Edit
+                        </button>
+                        <button onClick={() => handleDeleteProduct(product)} disabled={deletingId===product.id}
+                          className="py-2 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-xl text-xs font-black text-red-500 transition-colors flex items-center justify-center gap-1.5">
+                          <Trash2 className="w-3.5 h-3.5" /> Delete
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ══ BRANCHES VIEW ══ */}
+          {activeView === 'branches' && (
+            <div className="space-y-3">
+              {branchStats.length === 0 ? (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-16 text-center">
+                  <Store className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
+                  <p className="font-black text-gray-900 dark:text-white">No branch activity yet</p>
+                </div>
+              ) : (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                  <div className="hidden sm:grid grid-cols-[1fr_80px_120px_80px_80px_100px_120px] gap-4 px-5 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+                    {['Branch', 'Orders', 'Revenue', 'Active', 'Done', 'Rating', ''].map((h, i) => (
+                      <p key={i} className="text-[10px] font-black uppercase tracking-widest text-gray-400">{h}</p>
+                    ))}
+                  </div>
+                  <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                    {branchStats.map((b, i) => {
+                      const branchId = b.name.toLowerCase().replace('simba supermarket ', '').replace(/\s+/g, '_');
+                      const rating = ratings[branchId];
+                      const maxRev2 = Math.max(...branchStats.map(x => x.revenue), 1);
+                      return (
+                        <motion.div key={b.name} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}
+                          className="grid grid-cols-1 sm:grid-cols-[1fr_80px_120px_80px_80px_100px_120px] gap-3 sm:gap-4 px-5 py-4 hover:bg-gray-50/70 dark:hover:bg-gray-800/40 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 bg-brand-muted dark:bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                              <Store className="w-4 h-4 text-brand" />
+                            </div>
+                            <div>
+                              <p className="font-black text-sm text-gray-900 dark:text-white">{b.name.replace('Simba Supermarket ','')}</p>
+                              <div className="mt-1 h-1 w-24 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div className="h-full bg-brand rounded-full" style={{ width: `${(b.revenue/maxRev2)*100}%` }} />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center"><p className="font-black text-sm text-gray-900 dark:text-white">{b.total}</p></div>
+                          <div className="flex items-center"><p className="font-bold text-sm text-gray-700 dark:text-gray-300">{b.revenue.toLocaleString()} RWF</p></div>
+                          <div className="flex items-center"><span className="px-2 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-black">{b.processing}</span></div>
+                          <div className="flex items-center"><span className="px-2 py-1 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg text-xs font-black">{b.delivered}</span></div>
+                          <div className="flex items-center">
+                            {rating?.avgRating ? (
+                              <div className="flex items-center gap-1">
+                                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                                <span className="text-sm font-black text-gray-900 dark:text-white">{rating.avgRating}</span>
+                                <span className="text-xs text-gray-400">({rating.total})</span>
+                              </div>
+                            ) : <span className="text-xs text-gray-400">—</span>}
+                          </div>
+                          <div className="flex items-center justify-end">
+                            <button onClick={() => { setBranchFilter(b.name); setActiveView('orders'); }}
+                              className="px-3 py-1.5 bg-brand-dark dark:bg-brand dark:text-gray-900 text-white rounded-lg text-xs font-black hover:bg-gray-800 transition-colors">
+                              View Orders
+                            </button>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Revenue chart */}
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
+                <p className="text-sm font-black text-gray-900 dark:text-white mb-4">Revenue — Last 7 Days</p>
+                <div className="flex items-end gap-2 h-32">
+                  {revenueByDay.map(({ day, rev }) => (
+                    <div key={day} className="flex-1 flex flex-col items-center gap-1">
+                      <p className="text-[9px] font-bold text-gray-500 dark:text-gray-400">{rev > 0 ? `${(rev/1000).toFixed(0)}K` : ''}</p>
+                      <div className="w-full bg-brand rounded-t-lg transition-all" style={{ height: `${Math.max(4, (rev/maxRev)*96)}px` }} />
+                      <p className="text-[9px] font-bold text-gray-400">{day}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Top products */}
+              {topProducts.length > 0 && (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
+                  <p className="text-sm font-black text-gray-900 dark:text-white mb-4">Top Selling Products</p>
+                  <div className="space-y-3">
+                    {topProducts.map((p, i) => (
+                      <div key={p.name} className="flex items-center gap-3">
+                        <span className="w-6 h-6 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center text-xs font-black text-gray-500">{i+1}</span>
+                        <div className="relative w-9 h-9 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+                          <Image src={p.image} alt={p.name} fill className="object-cover" sizes="36px" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm text-gray-900 dark:text-white truncate">{p.name}</p>
+                          <p className="text-xs text-gray-400">{p.count} units sold</p>
+                        </div>
+                        <p className="font-black text-sm text-gray-900 dark:text-white flex-shrink-0">{p.revenue.toLocaleString()} RWF</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ══ PROMOS VIEW ══ */}
+          {activeView === 'promos' && (
+            <div className="space-y-5 max-w-2xl">
+              {/* Create form */}
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
+                <p className="text-sm font-black text-gray-900 dark:text-white mb-4">Create New Promo Code</p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input value={newPromoCode} onChange={e => setNewPromoCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))} placeholder="e.g. SUMMER20" maxLength={12}
+                    className="flex-1 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-black uppercase outline-none focus:border-brand transition-colors dark:text-white" />
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                    <Tag className="w-4 h-4 text-gray-400" />
+                    <input type="number" min={1} max={50} value={newPromoDiscount} onChange={e => setNewPromoDiscount(Number(e.target.value))}
+                      className="w-16 bg-transparent text-sm font-black outline-none text-gray-900 dark:text-white" />
+                    <span className="text-sm font-black text-gray-400">% off</span>
+                  </div>
+                  <button onClick={addPromo} disabled={!newPromoCode.trim()}
+                    className="flex items-center justify-center gap-2 px-5 py-3 bg-brand-dark text-white rounded-xl text-sm font-black hover:bg-gray-800 disabled:opacity-50 transition-colors">
+                    <Plus className="w-4 h-4" /> Add
+                  </button>
+                </div>
+              </div>
+
+              {/* Promo list */}
+              {promosLoading ? (
+                <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" /></div>
+              ) : promos.length === 0 ? (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 p-12 text-center">
+                  <Tag className="w-10 h-10 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
+                  <p className="font-black text-gray-900 dark:text-white">No promo codes yet</p>
+                  <p className="text-sm text-gray-400 mt-1">Create your first code above</p>
+                </div>
+              ) : (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                  <div className="hidden sm:grid grid-cols-[1fr_80px_80px_100px_100px] gap-4 px-5 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+                    {['Code', 'Discount', 'Uses', 'Status', ''].map((h,i) => (
+                      <p key={i} className="text-[10px] font-black uppercase tracking-widest text-gray-400">{h}</p>
+                    ))}
+                  </div>
+                  <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                    {promos.map(promo => (
+                      <div key={promo.code} className={clsx('grid grid-cols-1 sm:grid-cols-[1fr_80px_80px_100px_100px] gap-3 sm:gap-4 px-5 py-4 transition-colors', !promo.active && 'opacity-50')}>
+                        <div className="flex items-center gap-3">
+                          <div className={clsx('px-3 py-1.5 rounded-xl font-black text-sm tracking-widest', promo.active ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-400')}>
+                            {promo.code}
+                          </div>
+                        </div>
+                        <div className="flex items-center"><p className="font-black text-gray-900 dark:text-white">{promo.discount}%</p></div>
+                        <div className="flex items-center"><p className="text-sm text-gray-500 dark:text-gray-400">{promo.uses ?? 0}</p></div>
+                        <div className="flex items-center">
+                          <span className={clsx('px-2.5 py-1 rounded-full text-xs font-black', promo.active ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-500')}>
+                            {promo.active ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-end gap-2">
+                          <button onClick={() => togglePromo(promo.code)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-black transition-colors bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">
+                            {promo.active ? 'Deactivate' : 'Activate'}
+                          </button>
+                          <button onClick={() => deletePromo(promo.code)}
+                            className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ══ USERS VIEW ══ */}
+          {activeView === 'users' && (
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <button onClick={loadUsers} className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 hover:border-brand transition-colors">
+                  <RefreshCw className="w-3.5 h-3.5" /> Refresh
+                </button>
+              </div>
+              {usersLoading ? (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-16 flex justify-center">
+                  <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : users.length === 0 ? (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-16 text-center">
+                  <Users className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
+                  <p className="font-black text-gray-900 dark:text-white">No users yet</p>
+                </div>
+              ) : (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                  <div className="hidden sm:grid grid-cols-[1fr_200px_120px_90px_60px] gap-4 px-5 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+                    {['User', 'Email', 'Phone', 'Points', ''].map((h,i) => (
+                      <p key={i} className="text-[10px] font-black uppercase tracking-widest text-gray-400">{h}</p>
+                    ))}
+                  </div>
+                  <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                    {users.map((u, i) => (
+                      <motion.div key={u.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
+                        className="grid grid-cols-1 sm:grid-cols-[1fr_200px_120px_90px_60px] gap-3 sm:gap-4 px-5 py-3.5 hover:bg-gray-50/70 dark:hover:bg-gray-800/40 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-brand-muted dark:bg-brand/10 rounded-full flex items-center justify-center font-black text-brand-dark dark:text-brand text-sm flex-shrink-0">
+                            {u.name?.charAt(0)?.toUpperCase() ?? '?'}
+                          </div>
+                          <div>
+                            <p className="font-bold text-sm text-gray-900 dark:text-white">{u.name}</p>
+                            <p className="text-xs text-gray-400">{new Date(u.created_at).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center"><p className="text-xs text-gray-600 dark:text-gray-300 truncate">{u.email}</p></div>
+                        <div className="flex items-center"><p className="text-xs text-gray-500 dark:text-gray-400">{u.phone ?? '—'}</p></div>
+                        <div className="flex items-center">
+                          <span className="px-2 py-0.5 bg-brand-muted dark:bg-brand/10 text-brand-dark dark:text-brand rounded-full text-xs font-black">{u.loyalty_points ?? 0} pts</span>
+                        </div>
+                        <div className="flex items-center justify-end">
+                          <button onClick={() => deleteUser(u.id)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ══ SETTINGS VIEW ══ */}
+          {activeView === 'settings' && (
+            <div className="space-y-5 max-w-2xl">
+              {settingsSaved && (
+                <div className="flex items-center gap-2 px-4 py-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
+                  <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+                  <p className="text-sm font-bold text-green-700 dark:text-green-400">Settings saved successfully</p>
+                </div>
+              )}
+
+              {/* Pickup & Store */}
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                  <p className="font-black text-sm text-gray-900 dark:text-white">Pickup & Store Hours</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Deposit amount, pickup time, and operating hours</p>
+                </div>
+                <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                  {[
+                    { key: 'deposit_amount',   label: 'Deposit Amount (RWF)',    hint: 'Upfront deposit to confirm an order' },
+                    { key: 'pickup_time_min',  label: 'Min Pickup Time (min)',   hint: 'Minimum estimated pickup time' },
+                    { key: 'pickup_time_max',  label: 'Max Pickup Time (min)',   hint: 'Maximum estimated pickup time' },
+                    { key: 'store_open_hour',  label: 'Opens at (24h hour)',     hint: 'Store opening hour in Kigali time' },
+                    { key: 'store_close_hour', label: 'Closes at (24h hour)',    hint: 'Store closing hour in Kigali time' },
+                  ].map(({ key, label, hint }) => (
+                    <div key={key} className="flex items-center justify-between px-5 py-4 gap-4">
+                      <div>
+                        <p className="font-bold text-sm text-gray-900 dark:text-white">{label}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{hint}</p>
+                      </div>
+                      <input type="number" value={settings[key] ?? ''} onChange={e => setSettings(p => ({...p,[key]:e.target.value}))} onBlur={e => saveSettings({[key]:e.target.value})}
+                        className="w-24 px-3 py-2 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-black text-right outline-none focus:border-brand transition-colors dark:text-white" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Loyalty */}
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                  <p className="font-black text-sm text-gray-900 dark:text-white">Loyalty Program</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Points earning rate and tier thresholds</p>
+                </div>
+                <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                  {[
+                    { key: 'loyalty_earn_rate',  label: 'Earn 1 Point per X RWF', hint: 'e.g. 100 means 1 pt per 100 RWF spent' },
+                    { key: 'loyalty_bronze_max', label: 'Bronze Max Points',       hint: 'Upper limit of Bronze tier' },
+                    { key: 'loyalty_silver_max', label: 'Silver Max Points',       hint: 'Upper limit of Silver tier' },
+                  ].map(({ key, label, hint }) => (
+                    <div key={key} className="flex items-center justify-between px-5 py-4 gap-4">
+                      <div>
+                        <p className="font-bold text-sm text-gray-900 dark:text-white">{label}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{hint}</p>
+                      </div>
+                      <input type="number" value={settings[key] ?? ''} onChange={e => setSettings(p => ({...p,[key]:e.target.value}))} onBlur={e => saveSettings({[key]:e.target.value})}
+                        className="w-24 px-3 py-2 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-black text-right outline-none focus:border-brand transition-colors dark:text-white" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Feature flags */}
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                  <p className="font-black text-sm text-gray-900 dark:text-white">Feature Flags</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Enable or disable sections of the storefront</p>
+                </div>
+                <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                  {[
+                    { key: 'feature_flash_deals',  label: 'Flash Deals Banner',    hint: 'Show the flash deals section on the homepage' },
+                    { key: 'feature_deals_of_day', label: 'Deals of the Day',       hint: 'Show the daily deals section' },
+                    { key: 'feature_trending',     label: 'Trending Products',      hint: 'Show the trending now section' },
+                    { key: 'feature_buy_it_again', label: 'Buy It Again',           hint: 'Show repurchase suggestions for returning customers' },
+                    { key: 'feature_compare',      label: 'Product Compare',        hint: 'Allow customers to compare up to 3 products' },
+                    { key: 'feature_reviews',      label: 'Product Reviews',        hint: 'Allow customers to leave and read reviews' },
+                    { key: 'feature_referrals',    label: 'Referral Program',       hint: 'Show the referral card in the account tab' },
+                  ].map(({ key, label, hint }) => {
+                    const enabled = settings[key] !== 'false';
+                    return (
+                      <div key={key} className="flex items-center justify-between px-5 py-4">
+                        <div>
+                          <p className="font-bold text-sm text-gray-900 dark:text-white">{label}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{hint}</p>
+                        </div>
+                        <button onClick={() => saveSettings({[key]: enabled ? 'false' : 'true'})} disabled={settingsSaving}
+                          className={clsx('w-11 h-6 rounded-full transition-all relative flex-shrink-0', enabled ? 'bg-brand' : 'bg-gray-200 dark:bg-gray-700')}>
+                          <span className={clsx('absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all', enabled ? 'left-5' : 'left-0.5')} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+        </main>
+      </div>
+
+      {/* ── Order detail drawer ── */}
+      <AnimatePresence>
+        {selectedOrder && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]" onClick={() => setSelectedOrder(null)} />
+            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="fixed right-0 top-0 h-full w-full max-w-md bg-white dark:bg-gray-900 z-[110] shadow-2xl flex flex-col">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                <div>
+                  <p className="font-black text-gray-900 dark:text-white">Order #{selectedOrder.id}</p>
+                  <p className="text-xs text-gray-400">{new Date(selectedOrder.date).toLocaleString('en-RW',{dateStyle:'medium',timeStyle:'short'})}</p>
+                </div>
+                <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors">
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                {/* Status */}
+                <div className={clsx('flex items-center gap-2 px-4 py-3 rounded-xl border', STATUS[selectedOrder.status].bg, STATUS[selectedOrder.status].border)}>
+                  {(() => { const Icon = STATUS[selectedOrder.status].icon; return <Icon className={`w-4 h-4 ${STATUS[selectedOrder.status].color}`} />; })()}
+                  <span className={`font-black text-sm ${STATUS[selectedOrder.status].color}`}>{STATUS[selectedOrder.status].label}</span>
+                  <span className="ml-auto text-xs text-gray-500 dark:text-gray-400 truncate">{selectedOrder.pickup_branch?.replace('Simba Supermarket ','')}</span>
+                </div>
+
+                {/* Customer */}
+                {selectedOrder.customer_name && (
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Customer</p>
+                    <p className="font-bold text-gray-900 dark:text-white">{selectedOrder.customer_name}</p>
+                    {selectedOrder.customer_phone && <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{selectedOrder.customer_phone}</p>}
+                  </div>
+                )}
+
+                {/* Items */}
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Items ({selectedOrder.items.length})</p>
+                  <div className="space-y-2">
+                    {selectedOrder.items.map(item => (
+                      <div key={item.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                        <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0">
+                          <Image src={item.image} alt={item.name} fill className="object-cover" sizes="40px" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm text-gray-900 dark:text-white truncate">{item.name}</p>
+                          <p className="text-xs text-gray-400">×{item.quantity} · {item.price.toLocaleString()} RWF each</p>
+                        </div>
+                        <p className="font-black text-sm text-gray-900 dark:text-white flex-shrink-0">{(item.price*item.quantity).toLocaleString()}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Order summary */}
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-2">
+                  <div className="flex justify-between text-sm"><span className="text-gray-500 dark:text-gray-400">Payment</span><span className="font-bold text-gray-900 dark:text-white">{getPaymentMethodLabel(normalizePaymentMethod(selectedOrder.payment_method), language)}</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-gray-500 dark:text-gray-400">Pickup slot</span><span className="font-bold text-gray-900 dark:text-white">{selectedOrder.pickup_slot ?? 'asap'}</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-gray-500 dark:text-gray-400">Deposit paid</span><span className="font-bold text-gray-900 dark:text-white">{(selectedOrder.deposit_amount??0).toLocaleString()} RWF</span></div>
+                  <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+                    <span className="font-black text-gray-900 dark:text-white">Total</span>
+                    <span className="font-black text-lg text-gray-900 dark:text-white">{selectedOrder.total.toLocaleString()} RWF</span>
+                  </div>
+                </div>
+
+                {/* Update status */}
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Update Status</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(['processing','delivered','cancelled'] as Order['status'][]).map(s => {
+                      const cfg = STATUS[s]; const Icon = cfg.icon; const isActive = selectedOrder.status===s;
+                      return (
+                        <button key={s} onClick={() => !isActive && handleStatusChange(selectedOrder.id, s)}
+                          disabled={isActive || updating===selectedOrder.id}
+                          className={clsx('flex flex-col items-center gap-2 py-3 rounded-xl border-2 transition-all',
+                            isActive ? `${cfg.bg} ${cfg.border}` : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-white dark:bg-gray-800'
+                          )}>
+                          <Icon className={`w-5 h-5 ${isActive ? cfg.color : 'text-gray-400'}`} />
+                          <span className={`text-xs font-black ${isActive ? cfg.color : 'text-gray-500 dark:text-gray-400'}`}>{cfg.label}</span>
+                          {isActive && <span className="text-[9px] text-gray-400">Current</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ── Product modal ── */}
+      <AnimatePresence>
+        {showProductModal && (
+          <ProductModal product={isNewProduct ? null : editProduct} categories={CATEGORIES} onSave={handleSaveProduct}
+            onClose={() => { setShowProductModal(false); setEditProduct(null); setIsNewProduct(false); }} language={language} />
+        )}
+      </AnimatePresence>
+    </div>
+    </div>
+  );
+}
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-brand rounded-xl flex items-center justify-center">
