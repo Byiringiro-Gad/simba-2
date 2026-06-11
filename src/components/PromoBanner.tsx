@@ -1,102 +1,94 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import Image from 'next/image';
+import { X, ChevronRight } from 'lucide-react';
 import { useSimbaStore } from '@/store/useSimbaStore';
-import { translations } from '@/lib/translations';
+
+const MESSAGES = [
+  {
+    id: 1,
+    bg: 'bg-brand-dark',
+    en: 'New customers get 15% off — use code WELCOME at checkout',
+    fr: 'Nouveaux clients : 15% de réduction — code WELCOME',
+    rw: 'Abakiriya bashya bagabanyirizwa 15% — kode WELCOME',
+    code: 'WELCOME',
+    cta: { en: 'Apply', fr: 'Appliquer', rw: 'Shyira' },
+  },
+  {
+    id: 2,
+    bg: 'bg-orange-600',
+    en: 'Save 10% on your order today — use code SIMBA10',
+    fr: 'Économisez 10% sur votre commande — code SIMBA10',
+    rw: 'Igabanya 10% ku itumizwa ryawe — kode SIMBA10',
+    code: 'SIMBA10',
+    cta: { en: 'Apply', fr: 'Appliquer', rw: 'Shyira' },
+  },
+  {
+    id: 3,
+    bg: 'bg-emerald-700',
+    en: 'Free pickup at 9 branches across Kigali — order online in minutes',
+    fr: 'Retrait gratuit dans 9 agences à Kigali — commandez en quelques minutes',
+    rw: 'Gufata ubuntu mu mashami 9 i Kigali — tumiza vuba',
+    code: null,
+    cta: { en: 'Shop now', fr: 'Acheter', rw: 'Gura' },
+  },
+];
 
 export default function PromoBanner() {
-  const [current, setCurrent] = useState(0);
-  const { applyPromo, language } = useSimbaStore();
-  const t = translations[language];
-
-  // Banners defined inside component so they react to language changes
-  const BANNERS = [
-    {
-      id: 1,
-      title: t.promoFreeDelivery,
-      subtitle: t.promoFreeDeliverySub,
-      badge: t.promoNewUser,
-      bg: 'from-[#0F172A] to-[#1E3A8A]',
-      image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&q=80',
-      code: 'WELCOME',
-    },
-    {
-      id: 2,
-      title: t.promoGroceries,
-      subtitle: t.promoGroceriesSub,
-      badge: t.promoLimited,
-      bg: 'from-amber-600 to-orange-700',
-      image: 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=600&q=80',
-      code: 'SIMBA10',
-    },
-    {
-      id: 3,
-      title: t.promoBakery,
-      subtitle: t.promoBakerySub,
-      badge: t.promoDaily,
-      bg: 'from-rose-600 to-pink-800',
-      image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&q=80',
-      code: null,
-    },
-  ];
+  const { applyPromo, language, setShopNowOpen } = useSimbaStore();
+  const [idx, setIdx] = useState(0);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrent(c => (c + 1) % BANNERS.length), 4500);
-    return () => clearInterval(timer);
+    const t = setInterval(() => setIdx(i => (i + 1) % MESSAGES.length), 5000);
+    return () => clearInterval(t);
   }, []);
 
-  const banner = BANNERS[current];
+  if (dismissed) return null;
+
+  const msg = MESSAGES[idx];
+  const text = msg[language as 'en' | 'fr' | 'rw'] ?? msg.en;
+  const cta  = msg.cta[language as 'en' | 'fr' | 'rw'] ?? msg.cta.en;
+
+  const handleCta = () => {
+    if (msg.code) applyPromo(msg.code);
+    else setShopNowOpen(true);
+  };
 
   return (
-    <div className="relative h-56 sm:h-72 rounded-2xl overflow-hidden group cursor-pointer"
-      onClick={() => banner.code && applyPromo(banner.code)}>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={banner.id}
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -30 }}
-          transition={{ duration: 0.3 }}
-          className={`absolute inset-0 bg-gradient-to-r ${banner.bg}`}
-        >
-          <div className="absolute right-0 top-0 bottom-0 w-2/5 opacity-25">
-            <Image src={banner.image} alt="" fill className="object-cover" />
-          </div>
-          <div className="relative h-full flex flex-col justify-center px-6 sm:px-10">
-            <span className="inline-block px-3 py-1 bg-white/20 text-white text-[10px] font-black uppercase tracking-widest rounded-full mb-3 self-start">
-              {banner.badge}
-            </span>
-            <h3 className="text-2xl sm:text-4xl font-black text-white leading-tight mb-2">{banner.title}</h3>
-            <p className="text-white/80 text-sm sm:text-base font-medium mb-5">{banner.subtitle}</p>
+    <div className={`${msg.bg} relative`}>
+      <div className="max-w-screen-xl mx-auto px-3 sm:px-6 py-2 flex items-center justify-between gap-3">
+        {/* Cycling dot */}
+        <div className="flex gap-1 flex-shrink-0 items-center">
+          {MESSAGES.map((_, i) => (
             <button
-              onClick={e => { e.stopPropagation(); banner.code && applyPromo(banner.code); }}
-              className="self-start px-5 py-2.5 bg-white text-gray-900 rounded-xl text-sm font-black hover:bg-gray-100 transition-colors shadow-lg"
-            >
-              {t.shopNow}
-            </button>
-          </div>
-        </motion.div>
-      </AnimatePresence>
+              key={i}
+              onClick={() => setIdx(i)}
+              className={`rounded-full transition-all ${i === idx ? 'w-3 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/40'}`}
+              aria-label={`Message ${i + 1}`}
+            />
+          ))}
+        </div>
 
-      {/* Arrows */}
-      <button onClick={e => { e.stopPropagation(); setCurrent(c => (c - 1 + BANNERS.length) % BANNERS.length); }}
-        className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/20 hover:bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-        <ChevronLeft className="w-4 h-4 text-white" />
-      </button>
-      <button onClick={e => { e.stopPropagation(); setCurrent(c => (c + 1) % BANNERS.length); }}
-        className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 bg-black/20 hover:bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-        <ChevronRight className="w-4 h-4 text-white" />
-      </button>
+        {/* Message */}
+        <p className="text-white text-xs sm:text-sm font-medium flex-1 text-center truncate">{text}</p>
 
-      {/* Dots */}
-      <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1.5">
-        {BANNERS.map((_, i) => (
-          <button key={i} onClick={e => { e.stopPropagation(); setCurrent(i); }}
-            className={`h-1 rounded-full transition-all ${i === current ? 'w-5 bg-white' : 'w-1 bg-white/40'}`} />
-        ))}
+        {/* CTA + close */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={handleCta}
+            className="flex items-center gap-1 px-2.5 py-1 bg-white/20 hover:bg-white/30 text-white text-xs font-black rounded-lg transition-colors border border-white/20"
+          >
+            {cta} <ChevronRight className="w-3 h-3" />
+          </button>
+          <button
+            onClick={() => setDismissed(true)}
+            className="w-5 h-5 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+            aria-label="Dismiss"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </div>
   );

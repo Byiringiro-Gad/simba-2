@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import { getSimbaData } from '@/lib/data';
-import { Search, ShoppingCart, MapPin, X, Globe, Menu, User, LogOut, ChevronRight, ChevronDown } from 'lucide-react';
+import { Search, ShoppingCart, MapPin, X, Globe, Menu, User, LogOut, ChevronRight, ChevronDown, Moon, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -21,6 +21,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
     setActiveTab,
     user, logout, setCartOpen,
     setSelectedCategory,
+    isDarkMode, toggleDarkMode,
   } = useSimbaStore();
 
   const t = translations[language];
@@ -191,7 +192,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                   value={searchQuery}
                   onFocus={openSearch}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder={language === 'fr' ? '🤖 Recherche IA' : language === 'rw' ? '🤖 Shakisha na AI' : '🤖 AI Search'}
+                  placeholder={language === 'fr' ? 'Rechercher des produits...' : language === 'rw' ? 'Shakisha ibicuruzwa...' : 'Search products...'}
                   className="flex-1 min-w-0 bg-transparent outline-none text-sm text-gray-900 placeholder:text-gray-400 font-medium"
                 />
                 {searchQuery && (
@@ -204,6 +205,19 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
             {/* Right actions */}
             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+
+              {/* Dark mode toggle */}
+              <button
+                onClick={toggleDarkMode}
+                className="p-2 rounded-xl hover:bg-white/10 transition-colors"
+                title={isDarkMode ? 'Light mode' : 'Dark mode'}
+                aria-label="Toggle dark mode"
+              >
+                {isDarkMode
+                  ? <Sun className="w-5 h-5 text-white/80" />
+                  : <Moon className="w-5 h-5 text-white/80" />
+                }
+              </button>
 
               {/* Language */}
               <button

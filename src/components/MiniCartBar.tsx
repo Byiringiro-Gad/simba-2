@@ -34,7 +34,7 @@ export default function MiniCartBar() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: 'spring', damping: 26, stiffness: 280 }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] hidden sm:flex items-center gap-4 px-5 py-3.5 bg-gray-900 dark:bg-white rounded-2xl shadow-2xl border border-white/10 dark:border-gray-200 max-w-xl w-[calc(100vw-3rem)]"
+          className="fixed bottom-24 sm:bottom-32 left-1/2 -translate-x-1/2 z-[58] hidden sm:flex items-center gap-4 px-5 py-3.5 bg-gray-900 dark:bg-white rounded-2xl shadow-2xl border border-white/10 dark:border-gray-200 max-w-xl w-[calc(100vw-3rem)]"
           style={{ backdropFilter: 'blur(16px)' }}
         >
           {/* Cart icon + count */}

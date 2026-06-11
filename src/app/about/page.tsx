@@ -172,7 +172,7 @@ export default function AboutPage() {
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   <Clock className="w-3 h-3 text-gray-300" />
-                  <span className="text-[10px] text-gray-400">{b.openingHour}:00–{b.closingHour}:00</span>
+                  <span className="text-[10px] text-gray-400">8:00–21:00</span>
                 </div>
               </a>
             ))}

@@ -7,7 +7,7 @@ import CategorySidebar from '@/components/CategorySidebar';
 import CategoryGrid from '@/components/CategoryGrid';
 import ProductGrid from '@/components/ProductGrid';
 import ProductCard from '@/components/ProductCard';
-import PromoBanner from '@/components/PromoBanner';
+import PromoBanner from '@/components/PromoBanner'; // kept for import but not used in layout
 import CartDrawer from '@/components/CartDrawer';
 import BottomNav from '@/components/BottomNav';
 import AddressModal from '@/components/AddressModal';
@@ -23,7 +23,6 @@ import FlashSalesBanner from '@/components/FlashSalesBanner';
 import BuyItAgain from '@/components/BuyItAgain';
 import TrendingProducts from '@/components/TrendingProducts';
 import DealsOfTheDay from '@/components/DealsOfTheDay';
-import PersonalisedGreeting from '@/components/PersonalisedGreeting';
 import ScrollReveal, { StaggerReveal, StaggerItem } from '@/components/ScrollReveal';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
@@ -107,31 +106,6 @@ function RecentlyViewedSection({ data }: { data: SimbaData }) {
   );
 }
 
-// ── Trust strip ──────────────────────────────────────────────────────────────
-function TrustStrip() {
-  const { language } = useSimbaStore();
-  const items = [
-    { icon: '⚡', en: 'Ready in 20–45 min', fr: 'Prêt en 20–45 min', rw: 'Bitegurwa mu min 20–45' },
-    { icon: '📍', en: '9 branches in Kigali', fr: '9 agences à Kigali', rw: 'Amashami 9 i Kigali' },
-    { icon: '🛡️', en: '100% authentic products', fr: 'Produits 100% authentiques', rw: 'Ibicuruzwa nyakuri 100%' },
-    { icon: '💳', en: 'MTN · Airtel · Card', fr: 'MTN · Airtel · Carte', rw: 'MTN · Airtel · Ikarita' },
-    { icon: '⭐', en: 'Earn loyalty points', fr: 'Gagnez des points', rw: 'Unguka amanota' },
-  ];
-  const L = (item: typeof items[0]) => language === 'fr' ? item.fr : language === 'rw' ? item.rw : item.en;
-  return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden">
-      <div className="flex overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-        {items.map((item, i) => (
-          <div key={i} className={`flex items-center gap-2 px-4 py-3 flex-shrink-0 ${i < items.length - 1 ? 'border-r border-gray-100 dark:border-gray-800' : ''}`}>
-            <span className="text-base">{item.icon}</span>
-            <span className="text-xs font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap">{L(item)}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ── Main page ────────────────────────────────────────────────────────────────
 const BRANCHES = SIMBA_BRANCHES;
 
@@ -174,8 +148,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* ── Top promo bar ── */}
-      <PromoBanner />
       <Navbar onMenuClick={() => setSidebarOpen(true)} />
 
       <AnimatePresence mode="wait">
@@ -258,12 +230,8 @@ export default function Home() {
                 <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 pb-24 sm:pb-10 space-y-10">
 
                   {/* 2. Trust badges strip */}
-                  <TrustStrip />
 
-                  {/* 3. Personalised greeting (logged-in only) */}
-                  <PersonalisedGreeting />
-
-                  {/* 4. Flash sales (rotating every 4h with countdown) */}
+                  {/* 3. Flash sales (rotating every 4h with countdown) */}
                   <ScrollReveal direction="up">
                     <FlashSalesBanner />
                   </ScrollReveal>
