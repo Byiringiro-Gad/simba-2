@@ -29,21 +29,21 @@ function buildResponse(input: string, lang: string, products: Product[]): ChatMe
     return {
       role: 'assistant',
       text: pick(
-        "Hello! 👋 I'm Pulse, your Simba AI assistant. I can help you find products, suggest recipes, answer questions about delivery, payment, or anything about Simba. What can I help you with?",
-        "Bonjour ! 👋 Je suis Pulse, votre assistant IA Simba. Je peux vous aider à trouver des produits, suggérer des recettes, répondre à vos questions sur la livraison, le paiement ou tout ce qui concerne Simba. Comment puis-je vous aider ?",
-        "Muraho! 👋 Ndi Pulse, umufasha wawe wa AI wa Simba. Nshobora kukufasha gushaka ibicuruzwa, gutanga ingero z'amafunguro, gusubiza ibibazo ku gutumiza, kwishura cyangwa ibyerekeye Simba. Nakufasha iki?"
+        "Hello! I'm Pulse, the Simba Supermarket AI assistant. I can help you find products, suggest meal ideas, and answer questions about our branches, payment options, and more. How can I help you today?",
+        "Bonjour ! Je suis Pulse, l'assistant IA de Simba Supermarket. Je peux vous aider à trouver des produits, suggérer des recettes et répondre à vos questions sur nos agences, les paiements et plus encore. Comment puis-je vous aider ?",
+        "Muraho! Ndi Pulse, umufasha wa AI wa Simba Supermarket. Nshobora kukufasha gushaka ibicuruzwa, gutanga ingero z'amafunguro, gusubiza ibibazo ku mashami, kwishura n'ibindi. Nakufasha iki?"
       ),
     };
   }
 
-  // Delivery
-  if (/deliver|livr|gutumiz|time|igihe|fast|vuba|how long|combien|minutes|minota/.test(q)) {
+  // Pickup / time
+  if (/deliver|pickup|pick.?up|livr|gutumiz|time|igihe|fast|vuba|how long|combien|minutes|minota|ready/.test(q)) {
     return {
       role: 'assistant',
       text: pick(
-        "🚴 Simba delivers across Kigali in **45 minutes**! We have 9 branches strategically located for fast pickup. Order now and your order will be ready in 20-45 min.",
-        "🚴 Simba livre partout à Kigali en **45 minutes** ! Nous avons 9 agences pour un retrait rapide. Commandez maintenant, votre commande sera prête en 20-45 min.",
-        "🚴 Simba itumiza mu Kigali hose mu **minota 45**! Dufite amashami 9. Tumiza ubu, itumizwa ryawe rizategurwa mu minota 20-45."
+        "Simba Online Shopping is a pickup service. Once you place an order, your basket is prepared by branch staff and ready for collection in 20–45 minutes. We have 9 branches across Kigali — choose the one closest to you. There is no home delivery at this time.",
+        "Simba Online Shopping est un service de retrait. Une fois votre commande passée, votre panier est préparé par l'équipe de l'agence et prêt à retirer en 20–45 minutes. Nous avons 9 agences à Kigali. La livraison à domicile n'est pas disponible pour l'instant.",
+        "Simba Online Shopping niyo serivisi yo gufata ibicuruzwa. Nyuma yo gutumiza, igitebo cyawe gitegurwa n'abakozi b'ishami kandi kiba giteganijwe mu minota 20–45. Dufite amashami 9 i Kigali. Nta gutumizwa mu rugo biraboneka ubu."
       ),
     };
   }
@@ -53,9 +53,9 @@ function buildResponse(input: string, lang: string, products: Product[]): ChatMe
     return {
       role: 'assistant',
       text: pick(
-        "💳 Simba accepts **MTN MoMo**, **Airtel Money**, and **card** payments. A **500 RWF deposit** is required at checkout to confirm your order. The rest is paid at pickup. Simple and secure!",
-        "💳 Simba accepte **MTN MoMo**, **Airtel Money** et **carte**. Un **dépôt de 500 RWF** est requis à la caisse pour confirmer votre commande. Le reste est payé au retrait.",
-        "💳 Simba yemera **MTN MoMo**, **Airtel Money** na **ikarita**. **Inguzanyo ya 500 RWF** irasabwa mu kwishura kugira ngo wemeze itumizwa. Isigaye wishurwa igihe ugiye gufata."
+        "Simba accepts MTN Mobile Money, Airtel Money, and card payments. A 500 RWF deposit is required at checkout to confirm your order. The remaining balance is paid at the branch when you collect. The deposit helps ensure your basket is prepared only for confirmed orders.",
+        "Simba accepte MTN Mobile Money, Airtel Money et le paiement par carte. Un dépôt de 500 RWF est requis à la caisse pour confirmer votre commande. Le solde restant est payé à l'agence lors du retrait.",
+        "Simba yemera MTN Mobile Money, Airtel Money na ikarita. Inguzanyo ya 500 RWF irasabwa mu kwishura kugira ngo wemeze itumizwa. Isigaye wishurwa mu ishami igihe ugiye gufata ibicuruzwa byawe."
       ),
     };
   }
@@ -65,9 +65,9 @@ function buildResponse(input: string, lang: string, products: Product[]): ChatMe
     return {
       role: 'assistant',
       text: pick(
-        "🎁 Active promo codes:\n• **SIMBA10** — 10% off\n• **WELCOME** — 15% off (new users)\n• **KIGALI5** — 5% off\n\nEnter the code in your cart before checkout!",
-        "🎁 Codes promo actifs :\n• **SIMBA10** — 10% de réduction\n• **WELCOME** — 15% (nouveaux utilisateurs)\n• **KIGALI5** — 5% de réduction\n\nEntrez le code dans votre panier !",
-        "🎁 Amakode ya promo:\n• **SIMBA10** — 10% igabanywa\n• **WELCOME** — 15% (abakoresha bashya)\n• **KIGALI5** — 5% igabanywa\n\nShyira kode mu gitebo!"
+        "Simba currently has these active promo codes:\n\nSIMBA10 — 10% off your order\nWELCOME — 15% off (new customers)\nKIGALI5 — 5% off\n\nEnter the code in your cart before proceeding to checkout.",
+        "Simba a actuellement ces codes promo actifs :\n\nSIMBA10 — 10% de réduction\nWELCOME — 15% de réduction (nouveaux clients)\nKIGALI5 — 5% de réduction\n\nEntrez le code dans votre panier avant de procéder au paiement.",
+        "Simba ifite amakode ya promo akora ubu:\n\nSIMBA10 — 10% igabanywa\nWELCOME — 15% igabanywa (abakiriya bashya)\nKIGALI5 — 5% igabanywa\n\nShyira kode mu gitebo mbere yo kwishura."
       ),
     };
   }
@@ -77,146 +77,146 @@ function buildResponse(input: string, lang: string, products: Product[]): ChatMe
     return {
       role: 'assistant',
       text: pick(
-        "⭐ Earn **1 point for every 100 RWF** spent. Reach 200 points for Silver, 500 for Gold status. Points are tracked automatically in your account!",
-        "⭐ Gagnez **1 point pour 100 RWF** dépensés. Atteignez 200 points pour Argent, 500 pour Or. Les points sont suivis automatiquement !",
-        "⭐ Unguka **amanota 1 kuri RWF 100** wishura. Gera ku manota 200 kugira ngo ubone Ifeza, 500 kugira ngo ubone Zahabu!"
+        "Simba's loyalty programme awards 1 point for every 100 RWF spent. You need 200 points to reach Silver tier and 500 points for Gold. Your points are tracked automatically in your account under the Loyalty Wallet section.",
+        "Le programme de fidélité Simba accorde 1 point pour 100 RWF dépensés. Vous avez besoin de 200 points pour le niveau Argent et 500 pour Or. Vos points sont suivis automatiquement dans votre compte.",
+        "Porogaramu y'ubudahemuka ya Simba iha amanota 1 kuri RWF 100 wishurwa. Ukeneye amanota 200 kugera ku rwego rwa Ifeza no 500 kugera ku Zahabu. Amanota yawe akurikiriranwa mu konti yawe."
       ),
     };
   }
 
-  // Locations / branches
+  // Branches / locations
   if (/locat|branch|where|kigali|aho|agence|kimironko|nyamirambo|remera|store|ishami/.test(q)) {
     return {
       role: 'assistant',
       text: pick(
-        "📍 Simba has **9 branches across Kigali**: Remera, Kimironko, Kacyiru, Nyamirambo, Gikondo, Kanombe, Kinyinya, Kibagabaga, Nyanza. See all on the map on our homepage!",
-        "📍 Simba a **9 agences à Kigali** : Remera, Kimironko, Kacyiru, Nyamirambo, Gikondo, Kanombe, Kinyinya, Kibagabaga, Nyanza. Consultez la carte sur notre page d'accueil !",
-        "📍 Simba ifite **amashami 9 mu Kigali**: Remera, Kimironko, Kacyiru, Nyamirambo, Gikondo, Kanombe, Kinyinya, Kibagabaga, Nyanza. Reba ikarita ku rupapuro rwacu!"
+        "Simba Supermarket has 9 branches across Kigali: Remera, Kimironko, Kacyiru, Nyamirambo, Gikondo, Kanombe, Kinyinya, Kibagabaga, and Nyanza. All branches are open Monday to Saturday 8:00 AM–9:00 PM, and Sunday 9:00 AM–6:00 PM (Nyanza closes at 8:00 PM).",
+        "Simba Supermarket a 9 agences à Kigali : Remera, Kimironko, Kacyiru, Nyamirambo, Gikondo, Kanombe, Kinyinya, Kibagabaga et Nyanza. Toutes les agences sont ouvertes du lundi au samedi de 8h à 21h, et le dimanche de 9h à 18h.",
+        "Simba Supermarket ifite amashami 9 i Kigali: Remera, Kimironko, Kacyiru, Nyamirambo, Gikondo, Kanombe, Kinyinya, Kibagabaga, na Nyanza. Amashami yose afungura kuva Kuwa mbere kugeza Kuwa gatandatu saa mbiri kugeza saa tatu nijoro, no ku cyumweru saa tatu kugeza saa kumi nijoro."
       ),
     };
   }
 
-  // Recipes — show ingredients
+  // Recipes
   if (/recip|cook|meal|dinner|lunch|breakfast|recette|cuisine|amafunguro|ifunguro|guteka/.test(q)) {
     const items = findProducts(['oil', 'tomato', 'rice', 'flour', 'spice', 'sauce', 'pasta', 'salt'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "👨‍🍳 For a classic Rwandan meal, try **Isombe with rice** or **Ugali with beans**. Here are some ingredients you can order:",
-        "👨‍🍳 Pour un repas rwandais, essayez l'**Isombe avec du riz** ou l'**Ugali avec des haricots**. Voici des ingrédients à commander :",
-        "👨‍🍳 Ku ifunguro rya kinyarwanda, gerageza **Isombe n'umuceri** cyangwa **Ugali n'ibishyimbo**. Dore ibikenewe:"
+        "For a classic Rwandan meal, consider Isombe with rice, Ugali with beans, or Akabenz chicken. Here are some ingredients available at Simba:",
+        "Pour un repas rwandais classique, pensez à l'Isombe avec du riz, l'Ugali aux haricots ou le poulet Akabenz. Voici quelques ingrédients disponibles chez Simba :",
+        "Ku ifunguro rya kinyarwanda, gerageza Isombe n'umuceri, Ugali n'ibishyimbo, cyangwa inkoko ya Akabenz. Dore ibikenewe bibonetse kuri Simba:"
       ),
       products: items.length > 0 ? items : undefined,
     };
   }
 
-  // Bakery — show products
+  // Bakery
   if (/bread|baguette|cake|croissant|bakery|pain|gâteau|boulangerie|umugati|ufu/.test(q)) {
     const items = findProducts(['baguette', 'bread', 'cake', 'croissant', 'bakery'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "🥐 Yes! Our bakery is baked **fresh every morning**. Here's what's available:",
-        "🥐 Oui ! Notre boulangerie est cuite **fraîche chaque matin**. Voici ce qui est disponible :",
-        "🥐 Yego! Ubuvumbuzi bwacu buterwa **buri gitondo**. Dore ibiriho:"
+        "Yes, Simba has a bakery section with freshly baked items including baguettes, bread, croissants, and cakes. Here is what we currently carry:",
+        "Oui, Simba a une section boulangerie avec des produits frais : baguettes, pain, croissants et gâteaux. Voici ce que nous proposons actuellement :",
+        "Yego, Simba ifite igice cy'ufu gifite imikate mishya harimo baguette, umugati, croissants na keiki. Dore ibiriho ubu:"
       ),
       products: items.length > 0 ? items : undefined,
     };
   }
 
-  // Drinks/Party — show products
+  // Drinks / beverages
   if (/drink|beer|wine|whisky|party|alcohol|boisson|bière|vin|ibiririwa|umunsi mukuru|celebrate/.test(q)) {
     const items = findProducts(['beer', 'wine', 'whisky', 'cognac', 'gin', 'vodka', 'champagne'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "🍷 Yes, we have a great selection of wines, beers, and spirits:",
-        "🍷 Oui, nous avons une excellente sélection de vins, bières et spiritueux :",
-        "🍷 Yego, dufite amahitamo meza y'inzoga:"
+        "Simba carries a wide range of beverages including wines, beers, and spirits. Please note that alcoholic beverages require valid ID proof of age at pickup. Here are some options:",
+        "Simba propose une large gamme de boissons, notamment des vins, bières et spiritueux. Veuillez noter qu'une pièce d'identité est requise pour les boissons alcoolisées au retrait. Voici quelques options :",
+        "Simba ifite inzoga nyinshi harimo divaini, inzoga z'inzabibu, na spirits. Menya ko ikarita y'indangamuntu irasabwa igihe ugiye gufata inzoga z'umutuzo. Dore amahitamo:"
       ),
       products: items.length > 0 ? items : undefined,
     };
   }
 
-  // Baby — show products
+  // Baby
   if (/baby|infant|diaper|formula|bébé|couche|umwana|inzoya/.test(q)) {
     const items = findProducts(['baby', 'diaper', 'lactogen', 'wipes'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "👶 Yes! We have everything for your little one:",
-        "👶 Oui ! Nous avons tout pour votre bébé :",
-        "👶 Yego! Dufite byose ku mwana wawe:"
+        "Simba has a dedicated baby products section with diapers, baby formula, wipes, and more. Here is what is currently available:",
+        "Simba dispose d'une section produits bébé avec des couches, du lait infantile, des lingettes et plus encore. Voici ce qui est disponible :",
+        "Simba ifite igice cy'ibicuruzwa by'umwana gifite pampers, amata y'umwana, udushwemo n'ibindi. Dore ibiriho ubu:"
       ),
       products: items.length > 0 ? items : undefined,
     };
   }
 
-  // Cosmetics — show products
+  // Cosmetics
   if (/shampoo|soap|lotion|cream|deodorant|cosmetic|beauty|savon|crème|isuku|ubwiza/.test(q)) {
     const items = findProducts(['shampoo', 'soap', 'lotion', 'cream', 'deodorant'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "✨ Yes, we carry a wide range of personal care products:",
-        "✨ Oui, nous proposons une large gamme de soins personnels :",
-        "✨ Yego, dufite ibicuruzwa byo kwisukura:"
+        "Yes, Simba has a cosmetics and personal care section. Here is a selection currently in stock:",
+        "Oui, Simba a une section cosmétiques et soins personnels. Voici une sélection actuellement en stock :",
+        "Yego, Simba ifite igice cy'ibicuruzwa byo kwiyitaho. Dore amahitamo ariho ubu:"
       ),
       products: items.length > 0 ? items : undefined,
     };
   }
 
-  // Cleaning — show products
+  // Cleaning
   if (/clean|detergent|mop|toilet|bleach|nettoyer|nettoyage|gusukura/.test(q)) {
     const items = findProducts(['clean', 'detergent', 'toilet', 'sponge', 'mop', 'bleach'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "🧹 Yes! Full range of cleaning products available:",
-        "🧹 Oui ! Gamme complète de produits ménagers disponible :",
-        "🧹 Yego! Ibicuruzwa byose byo gusukura biraboneka:"
+        "Simba stocks a full range of cleaning and household products. Here is what is available:",
+        "Simba propose une gamme complète de produits ménagers et de nettoyage. Voici ce qui est disponible :",
+        "Simba ifite imirimo yose yo gusukura ndetse n'ibikoresho by'urugo. Dore ibiriho:"
       ),
       products: items.length > 0 ? items : undefined,
     };
   }
 
-  // Electronics/Kitchen — show products
+  // Electronics / kitchen
   if (/electronic|kettle|blender|iron|kitchen|électronique|bouilloire|mixeur/.test(q)) {
     const items = findProducts(['kettle', 'blender', 'iron', 'pan', 'electric', 'coffee'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "⚡ Yes, we have kitchen appliances and electronics:",
-        "⚡ Oui, nous avons des appareils électroménagers :",
-        "⚡ Yego, dufite ibikoresho bya kitchen na electronics:"
+        "Simba carries kitchen appliances and electronics. Here is what we currently have in stock:",
+        "Simba propose des appareils de cuisine et de l'électronique. Voici ce que nous avons actuellement en stock :",
+        "Simba ifite ibikoresho bya kicheni na electronique. Dore ibiriho ubu:"
       ),
       products: items.length > 0 ? items : undefined,
     };
   }
 
-  // Sports — show products
+  // Sports
   if (/sport|gym|fitness|wellness|exercise|health|santé|ubuzima|imyitozo/.test(q)) {
     const items = findProducts(['sport', 'massage', 'roller', 'fitness'], 4);
     return {
       role: 'assistant',
       text: pick(
-        "💪 Yes! Sports and wellness products available:",
-        "💪 Oui ! Produits sport et bien-être disponibles :",
-        "💪 Yego! Ibicuruzwa bya sport biraboneka:"
+        "Simba has a sports and wellness section. Here are some products available:",
+        "Simba a une section sport et bien-être. Voici quelques produits disponibles :",
+        "Simba ifite igice cy'imikino na ubuzima. Dore amahitamo:"
       ),
       products: items.length > 0 ? items : undefined,
     };
   }
 
-  // Direct product name search — only show products, minimal text
+  // Direct product name search
   const nameMatch = findProducts([q], 4);
   if (nameMatch.length > 0) {
     return {
       role: 'assistant',
       text: pick(
-        `Yes, we have ${nameMatch.length} result${nameMatch.length > 1 ? 's' : ''} for "${input}":`,
-        `Oui, ${nameMatch.length} résultat${nameMatch.length > 1 ? 's' : ''} pour "${input}" :`,
-        `Yego, ibisubizo ${nameMatch.length} bya "${input}":`
+        `Found ${nameMatch.length} result${nameMatch.length > 1 ? 's' : ''} matching "${input}":`,
+        `${nameMatch.length} résultat${nameMatch.length > 1 ? 's' : ''} pour "${input}" :`,
+        `Ibisubizo ${nameMatch.length} bya "${input}":`
       ),
       products: nameMatch,
     };
@@ -227,9 +227,9 @@ function buildResponse(input: string, lang: string, products: Product[]): ChatMe
     return {
       role: 'assistant',
       text: pick(
-        "🦁 Simba Supermarket is Rwanda's most trusted supermarket chain, founded by Mr. Teklay Teame. We have 8 branches across Kigali, 700+ products, and deliver in 45 minutes. Shop at simbaonlineshopping.com!",
-        "🦁 Simba Supermarket est la chaîne la plus fiable du Rwanda, fondée par M. Teklay Teame. 8 agences à Kigali, 700+ produits, livraison en 45 minutes. Achetez sur simbaonlineshopping.com !",
-        "🦁 Simba ni isoko nziza cyane mu Rwanda, yashinzwe na Bwana Teklay Teame. Amashami 8 mu Kigali, ibicuruzwa 700+, gutumiza mu minota 45. Gura kuri simbaonlineshopping.com!"
+        "Simba Supermarket Ltd is one of Rwanda's leading supermarket chains, led by Teklay Teame. With 9 branches across Kigali, Simba offers 700+ products spanning groceries, bakery, cosmetics, electronics, baby products, beverages, and more. You can order online and pick up at your nearest branch in 20–45 minutes.",
+        "Simba Supermarket Ltd est l'une des principales chaînes de supermarchés du Rwanda, dirigée par Teklay Teame. Avec 9 agences à Kigali, Simba propose 700+ produits couvrant l'épicerie, la boulangerie, les cosmétiques, l'électronique, les produits bébé, les boissons et plus encore.",
+        "Simba Supermarket Ltd ni kimwe mu bisoko nkuru bikomeye mu Rwanda, cyayoborwa na Teklay Teame. Bifite amashami 9 i Kigali kandi biha ibicuruzwa 700+ harimo ibiribwa, ufu, ibicuruzwa byo kwiyitaho, ikoranabuhanga, ibicuruzwa by'umwana, ibiririwa n'ibindi."
       ),
     };
   }
@@ -238,9 +238,9 @@ function buildResponse(input: string, lang: string, products: Product[]): ChatMe
   return {
     role: 'assistant',
     text: pick(
-      "I'm here to help! You can ask me about:\n• 🛒 Finding products\n• 🚴 Delivery (45 min)\n• 💳 Payment (MoMo or card)\n• 🎁 Promo codes\n• 👨‍🍳 Recipe ideas\n• 📍 Store locations\n\nWhat would you like to know?",
-      "Je suis là pour vous aider ! Demandez-moi :\n• 🛒 Trouver des produits\n• 🚴 Livraison (45 min)\n• 💳 Paiement (MoMo ou carte)\n• 🎁 Codes promo\n• 👨‍🍳 Recettes\n• 📍 Emplacements\n\nQue voulez-vous savoir ?",
-      "Ndi hano kukufasha! Mbaza:\n• 🛒 Gushaka ibicuruzwa\n• 🚴 Gutumiza (min 45)\n• 💳 Kwishura (MoMo cyangwa ikarita)\n• 🎁 Amakode ya promo\n• 👨‍🍳 Amafunguro\n• 📍 Aho amashami ari\n\nUshaka kumenya iki?"
+      "I can help you with:\n\n- Finding specific products\n- Branch locations and hours\n- Payment methods and deposit\n- Pickup times and process\n- Loyalty points\n- Promo codes\n- Meal and recipe ideas\n\nWhat would you like to know?",
+      "Je peux vous aider avec :\n\n- Trouver des produits spécifiques\n- Emplacements et horaires des agences\n- Modes de paiement et dépôt\n- Horaires et processus de retrait\n- Points de fidélité\n- Codes promo\n- Idées de repas et recettes\n\nQue souhaitez-vous savoir ?",
+      "Nshobora kukufasha:\n\n- Gushaka ibicuruzwa runaka\n- Aho amashami ari n'amasaha\n- Uburyo bwo kwishura n'inguzanyo\n- Igihe cyo gufata n'uburyo\n- Amanota y'ubudahemuka\n- Amakode ya promo\n- Ingero z'amafunguro\n\nUshaka kumenya iki?"
     ),
   };
 }

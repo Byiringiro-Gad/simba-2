@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSimbaStore } from '@/store/useSimbaStore';
-import { MapPin, Phone, Mail, Facebook, Instagram, Twitter } from 'lucide-react';
+import { MapPin, Phone, Mail } from 'lucide-react';
 import { SIMBA_BRANCHES } from '@/lib/branches';
 
 export default function Footer() {
@@ -129,22 +129,14 @@ export default function Footer() {
 
             <div className="mt-4 flex items-center gap-3">
               <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t.followUs}</p>
-              {[
-                { icon: Facebook, href: 'https://www.facebook.com/SimbaOnlineShopping', label: 'Facebook' },
-                { icon: Instagram, href: 'https://www.instagram.com/simbasupermarket', label: 'Instagram' },
-                { icon: Twitter, href: 'https://twitter.com/simbasupermarket', label: 'Twitter' },
-              ].map(({ icon: Icon, href, label }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray-100 text-gray-500 transition-colors hover:bg-brand hover:text-white dark:bg-gray-800"
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                </a>
-              ))}
+              <a
+                href="https://www.simbaonlineshopping.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-brand hover:text-white rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 transition-colors"
+              >
+                Official Site
+              </a>
             </div>
           </div>
 

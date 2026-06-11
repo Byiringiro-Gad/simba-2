@@ -15,47 +15,47 @@ import FavoritesTab from '@/components/tabs/FavoritesTab';
 import OrdersTab from '@/components/tabs/OrdersTab';
 import AccountTab from '@/components/tabs/AccountTab';
 import SearchTab from '@/components/tabs/SearchTab';
-import { useSimbaStore } from '@/store/useSimbaStore';
-import { translations } from '@/lib/translations';
-import { ArrowLeft, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
-import Link from 'next/link';
-import { ShoppingCart } from 'lucide-react';
-import { SimbaData } from '@/types';
-import { SIMBA_BRANCHES, SimbaBranch } from '@/lib/branches';
-import ScrollReveal, { StaggerReveal, StaggerItem } from '@/components/ScrollReveal';
+import Footer from '@/components/Footer';
 import HeroSection from '@/components/HeroSection';
 import BranchMapModal from '@/components/BranchMapModal';
 import ShopNowPanel from '@/components/ShopNowPanel';
-import HomeBrandLink from '@/components/HomeBrandLink';
+import FlashSalesBanner from '@/components/FlashSalesBanner';
+import BuyItAgain from '@/components/BuyItAgain';
+import TrendingProducts from '@/components/TrendingProducts';
+import DealsOfTheDay from '@/components/DealsOfTheDay';
+import PersonalisedGreeting from '@/components/PersonalisedGreeting';
+import ScrollReveal, { StaggerReveal, StaggerItem } from '@/components/ScrollReveal';
+import { useSimbaStore } from '@/store/useSimbaStore';
+import { translations } from '@/lib/translations';
+import { ArrowLeft, X, ShoppingCart, Store as StoreIcon, CreditCard, CheckCircle2 as CheckIcon, ShoppingBag as CartIcon } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
+import { SimbaData } from '@/types';
+import { SIMBA_BRANCHES, SimbaBranch } from '@/lib/branches';
 
-// ── Why Simba Section — How it works only (stats are in hero) ────────────────
+// ── How it works section ─────────────────────────────────────────────────────
 function HowItWorksSection() {
   const { language } = useSimbaStore();
   const t = translations[language];
-
   const steps = [
-    { icon: '🛒', title: t.stepBrowse,      desc: t.stepBrowseDesc },
-    { icon: '🏪', title: t.stepPickBranch,  desc: t.stepPickBranchDesc },
-    { icon: '💳', title: t.stepPayDeposit,  desc: t.stepPayDepositDesc },
-    { icon: '✅', title: t.stepPickUp,      desc: t.stepPickUpDesc },
+    { icon: CartIcon,   title: t.stepBrowse,     desc: t.stepBrowseDesc },
+    { icon: StoreIcon,  title: t.stepPickBranch, desc: t.stepPickBranchDesc },
+    { icon: CreditCard, title: t.stepPayDeposit, desc: t.stepPayDepositDesc },
+    { icon: CheckIcon,  title: t.stepPickUp,     desc: t.stepPickUpDesc },
   ];
-
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
-      <ScrollReveal direction="up">
-        <h3 className="font-black text-gray-900 dark:text-white text-base mb-5">{t.howItWorks}</h3>
-      </ScrollReveal>
-      <StaggerReveal className="grid grid-cols-2 sm:grid-cols-4 gap-4" staggerDelay={0.1}>
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
+      <h3 className="font-black text-gray-900 dark:text-white text-lg mb-6">{t.howItWorks}</h3>
+      <StaggerReveal className="grid grid-cols-2 sm:grid-cols-4 gap-4" staggerDelay={0.08}>
         {steps.map((step, i) => (
           <StaggerItem key={i} direction="up">
             <div className="flex flex-col items-center text-center">
-              <div className="w-12 h-12 bg-brand-muted rounded-2xl flex items-center justify-center text-2xl mb-3">
-                {step.icon}
+              <div className="w-12 h-12 bg-brand-muted rounded-2xl flex items-center justify-center mb-3">
+                <step.icon className="w-6 h-6 text-brand" />
               </div>
               <p className="font-black text-sm text-gray-900 dark:text-white mb-1">{step.title}</p>
-              <p className="text-xs text-gray-400 font-medium leading-snug">{step.desc}</p>
+              <p className="text-xs text-gray-400 leading-snug">{step.desc}</p>
             </div>
           </StaggerItem>
         ))}
@@ -64,24 +64,23 @@ function HowItWorksSection() {
   );
 }
 
-// ── Branch locations ─────────────────────────────────────────────────────────
-const BRANCHES = SIMBA_BRANCHES;
-
-// ── Recently Viewed Section ───────────────────────────────────────────────────
+// ── Recently viewed ──────────────────────────────────────────────────────────
 function RecentlyViewedSection({ data }: { data: SimbaData }) {
   const { recentlyViewed, addToCart, cart, updateQuantity, language } = useSimbaStore();
   const t = translations[language];
   if (recentlyViewed.length === 0) return null;
-  const products = recentlyViewed.map(id => data.products.find(p => p.id === id)).filter(Boolean) as SimbaData['products'];
+  const products = recentlyViewed
+    .map(id => data.products.find(p => p.id === id))
+    .filter(Boolean) as SimbaData['products'];
   if (products.length === 0) return null;
   return (
     <section>
-      <h2 className="text-base font-black text-gray-900 dark:text-white mb-3">{t.recentlyViewed}</h2>
+      <h2 className="text-xl font-black text-gray-900 dark:text-white mb-4">{t.recentlyViewed}</h2>
       <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
         {products.slice(0, 8).map(p => {
           const qty = cart.find(i => i.id === p.id)?.quantity ?? 0;
           return (
-            <div key={p.id} className="flex-shrink-0 w-36 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+            <div key={p.id} className="flex-shrink-0 w-36 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-md transition-shadow">
               <Link href={`/products/${p.id}`} className="block relative aspect-square bg-gray-50 dark:bg-gray-800">
                 <Image src={p.image} alt={p.name} fill className="object-cover" sizes="144px" />
               </Link>
@@ -108,41 +107,62 @@ function RecentlyViewedSection({ data }: { data: SimbaData }) {
   );
 }
 
+// ── Trust strip ──────────────────────────────────────────────────────────────
+function TrustStrip() {
+  const { language } = useSimbaStore();
+  const items = [
+    { icon: '⚡', en: 'Ready in 20–45 min', fr: 'Prêt en 20–45 min', rw: 'Bitegurwa mu min 20–45' },
+    { icon: '📍', en: '9 branches in Kigali', fr: '9 agences à Kigali', rw: 'Amashami 9 i Kigali' },
+    { icon: '🛡️', en: '100% authentic products', fr: 'Produits 100% authentiques', rw: 'Ibicuruzwa nyakuri 100%' },
+    { icon: '💳', en: 'MTN · Airtel · Card', fr: 'MTN · Airtel · Carte', rw: 'MTN · Airtel · Ikarita' },
+    { icon: '⭐', en: 'Earn loyalty points', fr: 'Gagnez des points', rw: 'Unguka amanota' },
+  ];
+  const L = (item: typeof items[0]) => language === 'fr' ? item.fr : language === 'rw' ? item.rw : item.en;
+  return (
+    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden">
+      <div className="flex overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+        {items.map((item, i) => (
+          <div key={i} className={`flex items-center gap-2 px-4 py-3 flex-shrink-0 ${i < items.length - 1 ? 'border-r border-gray-100 dark:border-gray-800' : ''}`}>
+            <span className="text-base">{item.icon}</span>
+            <span className="text-xs font-bold text-gray-700 dark:text-gray-300 whitespace-nowrap">{L(item)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Main page ────────────────────────────────────────────────────────────────
+const BRANCHES = SIMBA_BRANCHES;
+
 export default function Home() {
   const data = useMemo(() => getSimbaData(), []);
   const categories = useMemo(() => getCategories(), []);
   const {
     language, isCartOpen, setCartOpen,
     activeTab, setActiveTab, selectedCategory, setSelectedCategory, searchQuery,
-    cart,
-    isShopNowOpen, setShopNowOpen,
+    cart, isShopNowOpen, setShopNowOpen,
   } = useSimbaStore();
   const t = translations[language];
   const cartCount = cart.reduce((a, i) => a + i.quantity, 0);
   const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
 
-  // sidebar drawer state
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // branch map modal
   const [selectedBranchMap, setSelectedBranchMap] = useState<SimbaBranch | null>(null);
 
-  // products for the selected category
   const categoryProducts = useMemo(() => {
     if (!selectedCategory) return [];
     return data.products.filter(p => p.category === selectedCategory);
   }, [data.products, selectedCategory]);
 
-  // are we showing the product view?
   const showProducts = !!selectedCategory || !!searchQuery.trim();
 
-  // Close ShopNowPanel whenever user navigates away
   useEffect(() => {
     if (isShopNowOpen && (activeTab !== 'home' || searchQuery.trim())) {
       setShopNowOpen(false);
     }
-  }, [activeTab, searchQuery]);
+  }, [activeTab, searchQuery, isShopNowOpen, setShopNowOpen]);
 
-  // Also close when a category is selected or back is pressed
   const handleCategorySelect = (cat: string) => {
     setSelectedCategory(cat);
     setSidebarOpen(false);
@@ -150,12 +170,12 @@ export default function Home() {
     setActiveTab('home');
   };
 
-  const handleBack = () => {
-    setSelectedCategory(null);
-  };
+  const handleBack = () => setSelectedCategory(null);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      {/* ── Top promo bar ── */}
+      <PromoBanner />
       <Navbar onMenuClick={() => setSidebarOpen(true)} />
 
       <AnimatePresence mode="wait">
@@ -192,22 +212,13 @@ export default function Home() {
         {activeTab === 'home' && (
           <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 
-            {/* ── PRODUCT VIEW (category selected or search active) ── */}
+            {/* ── PRODUCT / SEARCH VIEW ── */}
             {showProducts ? (
-              <motion.div
-                key="products"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2 }}
-              >
-                {/* Product page header */}
-                <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-16 z-30">
+              <motion.div key="products" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }}>
+                {/* Header */}
+                <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-[4.5rem] z-30">
                   <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-                    <button
-                      onClick={handleBack}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors flex-shrink-0"
-                    >
+                    <button onClick={handleBack} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors flex-shrink-0">
                       <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                     </button>
                     <div className="flex-1 min-w-0">
@@ -215,261 +226,192 @@ export default function Home() {
                         {selectedCategory ?? `"${searchQuery}"`}
                       </h1>
                       <p className="text-xs text-gray-400 font-medium">
-                        {selectedCategory
-                          ? `${categoryProducts.length} ${t.items}`
-                          : t.results}
+                        {selectedCategory ? `${categoryProducts.length} ${t.items}` : t.results}
                       </p>
                     </div>
                     {selectedCategory && (
-                      <button
-                        onClick={handleBack}
-                        className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
-                      >
+                      <button onClick={handleBack} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
                         <X className="w-4 h-4 text-gray-400" />
                       </button>
                     )}
                   </div>
                 </div>
 
-                {/* Two-column layout: sidebar + grid */}
-                <div className="max-w-screen-xl mx-auto">
-                  <div className="flex">
-                    {/* Left sidebar — desktop only */}
-                    <aside className="hidden lg:block w-56 flex-shrink-0 sticky top-[7.5rem] h-[calc(100vh-7.5rem)] overflow-y-auto border-r border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950">
-                      <CategorySidebar
-                        categories={categories}
-                        onSelect={handleCategorySelect}
-                      />
-                    </aside>
-
-                    {/* Products */}
-                    <main className="flex-1 min-w-0 px-4 sm:px-6 py-5 pb-24 sm:pb-8">
-                      <ProductGrid
-                        products={selectedCategory ? categoryProducts : data.products}
-                      />
-                    </main>
-                  </div>
+                {/* Two-column: sidebar + products */}
+                <div className="max-w-screen-xl mx-auto flex">
+                  <aside className="hidden lg:block w-56 flex-shrink-0 sticky top-[7.5rem] h-[calc(100vh-7.5rem)] overflow-y-auto border-r border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950">
+                    <CategorySidebar categories={categories} onSelect={handleCategorySelect} />
+                  </aside>
+                  <main className="flex-1 min-w-0 px-4 sm:px-6 py-5 pb-24 sm:pb-8">
+                    <ProductGrid products={selectedCategory ? categoryProducts : data.products} />
+                  </main>
                 </div>
               </motion.div>
+
             ) : (
-              /* ── LANDING VIEW (no category selected) ── */
-              <motion.div
-                key="landing"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                {/* ── HERO — first thing user sees ── */}
-                <HeroSection onShopNow={() => {
-                  setShopNowOpen(true);
-                }} />
+              /* ── LANDING HOME ── */
+              <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
 
-                <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 pb-24 sm:pb-10 space-y-8">
+                {/* 1. Hero with search */}
+                <HeroSection onShopNow={() => setShopNowOpen(true)} />
 
-                {/* Category grid */}
-                <ScrollReveal direction="up">
-                <section id="categories-section">
-                  <h2 className="text-base font-black text-gray-900 dark:text-white mb-4">
-                    {t.shopByCategory}
-                  </h2>
-                  <CategoryGrid
-                    categories={categories}
-                    onSelect={handleCategorySelect}
-                  />
-                </section>
-                </ScrollReveal>
+                <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 pb-24 sm:pb-10 space-y-10">
 
-                {/* ── HOW IT WORKS ── */}
-                <ScrollReveal direction="up" delay={0.05}>
-                <HowItWorksSection />
-                </ScrollReveal>
+                  {/* 2. Trust badges strip */}
+                  <TrustStrip />
 
-                {/* ── FEATURED PRODUCTS — grader can click → product detail → add to cart → checkout ── */}
-                <ScrollReveal direction="up">
-                <section>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-base font-black text-gray-900 dark:text-white">
-                      {language === 'fr' ? 'Produits populaires' : language === 'rw' ? 'Ibicuruzwa bikunzwe' : 'Popular Products'}
-                    </h2>
-                    <button onClick={() => handleCategorySelect('Groceries')}
-                      className="text-xs font-black text-brand-dark dark:text-brand hover:underline">
-                      {t.viewAll} →
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
-                    {data.products.filter(p => p.inStock).slice(0, 10).map((p, i) => (
-                      <ProductCard key={p.id} product={p} index={i} />
-                    ))}
-                  </div>
-                </section>
-                </ScrollReveal>
+                  {/* 3. Personalised greeting (logged-in only) */}
+                  <PersonalisedGreeting />
 
-                <ScrollReveal direction="up" delay={0.05}>
-                <RecentlyViewedSection data={data} />
-                </ScrollReveal>
+                  {/* 4. Flash sales (rotating every 4h with countdown) */}
+                  <ScrollReveal direction="up">
+                    <FlashSalesBanner />
+                  </ScrollReveal>
 
-                {/* Branches map */}
-                <ScrollReveal direction="up">
-                <section>
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <h2 className="text-base font-black text-gray-900 dark:text-white">{t.branches}</h2>
-                      <p className="text-xs text-gray-400 mt-0.5">{t.branchesDesc}</p>
-                    </div>
-                    <span className="px-3 py-1 bg-red-500 text-white rounded-full text-[9px] font-black uppercase tracking-widest">
-                      {t.liveBranches}
-                    </span>
-                  </div>
-
-                  {/* Map — centered on Kigali showing all Simba branches */}
-                  <div className="w-full h-64 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 relative mb-4">
-                    <iframe
-                      src="https://www.google.com/maps/embed?pb=!1m56!1m12!1m3!1d31898.5!2d30.0588!3d-1.9441!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m41!3e0!4m5!1s0x19dca42446b3b0b5%3A0x4e3e3e3e3e3e3e3e!2sKN%204%20Ave%2C%20Kigali!3m2!1d-1.9441!2d30.0588!4m5!1s0x19dca4244!2sKN%205%20Rd%2C%20Kigali!3m2!1d-1.9500!2d30.0601!4m5!1s0x19dca5!2sKG%20541%20St%2C%20Kigali!3m2!1d-1.9380!2d30.0712!4m5!1s0x19dca6!2sKimironko%2C%20Kigali!3m2!1d-1.9270!2d30.1020!4m5!1s0x19dca7!2sKG%20192%20St%2C%20Kigali!3m2!1d-1.9310!2d30.0890!4m5!1s0x19dca8!2sNyamirambo%2C%20Kigali!3m2!1d-1.9780!2d30.0420!5e0!3m2!1sen!2srw!4v1713530000000!5m2!1sen!2srw"
-                      className="w-full h-full"
-                      style={{ border: 0 }}
-                      allowFullScreen
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                      title="Simba Supermarket Locations"
-                    />
-                    <div className="absolute bottom-3 right-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-3 py-2 rounded-xl shadow-lg border dark:border-gray-700">
-                      <p className="text-[10px] font-black text-red-600 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                        {BRANCHES.length} {t.activePickupBranches}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Branch list */}
-                  <StaggerReveal className="grid grid-cols-1 sm:grid-cols-2 gap-2" staggerDelay={0.06}>
-                    {BRANCHES.map((b, i) => (
-                      <StaggerItem key={b.id} direction="up">
-                      <button
-                        key={b.id}
-                        onClick={() => setSelectedBranchMap(b)}
-                        className="flex items-center gap-3 p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-brand/40 hover:shadow-sm transition-all text-left w-full"
-                      >
-                        <div className="w-8 h-8 bg-red-50 dark:bg-red-900/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <span className="text-red-500 font-black text-xs">{i + 1}</span>
+                  {/* 5. Shop by Category — big visual aisles */}
+                  <ScrollReveal direction="up">
+                    <section id="categories-section">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h2 className="text-xl font-black text-gray-900 dark:text-white">{t.shopByCategory}</h2>
+                          <p className="text-sm text-gray-400 mt-0.5">
+                            {language === 'fr' ? 'Choisissez votre rayon' : language === 'rw' ? 'Hitamo icyiciro' : 'Browse every aisle'}
+                          </p>
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-bold text-sm text-gray-900 dark:text-white truncate">{b.name}</p>
-                          <p className="text-xs text-gray-400 truncate">{b.area}</p>
-                        </div>
-                        <span className="text-[10px] font-black text-brand-dark dark:text-brand bg-brand/10 px-2 py-1 rounded-lg flex-shrink-0">
-                          {language === 'fr' ? 'Voir' : language === 'rw' ? 'Reba' : 'View'}
-                        </span>
-                      </button>
-                      </StaggerItem>
-                    ))}
-                  </StaggerReveal>
-                </section>
-                </ScrollReveal>
-
-                {/* Footer */}
-                <ScrollReveal direction="up" delay={0.05}>
-                <footer className="border-t border-gray-100 dark:border-gray-800 pt-8">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-
-                    {/* Brand */}
-                    <div className="lg:col-span-1">
-                      <div className="inline-flex items-center gap-2.5 mb-3 px-3 py-2 rounded-xl" style={{ backgroundColor: '#FF6600' }}>
-                        <HomeBrandLink variant="footer" showText={true} />
+                        <button
+                          onClick={() => setShopNowOpen(true)}
+                          className="text-xs font-black text-brand-dark dark:text-brand hover:underline"
+                        >
+                          {t.viewAll} →
+                        </button>
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mb-3">{t.aboutSimbaDesc}</p>
-                      <p className="text-[10px] text-gray-400">
-                        {language === 'fr' ? 'Fondé en 2007 · Kigali, Rwanda' : language === 'rw' ? 'Yashinzwe 2007 · Kigali, Rwanda' : 'Founded 2007 · Kigali, Rwanda'}
-                      </p>
-                    </div>
+                      <CategoryGrid categories={categories} onSelect={handleCategorySelect} />
+                    </section>
+                  </ScrollReveal>
 
-                    {/* Quick Links */}
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">
-                        {language === 'fr' ? 'Liens rapides' : language === 'rw' ? 'Aho Ugana Vuba' : 'Quick Links'}
-                      </p>
-                      <div className="space-y-2">
-                        <Link href="/" className="block text-xs text-gray-600 dark:text-gray-300 hover:text-brand-dark dark:hover:text-brand transition-colors font-medium">
-                          {language === 'fr' ? 'Accueil' : language === 'rw' ? 'Ahabanza' : 'Home'}
+                  {/* 6. Buy It Again (AI-powered, logged-in users with order history) */}
+                  <BuyItAgain />
+
+                  {/* 7. Trending Now (predictive recommendations) */}
+                  <ScrollReveal direction="up">
+                    <TrendingProducts />
+                  </ScrollReveal>
+
+                  {/* 8. Popular Products */}
+                  <ScrollReveal direction="up">
+                    <section>
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h2 className="text-xl font-black text-gray-900 dark:text-white">
+                            {language === 'fr' ? 'Produits populaires' : language === 'rw' ? 'Ibicuruzwa bikunzwe' : 'Popular Products'}
+                          </h2>
+                          <p className="text-sm text-gray-400 mt-0.5">
+                            {language === 'fr' ? 'Les plus achetés cette semaine' : language === 'rw' ? 'Ibyaguriwe kenshi iki cyumweru' : 'Most purchased this week'}
+                          </p>
+                        </div>
+                        <button onClick={() => handleCategorySelect('Groceries')} className="text-xs font-black text-brand-dark dark:text-brand hover:underline">
+                          {t.viewAll} →
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
+                        {data.products.filter(p => p.inStock).slice(0, 10).map((p, i) => (
+                          <ProductCard key={p.id} product={p} index={i} />
+                        ))}
+                      </div>
+                    </section>
+                  </ScrollReveal>
+
+                  {/* 9. Recently Viewed (personalised) */}
+                  <ScrollReveal direction="up">
+                    <RecentlyViewedSection data={data} />
+                  </ScrollReveal>
+
+                  {/* 10. Deals of the Day (with midnight countdown) */}
+                  <ScrollReveal direction="up">
+                    <DealsOfTheDay />
+                  </ScrollReveal>
+
+                  {/* 11. How it works */}
+                  <ScrollReveal direction="up">
+                    <HowItWorksSection />
+                  </ScrollReveal>
+
+                  {/* 12. Branches map */}
+                  <ScrollReveal direction="up">
+                    <section>
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h2 className="text-xl font-black text-gray-900 dark:text-white">{t.branches}</h2>
+                          <p className="text-sm text-gray-400 mt-0.5">{t.branchesDesc}</p>
+                        </div>
+                        <Link href="/about" className="text-xs font-black text-brand-dark dark:text-brand hover:underline">
+                          {language === 'fr' ? 'Voir tout' : language === 'rw' ? 'Reba byose' : 'View all'} →
                         </Link>
-                        <a href="https://www.simbaonlineshopping.com/AboutUs.aspx" target="_blank" rel="noopener noreferrer"
-                          className="block text-xs text-gray-600 dark:text-gray-300 hover:text-brand-dark dark:hover:text-brand transition-colors font-medium">
-                          {language === 'fr' ? 'À propos' : language === 'rw' ? 'Ibyerekeye' : 'About Simba'}
-                        </a>
                       </div>
-                    </div>
 
-                    {/* Contact */}
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">{t.contact}</p>
-                      <div className="space-y-2.5">
-                        <div className="flex items-start gap-2">
-                          <span className="text-sm mt-0.5">📍</span>
-                          <p className="text-xs text-gray-600 dark:text-gray-300 font-medium leading-snug">{t.contactAddress}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm">📞</span>
-                          <a href={`tel:${t.contactPhone.replace(/\s/g, '')}`} className="text-xs text-gray-600 dark:text-gray-300 font-medium hover:text-brand-dark transition-colors">
-                            {t.contactPhone}
-                          </a>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm">✉️</span>
-                          <a href={`mailto:${t.contactEmail}`} className="text-xs text-gray-600 dark:text-gray-300 font-medium hover:text-brand-dark transition-colors">
-                            {t.contactEmail}
-                          </a>
+                      {/* Map */}
+                      <div className="w-full h-64 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 relative mb-4">
+                        <iframe
+                          src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d31898.5!2d30.0588!3d-1.9441!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2srw!4v1713530000000!5m2!1sen!2srw"
+                          className="w-full h-full"
+                          style={{ border: 0 }}
+                          allowFullScreen
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                          title="Simba Supermarket Kigali Locations"
+                        />
+                        <div className="absolute bottom-3 right-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-3 py-2 rounded-xl shadow-lg border dark:border-gray-700">
+                          <p className="text-[10px] font-black text-red-600 flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                            {BRANCHES.length} {t.activePickupBranches}
+                          </p>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Hours & Payment */}
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">
-                        {language === 'fr' ? 'Horaires & Paiement' : language === 'rw' ? 'Amasaha & Kwishura' : 'Hours & Payment'}
-                      </p>
-                      <div className="space-y-2 mb-4">
-                        <p className="text-xs text-gray-600 dark:text-gray-300 font-medium">
-                          {language === 'fr' ? 'Lun–Sam: 8h–21h' : language === 'rw' ? 'Gitu–Gat: 8h–21h' : 'Mon–Sat: 8am–9pm'}
-                        </p>
-                        <p className="text-xs text-gray-600 dark:text-gray-300 font-medium">
-                          {language === 'fr' ? 'Dimanche: 9h–18h' : language === 'rw' ? 'Ku cyumweru: 9h–18h' : 'Sunday: 9am–6pm'}
-                        </p>
-                      </div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">
-                        {language === 'fr' ? 'Modes de paiement' : language === 'rw' ? 'Uburyo bwo Kwishura' : 'We Accept'}
-                      </p>
-                      <div className="flex gap-2">
-                        <span className="px-2 py-1 bg-yellow-400 text-black rounded-lg text-[10px] font-black">MTN MoMo</span>
-                        <span className="px-2 py-1 bg-red-500 text-white rounded-lg text-[10px] font-black">Airtel Money</span>
-                        <span className="px-2 py-1 bg-slate-900 text-white rounded-lg text-[10px] font-black">Card</span>
-                      </div>
-                    </div>
-                  </div>
+                      {/* Branch cards */}
+                      <StaggerReveal className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2" staggerDelay={0.04}>
+                        {BRANCHES.map((b, i) => (
+                          <StaggerItem key={b.id} direction="up">
+                            <button
+                              onClick={() => setSelectedBranchMap(b)}
+                              className="flex items-center gap-3 p-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-brand/40 hover:shadow-sm transition-all text-left w-full"
+                            >
+                              <div className="w-8 h-8 bg-brand/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <span className="text-brand font-black text-xs">{i + 1}</span>
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="font-bold text-sm text-gray-900 dark:text-white truncate">{b.name}</p>
+                                <p className="text-xs text-gray-400 truncate">{b.area}</p>
+                              </div>
+                              <span className="text-[10px] font-black text-brand-dark dark:text-brand bg-brand/10 px-2 py-1 rounded-lg flex-shrink-0">
+                                {language === 'fr' ? 'Voir' : language === 'rw' ? 'Reba' : 'View'}
+                              </span>
+                            </button>
+                          </StaggerItem>
+                        ))}
+                      </StaggerReveal>
+                    </section>
+                  </ScrollReveal>
 
-                  {/* Bottom bar */}
-                  <div className="border-t border-gray-100 dark:border-gray-800 pt-4">
-                    <p className="text-[10px] text-gray-400 text-center">{t.copyright}</p>
-                  </div>
-                </footer>
-                </ScrollReveal>
-                </div>{/* end inner wrapper */}
+                  {/* 13. Footer with full legal links */}
+                  <Footer />
+
+                </div>{/* end max-w wrapper */}
               </motion.div>
             )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── CATEGORY SIDEBAR DRAWER ── */}
+      {/* ── Category sidebar drawer ── */}
       <AnimatePresence>
         {sidebarOpen && (
           <>
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[80]"
               onClick={() => setSidebarOpen(false)}
             />
-            <motion.div
-              initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
+            <motion.div initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
               className="fixed left-0 top-0 h-full w-72 bg-white dark:bg-gray-950 z-[90] shadow-2xl flex flex-col"
             >
@@ -491,14 +433,14 @@ export default function Home() {
       <AddressModal />
       <CartDrawer isOpen={isCartOpen} onClose={() => setCartOpen(false)} />
 
-      {/* Floating cart button — visible on desktop where BottomNav is hidden */}
+      {/* Floating cart — desktop only */}
       {cartCount > 0 && (
         <motion.button
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           onClick={() => setCartOpen(true)}
           className="fixed bottom-8 right-8 z-[60] hidden sm:flex items-center gap-3 px-6 py-4 bg-brand text-gray-900 rounded-2xl shadow-2xl font-black text-sm hover:bg-brand-dark hover:text-white transition-all"
-          style={{ boxShadow: '0 8px 40px rgba(252,125,0,0.5)' }}
+          style={{ boxShadow: '0 8px 40px rgba(255,102,0,0.45)' }}
         >
           <div className="relative">
             <ShoppingCart className="w-6 h-6" />
@@ -512,6 +454,7 @@ export default function Home() {
           </div>
         </motion.button>
       )}
+
       <BranchMapModal branch={selectedBranchMap} onClose={() => setSelectedBranchMap(null)} />
       <ShopNowPanel
         isOpen={isShopNowOpen}

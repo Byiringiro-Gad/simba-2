@@ -12,14 +12,15 @@ import GoogleAuthHandler from "@/components/GoogleAuthHandler";
 import PageLoader from "@/components/PageLoader";
 import ScrollToTop from "@/components/ScrollToTop";
 import SiteReviewWidget from "@/components/SiteReviewWidget";
+import MiniCartBar from "@/components/MiniCartBar";
 import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Simba Supermarket | Rwanda's Modern Online Store",
-  description: "Shop 700+ authentic products from Simba Supermarket. Browse by category, search products, add to cart, checkout with MTN MoMo, Airtel Money, or card, and pick up at your nearest Kigali branch. Available in English, French, and Kinyarwanda. Branch staff and manager dashboard at /staff.",
-  keywords: "simba supermarket, rwanda, kigali, online grocery, pickup, momo, market rep dashboard, branch staff, multilingual, kinyarwanda, french",
+  description: "Shop 700+ authentic products from Simba Supermarket. Browse groceries, bakery, cosmetics, electronics and more. Order online and pick up at your nearest Kigali branch in 20-45 minutes. Pay with MTN MoMo, Airtel Money, or card. Available in English, French, and Kinyarwanda.",
+  keywords: "simba supermarket, rwanda, kigali, online grocery, pickup, mtn momo, airtel money, groceries, bakery, cosmetics, baby products, kinyarwanda, french",
   icons: {
     icon: '/simba-icon.png',
     shortcut: '/simba-icon.png',
@@ -32,9 +33,16 @@ export const metadata: Metadata = {
     userScalable: true,
   },
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#0F172A' },
+    { media: '(prefers-color-scheme: light)', color: '#FF6600' },
     { media: '(prefers-color-scheme: dark)',  color: '#0F172A' },
   ],
+  openGraph: {
+    title: "Simba Supermarket | Online Shopping in Kigali",
+    description: "700+ products, 9 branches, 20-45 min pickup across Kigali. Shop now.",
+    type: 'website',
+    locale: 'en_RW',
+    siteName: 'Simba Supermarket',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -45,7 +53,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="shortcut icon" href="/simba-icon.png" />
         <link rel="apple-touch-icon" href="/simba-icon.png" />
       </head>
-      <body className={`${inter.className} pb-16 sm:pb-0`} style={{ paddingBottom: 'max(4rem, env(safe-area-inset-bottom))' }}>
+      <body
+        className={`${inter.className} pb-16 sm:pb-0`}
+        style={{ paddingBottom: 'max(4rem, env(safe-area-inset-bottom))' }}
+      >
         <ThemeProvider>
           <AuthBootstrap />
           <GoogleAuthHandler />
@@ -55,15 +66,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ErrorBoundary>
             {children}
           </ErrorBoundary>
+          {/* Global overlays — order matters for z-index */}
           <SimbaPulse />
           <AuthModal />
           <PickupBranchModal />
           <ToastContainer />
           <ScrollToTop />
           <SiteReviewWidget />
+          {/* Sticky desktop mini-cart bar */}
+          <MiniCartBar />
         </ThemeProvider>
       </body>
     </html>
   );
 }
-
