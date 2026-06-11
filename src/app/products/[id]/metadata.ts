@@ -1,9 +1,10 @@
 import { Metadata } from 'next';
 import { getSimbaData } from '@/lib/data';
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
   const data = getSimbaData();
-  const product = data.products.find(p => p.id === Number(params.id));
+  const product = data.products.find(p => p.id === Number(id));
 
   if (!product) {
     return {
