@@ -182,27 +182,27 @@ export default function ShopNowPanel({ isOpen, onClose, onCategorySelect }: Prop
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[45] bg-gray-50 dark:bg-gray-950 flex flex-col"
-          style={{ paddingTop: '4rem' }}  // account for sticky navbar
+          className="fixed inset-0 z-[60] bg-gray-50 dark:bg-gray-950 flex flex-col"
+          style={{ paddingTop: 0 }}
         >
-          {/* Sub-header — sits below main Navbar */}
-          <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shadow-sm">
-            <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between">
+          {/* Sub-header */}
+          <div className="flex-shrink-0 bg-[#FF6600] shadow-md">
+            <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShoppingBag className="w-4 h-4 text-brand" />
-                <p className="font-black text-gray-900 dark:text-white text-sm">{L.title}</p>
-                <span className="text-xs text-gray-400 font-medium hidden sm:block">· {L.sub}</span>
+                <ShoppingBag className="w-5 h-5 text-white" />
+                <p className="font-black text-white text-base">{L.title}</p>
+                <span className="text-white/70 text-xs font-medium hidden sm:block">· {L.sub}</span>
               </div>
               <div className="flex items-center gap-3">
                 {cartCount > 0 && (
                   <button onClick={onClose}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-brand text-gray-900 rounded-xl text-xs font-black hover:bg-brand-dark hover:text-white transition-colors">
+                    className="flex items-center gap-2 px-3 py-1.5 bg-white text-brand rounded-xl text-xs font-black hover:bg-gray-100 transition-colors">
                     <ShoppingBag className="w-3.5 h-3.5" />
                     {cartCount} {language === 'fr' ? 'article(s)' : language === 'rw' ? 'ibintu' : 'item(s)'}
                   </button>
                 )}
                 <button onClick={onClose}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-300 transition-colors">
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-xl text-xs font-bold text-white transition-colors">
                   <X className="w-3.5 h-3.5" />
                   {language === 'fr' ? 'Fermer' : language === 'rw' ? 'Funga' : 'Close'}
                 </button>

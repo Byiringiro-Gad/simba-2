@@ -124,7 +124,6 @@ export default function Home() {
   } = useSimbaStore();
 
   const t = translations[language];
-  const cartCount = cart.reduce((a, i) => a + i.quantity, 0);
 
   const [sidebarOpen, setSidebarOpen]         = useState(false);
   const [selectedBranchMap, setSelectedBranchMap] = useState<SimbaBranch | null>(null);
@@ -180,7 +179,7 @@ export default function Home() {
               <motion.div key="products" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
                 <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-[6.5rem] z-30">
                   <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-                    <button onClick={() => setSelectedCategory(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl flex-shrink-0">
+                    <button onClick={() => goHome()} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl flex-shrink-0">
                       <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                     </button>
                     <div className="flex-1 min-w-0">
@@ -212,25 +211,25 @@ export default function Home() {
               /* ── HOME LANDING ── */
               <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 
-                {/* 1. HERO BANNER — full width,*/}
+                {/* 1. HERO BANNER — full width */}
                 <HeroSection onShopNow={() => setShopNowOpen(true)} />
 
-                <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-24 sm:pb-10 space-y-8">
-
-                  {/* Flash Deals — title left, no "View all" (Flash Deals button leads to shop) */}
-                  <section>
-                    <div className="flex items-end justify-between mb-3">
-                      <div>
-                        <h2 className="text-xl font-black text-gray-900 dark:text-white leading-none">
-                          {language === 'fr' ? 'Offres flash' : language === 'rw' ? 'Ibiciro byihuse' : 'Flash Deals'}
-                        </h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                          {language === 'fr' ? 'Jusqu\'à 25% de réduction' : language === 'rw' ? 'Kugeza 25% igabanywa' : 'Up to 25% off'}
-                        </p>
-                      </div>
+                {/* 2. FLASH DEALS — full width strip, outside the padded container */}
+                <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                  <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-5">
+                    <div className="mb-3">
+                      <h2 className="text-xl font-black text-gray-900 dark:text-white leading-none">
+                        {language === 'fr' ? 'Offres flash' : language === 'rw' ? 'Ibiciro byihuse' : 'Flash Deals'}
+                      </h2>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                        {language === 'fr' ? "Jusqu'à 25% de réduction" : language === 'rw' ? 'Kugeza 25% igabanywa' : 'Up to 25% off'}
+                      </p>
                     </div>
                     <FlashSalesBanner />
-                  </section>
+                  </div>
+                </div>
+
+                <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-24 sm:pb-10 space-y-8">
 
                   {/* 3. SHOP BY CATEGORY */}
                   <ScrollReveal direction="up">
