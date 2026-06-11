@@ -227,7 +227,7 @@ export default function SiteReviewWidget() {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 1.5, type: 'spring', stiffness: 260, damping: 20 }}
         onClick={() => { setIsOpen(true); setSubmitted(false); setActiveView('form'); }}
-        className="fixed bottom-24 right-4 sm:bottom-8 sm:right-8 z-[55] flex items-center gap-2 px-4 py-3 bg-brand text-gray-900 rounded-2xl shadow-brand-lg font-black text-sm hover:bg-brand-dark hover:text-white transition-all"
+        className="fixed bottom-24 right-4 sm:bottom-44 sm:right-6 z-[55] flex items-center gap-2 px-4 py-3 bg-brand text-gray-900 rounded-2xl shadow-brand-lg font-black text-sm hover:bg-brand-dark hover:text-white transition-all"
         style={{ boxShadow: '0 8px 32px rgba(252,125,0,0.45)' }}
         aria-label={lbl.trigger}
       >

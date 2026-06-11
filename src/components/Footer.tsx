@@ -46,7 +46,7 @@ export default function Footer() {
       about: 'Ibyerekeye Simba',
       founded: 'Yashinzwe 2007 - Kigali, Rwanda',
       desc: 'Supermarket yizewe mu Rwanda ifite ibicuruzwa 700+ mu mashami 9 i Kigali.',
-      shop: 'Kugura',
+      shop: 'Isoko',
       company: 'Sosiyete',
       legal: 'Amategeko',
       support: 'Ubufasha',
@@ -62,19 +62,10 @@ export default function Footer() {
 
   const t = copy[language];
 
-  const SHOP_LINKS = [
-    { href: '/', label: { en: 'Home', fr: 'Accueil', rw: 'Ahabanza' } },
-    { href: '/?cat=Groceries', label: { en: 'Groceries', fr: 'Epicerie', rw: 'Ibiribwa' } },
-    { href: '/?cat=Bakery', label: { en: 'Bakery', fr: 'Boulangerie', rw: 'Ufu' } },
-    { href: '/?cat=Cosmetics & Personal Care', label: { en: 'Cosmetics', fr: 'Cosmetiques', rw: 'Kwiyitaho' } },
-    { href: '/?cat=Electronics', label: { en: 'Electronics', fr: 'Electronique', rw: 'Ikoranabuhanga' } },
-  ];
-
-  const COMPANY_LINKS = [
-    { href: '/about', label: { en: 'About Us', fr: 'A propos de nous', rw: 'Ibyerekeye twe' } },
-    { href: '/faq', label: { en: 'FAQ', fr: 'FAQ', rw: 'Ibibazo' } },
-    { href: '/contact', label: { en: 'Contact', fr: 'Contact', rw: 'Twandikire' } },
-    { href: 'https://www.simbaonlineshopping.com/AboutUs.aspx', label: { en: 'Official Site', fr: 'Site officiel', rw: 'Urubuga nyarwo' }, external: true },
+  const COMPANY_LINKS: { href: string; label: { en: string; fr: string; rw: string }; external?: boolean }[] = [
+    { href: '/about',   label: { en: 'About Us',      fr: 'A propos de nous',      rw: 'Ibyerekeye twe' } },
+    { href: '/faq',     label: { en: 'FAQ',            fr: 'FAQ',                   rw: 'Ibibazo' } },
+    { href: '/contact', label: { en: 'Contact',        fr: 'Contact',               rw: 'Twandikire' } },
   ];
 
   const LEGAL_LINKS = [
@@ -127,29 +118,9 @@ export default function Footer() {
               </a>
             </div>
 
-            <div className="mt-4 flex items-center gap-3">
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t.followUs}</p>
-              <a
-                href="https://www.simbaonlineshopping.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-brand hover:text-white rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 transition-colors"
-              >
-                Official Site
-              </a>
-            </div>
+            
           </div>
 
-          <div>
-            <p className="mb-3 text-[10px] font-black uppercase tracking-widest text-gray-400">{t.shop}</p>
-            <div className="space-y-2">
-              {SHOP_LINKS.map((l) => (
-                <Link key={l.href} href={l.href} className={linkClass}>
-                  {l.label[language as 'en' | 'fr' | 'rw'] ?? l.label.en}
-                </Link>
-              ))}
-            </div>
-          </div>
 
           <div>
             <p className="mb-3 text-[10px] font-black uppercase tracking-widest text-gray-400">{t.company}</p>

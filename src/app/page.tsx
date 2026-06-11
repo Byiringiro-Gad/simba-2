@@ -7,7 +7,6 @@ import CategorySidebar from '@/components/CategorySidebar';
 import CategoryGrid from '@/components/CategoryGrid';
 import ProductGrid from '@/components/ProductGrid';
 import ProductCard from '@/components/ProductCard';
-import PromoBanner from '@/components/PromoBanner'; // kept for import but not used in layout
 import CartDrawer from '@/components/CartDrawer';
 import BottomNav from '@/components/BottomNav';
 import AddressModal from '@/components/AddressModal';
