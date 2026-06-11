@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { getSimbaData, getCategories } from '@/lib/data';
 import Navbar from '@/components/Navbar';
 import CategorySidebar from '@/components/CategorySidebar';
@@ -25,14 +25,17 @@ import DealsOfTheDay from '@/components/DealsOfTheDay';
 import ScrollReveal, { StaggerReveal, StaggerItem } from '@/components/ScrollReveal';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
-import { ArrowLeft, X, ShoppingCart, Store as StoreIcon, CreditCard, CheckCircle2 as CheckIcon, ShoppingBag as CartIcon } from 'lucide-react';
+import {
+  ArrowLeft, X, ShoppingCart,
+  Store as StoreIcon, CreditCard, CheckCircle2 as CheckIcon, ShoppingBag as CartIcon,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { SimbaData } from '@/types';
 import { SIMBA_BRANCHES, SimbaBranch } from '@/lib/branches';
 
-// ── How it works section ─────────────────────────────────────────────────────
+// ── How it works ─────────────────────────────────────────────────────────────
 function HowItWorksSection() {
   const { language } = useSimbaStore();
   const t = translations[language];
@@ -62,7 +65,7 @@ function HowItWorksSection() {
   );
 }
 
-// ── Recently viewed ──────────────────────────────────────────────────────────
+// ── Recently Viewed ──────────────────────────────────────────────────────────
 function RecentlyViewedSection({ data }: { data: SimbaData }) {
   const { recentlyViewed, addToCart, cart, updateQuantity, language } = useSimbaStore();
   const t = translations[language];
@@ -105,36 +108,34 @@ function RecentlyViewedSection({ data }: { data: SimbaData }) {
   );
 }
 
-// ── Main page ────────────────────────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────────────────────────
 const BRANCHES = SIMBA_BRANCHES;
 
 export default function Home() {
-  const data = useMemo(() => getSimbaData(), []);
-  const categories = useMemo(() => getCategories(), []);
+  const data       = useMemo(() => getSimbaData(), []);
+  const categories = useMemo(() => getCategories(),  []);
+
   const {
     language, isCartOpen, setCartOpen,
-    activeTab, setActiveTab, selectedCategory, setSelectedCategory, searchQuery,
+    activeTab, setActiveTab,
+    selectedCategory, setSelectedCategory,
+    searchQuery,
     cart, isShopNowOpen, setShopNowOpen,
   } = useSimbaStore();
+
   const t = translations[language];
   const cartCount = cart.reduce((a, i) => a + i.quantity, 0);
-  const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  const subtotal  = cart.reduce((s, i) => s + i.price * i.quantity, 0);
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen]         = useState(false);
   const [selectedBranchMap, setSelectedBranchMap] = useState<SimbaBranch | null>(null);
 
-  const categoryProducts = useMemo(() => {
-    if (!selectedCategory) return [];
-    return data.products.filter(p => p.category === selectedCategory);
-  }, [data.products, selectedCategory]);
+  const categoryProducts = useMemo(() =>
+    selectedCategory ? data.products.filter(p => p.category === selectedCategory) : [],
+    [data.products, selectedCategory]
+  );
 
   const showProducts = !!selectedCategory || !!searchQuery.trim();
-
-  useEffect(() => {
-    if (isShopNowOpen && (activeTab !== 'home' || searchQuery.trim())) {
-      setShopNowOpen(false);
-    }
-  }, [activeTab, searchQuery, isShopNowOpen, setShopNowOpen]);
 
   const handleCategorySelect = (cat: string) => {
     setSelectedCategory(cat);
@@ -143,74 +144,63 @@ export default function Home() {
     setActiveTab('home');
   };
 
-  const handleBack = () => setSelectedCategory(null);
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+
+      {/* ── NAVBAR + SECONDARY CATEGORY BAR ── */}
       <Navbar onMenuClick={() => setSidebarOpen(true)} />
 
       <AnimatePresence mode="wait">
 
-        {/* ── SEARCH TAB ── */}
         {activeTab === 'search' && (
           <motion.div key="search" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <SearchTab />
           </motion.div>
         )}
-
-        {/* ── FAVORITES TAB ── */}
         {activeTab === 'favorites' && (
           <motion.div key="favorites" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <FavoritesTab />
           </motion.div>
         )}
-
-        {/* ── ORDERS TAB ── */}
         {activeTab === 'orders' && (
           <motion.div key="orders" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <OrdersTab />
           </motion.div>
         )}
-
-        {/* ── ACCOUNT TAB ── */}
         {activeTab === 'account' && (
           <motion.div key="account" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <AccountTab />
           </motion.div>
         )}
 
-        {/* ── HOME TAB ── */}
         {activeTab === 'home' && (
           <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 
-            {/* ── PRODUCT / SEARCH VIEW ── */}
             {showProducts ? (
-              <motion.div key="products" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }}>
-                {/* Header */}
-                <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-[4.5rem] z-30">
+              /* ── PRODUCT / SEARCH VIEW ── */
+              <motion.div key="products" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-[6.5rem] z-30">
                   <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
-                    <button onClick={handleBack} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors flex-shrink-0">
+                    <button onClick={() => setSelectedCategory(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl flex-shrink-0">
                       <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                     </button>
                     <div className="flex-1 min-w-0">
                       <h1 className="font-black text-gray-900 dark:text-white truncate">
                         {selectedCategory ?? `"${searchQuery}"`}
                       </h1>
-                      <p className="text-xs text-gray-400 font-medium">
+                      <p className="text-xs text-gray-400">
                         {selectedCategory ? `${categoryProducts.length} ${t.items}` : t.results}
                       </p>
                     </div>
                     {selectedCategory && (
-                      <button onClick={handleBack} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
+                      <button onClick={() => setSelectedCategory(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
                         <X className="w-4 h-4 text-gray-400" />
                       </button>
                     )}
                   </div>
                 </div>
-
-                {/* Two-column: sidebar + products */}
                 <div className="max-w-screen-xl mx-auto flex">
-                  <aside className="hidden lg:block w-56 flex-shrink-0 sticky top-[7.5rem] h-[calc(100vh-7.5rem)] overflow-y-auto border-r border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950">
+                  <aside className="hidden lg:block w-56 flex-shrink-0 sticky top-[10rem] h-[calc(100vh-10rem)] overflow-y-auto border-r border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950">
                     <CategorySidebar categories={categories} onSelect={handleCategorySelect} />
                   </aside>
                   <main className="flex-1 min-w-0 px-4 sm:px-6 py-5 pb-24 sm:pb-8">
@@ -220,35 +210,41 @@ export default function Home() {
               </motion.div>
 
             ) : (
-              /* ── LANDING HOME ── */
-              <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+              /* ── HOME LANDING ── */
+              <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 
-                {/* 1. Hero with search */}
+                {/* 1. HERO BANNER — full width,*/}
                 <HeroSection onShopNow={() => setShopNowOpen(true)} />
 
-                <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 pb-24 sm:pb-10 space-y-10">
+                <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-24 sm:pb-10 space-y-8">
 
-                  {/* 2. Trust badges strip */}
-
-                  {/* 3. Flash sales (rotating every 4h with countdown) */}
-                  <ScrollReveal direction="up">
+                  {/* Flash Deals — title left + "View all" right → horizontal product scroll */}
+                  <section>
+                    <div className="flex items-end justify-between mb-3">
+                      <div>
+                        <h2 className="text-xl font-black text-gray-900 dark:text-white leading-none">
+                          {language === 'fr' ? 'Offres flash' : language === 'rw' ? 'Ibiciro byihuse' : 'Flash Deals'}
+                        </h2>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                          {language === 'fr' ? 'Jusqu\'à 25% de réduction' : language === 'rw' ? 'Kugeza 25% igabanywa' : 'Up to 25% off'}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setShopNowOpen(true)}
+                        className="text-sm font-black text-brand-dark dark:text-brand hover:underline flex-shrink-0"
+                      >
+                        {language === 'fr' ? 'Voir tout' : language === 'rw' ? 'Reba byose' : 'View all'}
+                      </button>
+                    </div>
                     <FlashSalesBanner />
-                  </ScrollReveal>
+                  </section>
 
-                  {/* 5. Shop by Category — big visual aisles */}
+                  {/* 3. SHOP BY CATEGORY — grid of visual aisle tiles */}
                   <ScrollReveal direction="up">
-                    <section id="categories-section">
+                    <section>
                       <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h2 className="text-xl font-black text-gray-900 dark:text-white">{t.shopByCategory}</h2>
-                          <p className="text-sm text-gray-400 mt-0.5">
-                            {language === 'fr' ? 'Choisissez votre rayon' : language === 'rw' ? 'Hitamo icyiciro' : 'Browse every aisle'}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => setShopNowOpen(true)}
-                          className="text-xs font-black text-brand-dark dark:text-brand hover:underline"
-                        >
+                        <h2 className="text-xl font-black text-gray-900 dark:text-white">{t.shopByCategory}</h2>
+                        <button onClick={() => setShopNowOpen(true)} className="text-xs font-black text-brand-dark dark:text-brand hover:underline">
                           {t.viewAll} →
                         </button>
                       </div>
@@ -256,15 +252,10 @@ export default function Home() {
                     </section>
                   </ScrollReveal>
 
-                  {/* 6. Buy It Again (AI-powered, logged-in users with order history) */}
+                  {/* 4. BUY IT AGAIN — for returning customers */}
                   <BuyItAgain />
 
-                  {/* 7. Trending Now (predictive recommendations) */}
-                  <ScrollReveal direction="up">
-                    <TrendingProducts />
-                  </ScrollReveal>
-
-                  {/* 8. Popular Products */}
+                  {/* 5. POPULAR PRODUCTS — horizontal-scroll product row */}
                   <ScrollReveal direction="up">
                     <section>
                       <div className="flex items-center justify-between mb-4">
@@ -273,7 +264,7 @@ export default function Home() {
                             {language === 'fr' ? 'Produits populaires' : language === 'rw' ? 'Ibicuruzwa bikunzwe' : 'Popular Products'}
                           </h2>
                           <p className="text-sm text-gray-400 mt-0.5">
-                            {language === 'fr' ? 'Les plus achetés cette semaine' : language === 'rw' ? 'Ibyaguriwe kenshi iki cyumweru' : 'Most purchased this week'}
+                            {language === 'fr' ? 'Les plus vendus cette semaine' : language === 'rw' ? 'Ibyaguriwe kenshi' : 'Best sellers this week'}
                           </p>
                         </div>
                         <button onClick={() => handleCategorySelect('Groceries')} className="text-xs font-black text-brand-dark dark:text-brand hover:underline">
@@ -288,22 +279,27 @@ export default function Home() {
                     </section>
                   </ScrollReveal>
 
-                  {/* 9. Recently Viewed (personalised) */}
+                  {/* 6. TRENDING NOW */}
+                  <ScrollReveal direction="up">
+                    <TrendingProducts />
+                  </ScrollReveal>
+
+                  {/* 7. RECENTLY VIEWED */}
                   <ScrollReveal direction="up">
                     <RecentlyViewedSection data={data} />
                   </ScrollReveal>
 
-                  {/* 10. Deals of the Day (with midnight countdown) */}
+                  {/* 8. DEALS OF THE DAY — countdown timer */}
                   <ScrollReveal direction="up">
                     <DealsOfTheDay />
                   </ScrollReveal>
 
-                  {/* 11. How it works */}
+                  {/* 9. HOW IT WORKS */}
                   <ScrollReveal direction="up">
                     <HowItWorksSection />
                   </ScrollReveal>
 
-                  {/* 12. Branches map */}
+                  {/* 10. BRANCHES */}
                   <ScrollReveal direction="up">
                     <section>
                       <div className="flex items-center justify-between mb-4">
@@ -315,27 +311,20 @@ export default function Home() {
                           {language === 'fr' ? 'Voir tout' : language === 'rw' ? 'Reba byose' : 'View all'} →
                         </Link>
                       </div>
-
-                      {/* Map */}
-                      <div className="w-full h-64 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 relative mb-4">
+                      <div className="w-full h-56 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 relative mb-4">
                         <iframe
                           src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d31898.5!2d30.0588!3d-1.9441!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2srw!4v1713530000000!5m2!1sen!2srw"
-                          className="w-full h-full"
-                          style={{ border: 0 }}
-                          allowFullScreen
-                          loading="lazy"
-                          referrerPolicy="no-referrer-when-downgrade"
-                          title="Simba Supermarket Kigali Locations"
+                          className="w-full h-full" style={{ border: 0 }}
+                          allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"
+                          title="Simba Supermarket Kigali"
                         />
-                        <div className="absolute bottom-3 right-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-3 py-2 rounded-xl shadow-lg border dark:border-gray-700">
+                        <div className="absolute bottom-3 right-3 bg-white/95 dark:bg-gray-900/95 px-3 py-2 rounded-xl shadow-lg border dark:border-gray-700">
                           <p className="text-[10px] font-black text-red-600 flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
                             {BRANCHES.length} {t.activePickupBranches}
                           </p>
                         </div>
                       </div>
-
-                      {/* Branch cards */}
                       <StaggerReveal className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2" staggerDelay={0.04}>
                         {BRANCHES.map((b, i) => (
                           <StaggerItem key={b.id} direction="up">
@@ -360,31 +349,29 @@ export default function Home() {
                     </section>
                   </ScrollReveal>
 
-                  {/* 13. Footer with full legal links */}
+                  {/* 11. FOOTER */}
                   <Footer />
 
-                </div>{/* end max-w wrapper */}
+                </div>
               </motion.div>
             )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Category sidebar drawer ── */}
+      {/* Category sidebar drawer */}
       <AnimatePresence>
         {sidebarOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[80]"
-              onClick={() => setSidebarOpen(false)}
-            />
+              onClick={() => setSidebarOpen(false)} />
             <motion.div initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-              className="fixed left-0 top-0 h-full w-72 bg-white dark:bg-gray-950 z-[90] shadow-2xl flex flex-col"
-            >
+              className="fixed left-0 top-0 h-full w-72 bg-white dark:bg-gray-950 z-[90] shadow-2xl flex flex-col">
               <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
                 <h2 className="font-black text-gray-900 dark:text-white">{t.categories}</h2>
-                <button onClick={() => setSidebarOpen(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors">
+                <button onClick={() => setSidebarOpen(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl">
                   <X className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
@@ -400,13 +387,13 @@ export default function Home() {
       <AddressModal />
       <CartDrawer isOpen={isCartOpen} onClose={() => setCartOpen(false)} />
 
-      {/* Floating cart — desktop only */}
+      {/* Floating cart — desktop */}
       {cartCount > 0 && (
         <motion.button
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           onClick={() => setCartOpen(true)}
-          className="fixed bottom-8 right-8 z-[60] hidden sm:flex items-center gap-3 px-6 py-4 bg-brand text-gray-900 rounded-2xl shadow-2xl font-black text-sm hover:bg-brand-dark hover:text-white transition-all"
+          className="fixed bottom-8 right-8 z-[56] hidden sm:flex items-center gap-3 px-6 py-4 bg-brand text-gray-900 rounded-2xl shadow-2xl font-black text-sm hover:bg-brand-dark hover:text-white transition-all"
           style={{ boxShadow: '0 8px 40px rgba(255,102,0,0.45)' }}
         >
           <div className="relative">
@@ -423,11 +410,7 @@ export default function Home() {
       )}
 
       <BranchMapModal branch={selectedBranchMap} onClose={() => setSelectedBranchMap(null)} />
-      <ShopNowPanel
-        isOpen={isShopNowOpen}
-        onClose={() => setShopNowOpen(false)}
-        onCategorySelect={handleCategorySelect}
-      />
+      <ShopNowPanel isOpen={isShopNowOpen} onClose={() => setShopNowOpen(false)} onCategorySelect={handleCategorySelect} />
     </div>
   );
 }
