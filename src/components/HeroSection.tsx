@@ -67,10 +67,11 @@ export default function HeroSection({ onShopNow }: { onShopNow: () => void }) {
   };
 
   return (
-    <div
-      className="relative w-full overflow-hidden"
-      style={{ height: 'clamp(220px, 28vw, 300px)' }}
-    >
+    <section className="w-full bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+      <div
+        className="relative w-full overflow-hidden"
+        style={{ height: 'clamp(180px, 22vw, 260px)' }}
+      >
       <AnimatePresence mode="wait">
         <motion.div
           key={slide.id}
@@ -170,5 +171,6 @@ export default function HeroSection({ onShopNow }: { onShopNow: () => void }) {
         ))}
       </div>
     </div>
+    </section>
   );
 }

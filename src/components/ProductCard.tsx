@@ -1,29 +1,34 @@
-
 'use client';
 
 import { Product } from '@/types';
 import { useSimbaStore } from '@/store/useSimbaStore';
+import { useCompareStore } from '@/store/useCompareStore';
 import { translations } from '@/lib/translations';
-import { Plus, Minus, Heart } from 'lucide-react';
+import { Plus, Minus, Heart, BarChart2 } from 'lucide-react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import { getProductRating, getStockCount } from '@/lib/reviews';
 import { useState, useEffect, useRef } from 'react';
+import { toast } from './Toast';
 
 interface ProductCardProps {
   product: Product;
   index?: number;
+  viewMode?: 'grid' | 'list';
 }
 
-export default function ProductCard({ product, index = 0 }: ProductCardProps) {
+export default function ProductCard({ product, index = 0, viewMode = 'grid' }: ProductCardProps) {
   const { addToCart, updateQuantity, cart, toggleFavorite, favorites, language, branchInventory } = useSimbaStore();
+  const { addToCompare, removeFromCompare, isInCompare, compareList, setCompareOpen } = useCompareStore();
   const t = translations[language];
+  const lang = language as 'en' | 'fr' | 'rw';
 
   const cartItem = cart.find(i => i.id === product.id);
   const quantity = cartItem?.quantity ?? 0;
   const isFav = favorites.includes(product.id);
+  const inCompare = isInCompare(product.id);
   const { avg, count } = getProductRating(product.id);
   const prevQty = useRef(quantity);
   const [floats, setFloats] = useState<number[]>([]);
@@ -70,7 +75,131 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
     e.preventDefault(); e.stopPropagation();
     toggleFavorite(product.id);
   };
+  const handleCompare = (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    if (inCompare) {
+      removeFromCompare(product.id);
+    } else {
+      const added = addToCompare(product);
+      if (!added) {
+        toast.error(lang === 'fr' ? 'Maximum 3 produits' : lang === 'rw' ? 'Ntarenze 3' : 'Max 3 products to compare');
+        return;
+      }
+      if (compareList.length >= 1) setCompareOpen(true);
+    }
+  };
 
+  // ── LIST MODE ──────────────────────────────────────────────────────────────
+  if (viewMode === 'list') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-20px' }}
+        transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.3) }}
+        className="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-lg hover:border-gray-200 dark:hover:border-gray-700 transition-all duration-200 flex items-center gap-4 p-3"
+      >
+        {/* Image */}
+        <Link href={`/products/${product.id}`} className="relative w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800">
+          <Image
+            src={product.image} alt={product.name} fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            sizes="80px"
+          />
+          {!isAvailable && (
+            <div className="absolute inset-0 bg-white/70 dark:bg-black/70 flex items-center justify-center">
+              <span className="text-[8px] font-black text-gray-700 dark:text-gray-300 uppercase">Out</span>
+            </div>
+          )}
+        </Link>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex gap-0.5 mb-0.5">
+            {[1,2,3,4,5].map(i => (
+              <span key={i} className={`text-[10px] ${count > 0 && i <= Math.round(avg) ? 'text-amber-500' : 'text-gray-200 dark:text-gray-700'}`}>★</span>
+            ))}
+            {count > 0 && <span className="text-[10px] text-gray-400 ml-0.5">({count})</span>}
+          </div>
+          <Link href={`/products/${product.id}`}>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-snug hover:text-brand transition-colors line-clamp-1">
+              {displayName}
+            </h3>
+          </Link>
+          <p className="text-xs text-gray-400 mt-0.5">{product.category} · per {product.unit || 'unit'}</p>
+          {stockLeft !== null && isAvailable && (
+            <p className="text-[10px] font-black text-red-500 mt-0.5">{t.onlyLeft} {stockLeft} {t.leftInStock}</p>
+          )}
+        </div>
+
+        {/* Price + actions */}
+        <div className="flex flex-col items-end gap-2 flex-shrink-0">
+          <div className="text-right">
+            <p className="text-base font-black text-gray-900 dark:text-white leading-none">{product.price.toLocaleString()}</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase">RWF</p>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {/* Compare */}
+            <button
+              onClick={handleCompare}
+              className={clsx(
+                'w-7 h-7 rounded-lg flex items-center justify-center transition-all',
+                inCompare ? 'bg-brand text-gray-900' : 'bg-gray-100 dark:bg-gray-800 text-gray-400 hover:bg-brand/20 hover:text-brand'
+              )}
+              title={inCompare ? 'Remove from compare' : 'Add to compare'}
+            >
+              <BarChart2 className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Fav */}
+            <button onClick={handleFav}
+              className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+              <Heart className={clsx('w-3.5 h-3.5 transition-all', isFav ? 'fill-red-500 text-red-500' : 'text-gray-400')} />
+            </button>
+
+            {/* Cart */}
+            <AnimatePresence mode="wait">
+              {quantity === 0 ? (
+                <motion.button
+                  key="add"
+                  initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  onClick={handleAdd} disabled={!isAvailable}
+                  className={clsx(
+                    'h-7 px-3 rounded-xl text-xs font-black flex items-center gap-1 transition-all',
+                    isAvailable
+                      ? 'bg-brand-dark text-white hover:bg-brand hover:text-gray-900'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-300 cursor-not-allowed'
+                  )}
+                >
+                  <Plus className="w-3 h-3" />
+                  {lang === 'fr' ? 'Ajouter' : lang === 'rw' ? 'Ongeraho' : 'Add'}
+                </motion.button>
+              ) : (
+                <motion.div
+                  key="controls"
+                  initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  className="flex items-center bg-brand-dark rounded-xl overflow-hidden shadow-sm"
+                >
+                  <button onClick={handleDec} className="w-7 h-7 flex items-center justify-center text-white hover:bg-black/10 transition-colors">
+                    <Minus className="w-3 h-3 stroke-[3px]" />
+                  </button>
+                  <span className="text-white font-black text-xs w-5 text-center select-none">{quantity}</span>
+                  <button onClick={handleInc} className="w-7 h-7 flex items-center justify-center text-white hover:bg-black/10 transition-colors">
+                    <Plus className="w-3 h-3 stroke-[3px]" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // ── GRID MODE (default) ────────────────────────────────────────────────────
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -104,16 +233,27 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
           className="object-cover group-hover:scale-105 transition-transform duration-500"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
         />
-        {/* Shimmer on hover */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none" />
 
-        <motion.button
-          whileTap={{ scale: 1.4 }} onClick={handleFav}
-          className="absolute top-2 right-2 w-7 h-7 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm z-10"
-          aria-label={isFav ? 'Remove from favourites' : 'Save'}
-        >
-          <Heart className={clsx('w-3.5 h-3.5 transition-all duration-200', isFav ? 'fill-red-500 text-red-500' : 'text-gray-400')} />
-        </motion.button>
+        {/* Fav + Compare overlay buttons */}
+        <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
+          <motion.button whileTap={{ scale: 1.4 }} onClick={handleFav}
+            className="w-7 h-7 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm"
+            aria-label={isFav ? 'Remove from favourites' : 'Save'}>
+            <Heart className={clsx('w-3.5 h-3.5 transition-all duration-200', isFav ? 'fill-red-500 text-red-500' : 'text-gray-400')} />
+          </motion.button>
+
+          <motion.button whileTap={{ scale: 1.2 }} onClick={handleCompare}
+            className={clsx(
+              'w-7 h-7 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm transition-all',
+              inCompare
+                ? 'bg-brand text-gray-900'
+                : 'bg-white/90 dark:bg-gray-900/90 text-gray-400 hover:text-brand'
+            )}
+            aria-label={inCompare ? 'Remove from compare' : 'Add to compare'}>
+            <BarChart2 className="w-3.5 h-3.5" />
+          </motion.button>
+        </div>
 
         {stockLeft !== null && isAvailable && (
           <motion.div

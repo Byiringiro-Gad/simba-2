@@ -2,11 +2,12 @@
 
 import { Product } from '@/types';
 import { useSimbaStore } from '@/store/useSimbaStore';
+import { useCompareStore } from '@/store/useCompareStore';
 import { translations, translateCategory } from '@/lib/translations';
 import ProductCard from './ProductCard';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SearchX, SlidersHorizontal, ChevronDown, X, Check } from 'lucide-react';
+import { SearchX, SlidersHorizontal, ChevronDown, X, Check, LayoutGrid, List, BarChart2 } from 'lucide-react';
 import { getProductRating } from '@/lib/reviews';
 import { clsx } from 'clsx';
 
@@ -15,12 +16,18 @@ interface ProductGridProps {
 }
 
 type SortOption = 'default' | 'price-asc' | 'price-desc' | 'rating' | 'name-az' | 'name-za';
+type ViewMode = 'grid' | 'list';
 
 const MAX_PRICE = 50000;
 
 export default function ProductGrid({ products }: ProductGridProps) {
   const { searchQuery, selectedCategory, language, branchInventory } = useSimbaStore();
+  const { compareList, setCompareOpen, clearCompare } = useCompareStore();
   const t = translations[language];
+  const lang = language as 'en' | 'fr' | 'rw';
+
+  // ── View mode ─────────────────────────────────────────────────────────────
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   // ── AI search state ───────────────────────────────────────────────────────
   const [aiProducts, setAiProducts] = useState<Product[] | null>(null);
@@ -144,13 +151,31 @@ export default function ProductGrid({ products }: ProductGridProps) {
         </div>
       )}
 
-      {/* ── Toolbar: Sort + Filter ── */}
+      {/* ── Toolbar: Sort + Filter + View toggle ── */}
       <div className="flex items-center gap-2 mb-4 sticky top-[7.5rem] z-20 bg-gray-50 dark:bg-gray-950 py-2 overflow-x-auto no-scrollbar">
         {/* Result count */}
         <p className="text-xs font-bold text-gray-400 flex-1 truncate">
           {filteredProducts.length} {filteredProducts.length === 1 ? t.item : t.items}
           {selectedCategory ? ` · ${translateCategory(selectedCategory, language)}` : ''}
         </p>
+
+        {/* View toggle: Grid / List */}
+        <div className="flex items-center bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex-shrink-0">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={clsx('p-2 transition-colors', viewMode === 'grid' ? 'bg-brand-dark text-white' : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-200')}
+            title="Grid view"
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={clsx('p-2 transition-colors', viewMode === 'list' ? 'bg-brand-dark text-white' : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-200')}
+            title="List view"
+          >
+            <List className="w-4 h-4" />
+          </button>
+        </div>
 
         {/* Sort dropdown */}
         <div className="relative">
@@ -336,12 +361,61 @@ export default function ProductGrid({ products }: ProductGridProps) {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-3">
+        <div className={clsx(
+          viewMode === 'list'
+            ? 'flex flex-col gap-2'
+            : 'grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-3'
+        )}>
           {filteredProducts.map((product, index) => (
-            <ProductCard key={product.id} product={product} index={index} />
+            <ProductCard key={product.id} product={product} index={index} viewMode={viewMode} />
           ))}
         </div>
       )}
+
+      {/* ── Compare floating bar ── */}
+      <AnimatePresence>
+        {compareList.length > 0 && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-[150] flex items-center gap-3 px-5 py-3 bg-gray-900 dark:bg-gray-100 rounded-2xl shadow-2xl border border-gray-700 dark:border-gray-200"
+          >
+            <div className="flex items-center gap-2">
+              {compareList.map(p => (
+                <div key={p.id} className="relative w-10 h-10 rounded-xl overflow-hidden border-2 border-brand">
+                  <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                </div>
+              ))}
+              {compareList.length < 3 && Array.from({ length: 3 - compareList.length }).map((_, i) => (
+                <div key={i} className="w-10 h-10 rounded-xl border-2 border-dashed border-gray-600 dark:border-gray-400 flex items-center justify-center">
+                  <span className="text-gray-500 dark:text-gray-400 text-xs">+</span>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => setCompareOpen(true)}
+              disabled={compareList.length < 2}
+              className={clsx(
+                'flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all',
+                compareList.length >= 2
+                  ? 'bg-brand text-gray-900 hover:bg-brand-dark hover:text-white'
+                  : 'bg-gray-700 dark:bg-gray-300 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+              )}
+            >
+              <BarChart2 className="w-4 h-4" />
+              {lang === 'fr' ? 'Comparer' : lang === 'rw' ? 'Gereranya' : 'Compare'} ({compareList.length})
+            </button>
+            <button
+              onClick={clearCompare}
+              className="text-gray-400 hover:text-red-400 transition-colors p-1"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

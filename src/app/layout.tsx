@@ -13,6 +13,7 @@ import PageLoader from "@/components/PageLoader";
 import ScrollToTop from "@/components/ScrollToTop";
 import SiteReviewWidget from "@/components/SiteReviewWidget";
 import MiniCartBar from "@/components/MiniCartBar";
+import CompareDrawer from "@/components/CompareDrawer";
 import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -74,6 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ScrollToTop />
           <SiteReviewWidget />
           <MiniCartBar />
+          <CompareDrawer />
         </ThemeProvider>
       </body>
     </html>
