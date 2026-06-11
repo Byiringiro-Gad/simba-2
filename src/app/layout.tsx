@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from "@/components/ThemeProvider";
@@ -26,16 +26,6 @@ export const metadata: Metadata = {
     shortcut: '/simba-icon.png',
     apple: '/simba-icon.png',
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-  },
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#FF6600' },
-    { media: '(prefers-color-scheme: dark)',  color: '#0F172A' },
-  ],
   openGraph: {
     title: "Simba Supermarket | Online Shopping in Kigali",
     description: "700+ products, 9 branches, 20-45 min pickup across Kigali. Shop now.",
@@ -43,6 +33,17 @@ export const metadata: Metadata = {
     locale: 'en_RW',
     siteName: 'Simba Supermarket',
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#FF6600' },
+    { media: '(prefers-color-scheme: dark)',  color: '#0F172A' },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -66,14 +67,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ErrorBoundary>
             {children}
           </ErrorBoundary>
-          {/* Global overlays — order matters for z-index */}
           <SimbaPulse />
           <AuthModal />
           <PickupBranchModal />
           <ToastContainer />
           <ScrollToTop />
           <SiteReviewWidget />
-          {/* Sticky desktop mini-cart bar */}
           <MiniCartBar />
         </ThemeProvider>
       </body>

@@ -110,7 +110,7 @@ function SuccessStep({
   orderId: string;
   selectedBranch: ReturnType<typeof getBranchById>;
   totalPoints: number;
-  t: ReturnType<typeof translations.en.constructor> & any;
+  t: any;
   onReset: () => void;
   pickupBranchId: string;
   language: Language;
