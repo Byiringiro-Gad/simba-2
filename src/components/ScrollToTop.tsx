@@ -1,17 +1,22 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
 
 export default function ScrollToTop() {
   const [visible, setVisible] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 300);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  const isStaffPage = pathname.startsWith('/admin') || pathname.startsWith('/branch') || pathname.startsWith('/staff');
+  if (isStaffPage) return null;
 
   return (
     <AnimatePresence>

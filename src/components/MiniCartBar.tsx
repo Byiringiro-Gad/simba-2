@@ -2,17 +2,17 @@
 
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, ChevronRight, Truck, Clock } from 'lucide-react';
+import { ShoppingCart, ChevronRight, Clock } from 'lucide-react';
 
-/**
- * Sticky mini cart bar that slides up from the bottom on desktop
- * when the cart has items, showing a summary and quick checkout CTA.
- * Hidden on mobile (BottomNav already has the cart button).
- */
 export default function MiniCartBar() {
-  const { cart, setCartOpen, language, pickupBranchId, appliedPromo, promoDiscount } = useSimbaStore();
+  const { cart, setCartOpen, language, appliedPromo, promoDiscount } = useSimbaStore();
+  const pathname = usePathname();
   const t = translations[language];
+
+  const isStaffPage = pathname.startsWith('/admin') || pathname.startsWith('/branch') || pathname.startsWith('/staff');
+  if (isStaffPage) return null;
 
   const itemCount = cart.reduce((a, i) => a + i.quantity, 0);
   const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);

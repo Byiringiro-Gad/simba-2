@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import { getSimbaData } from '@/lib/data';
@@ -65,9 +66,9 @@ function buildResponse(input: string, lang: string, products: Product[]): ChatMe
     return {
       role: 'assistant',
       text: pick(
-        "Simba currently has these active promo codes:\n\nSIMBA10 — 10% off your order\nWELCOME — 15% off (new customers)\nKIGALI5 — 5% off\n\nEnter the code in your cart before proceeding to checkout.",
-        "Simba a actuellement ces codes promo actifs :\n\nSIMBA10 — 10% de réduction\nWELCOME — 15% de réduction (nouveaux clients)\nKIGALI5 — 5% de réduction\n\nEntrez le code dans votre panier avant de procéder au paiement.",
-        "Simba ifite amakode ya promo akora ubu:\n\nSIMBA10 — 10% igabanywa\nWELCOME — 15% igabanywa (abakiriya bashya)\nKIGALI5 — 5% igabanywa\n\nShyira kode mu gitebo mbere yo kwishura."
+        "Simba runs promo codes from time to time. Check the cart section — if any active codes are available, you can enter them before checkout to get a discount on your order.",
+        "Simba propose des codes promo de temps en temps. Vérifiez la section panier — si des codes actifs sont disponibles, vous pouvez les saisir avant le paiement pour obtenir une réduction.",
+        "Simba itanga amakode ya promo rimwe na rimwe. Reba igice cy'agosho — niba amakode akora ariho, ushobora ayashyira mbere yo kwishura kugira ngo ubone igabanywa."
       ),
     };
   }
@@ -253,9 +254,14 @@ export default function SimbaPulse() {
   const [chat, setChat] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const { language, addToCart } = useSimbaStore();
+  const pathname = usePathname();
   const t = translations[language];
   const allProducts = getSimbaData().products;
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Hide on staff-facing pages
+  const isStaffPage = pathname.startsWith('/admin') || pathname.startsWith('/branch') || pathname.startsWith('/staff');
+  if (isStaffPage) return null;
 
   useEffect(() => {
     setChat([{ role: 'assistant', text: t.aiGreeting }]);
@@ -320,7 +326,7 @@ export default function SimbaPulse() {
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.92 }}
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 sm:bottom-6 left-4 z-[60] w-14 h-14 bg-brand-dark rounded-2xl shadow-xl flex items-center justify-center border-2 border-brand/40"
+        className="fixed bottom-32 sm:bottom-6 left-4 z-[57] w-14 h-14 bg-brand-dark rounded-2xl shadow-xl flex items-center justify-center border-2 border-brand/40"
         aria-label="Open Simba AI"
       >
         <Sparkles className="w-6 h-6 text-brand" />

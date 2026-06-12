@@ -10,7 +10,7 @@ import { clsx } from 'clsx';
 export default function BottomNav() {
   const {
     activeTab, setActiveTab, favorites, orders, cart,
-    language, user, setAuthOpen, setCartOpen, isCartOpen,
+    language, user, setAuthOpen, setCartOpen, isCartOpen, goHome,
   } = useSimbaStore();
   const t = translations[language];
   const cartCount = cart.reduce((a, i) => a + i.quantity, 0);
@@ -35,7 +35,7 @@ export default function BottomNav() {
 
         {/* Home */}
         <button
-          onClick={() => setActiveTab('home')}
+          onClick={() => goHome()}
           className="flex flex-col items-center gap-0.5 px-3 py-1.5 relative"
         >
           <Home className={clsx('w-6 h-6 transition-colors', activeTab === 'home' ? 'text-brand' : 'text-gray-400')} />

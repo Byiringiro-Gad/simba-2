@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, X, Send, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
+import { Star, X, Send, MessageSquare, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { toast } from './Toast';
 
@@ -64,6 +65,11 @@ function formatDate(dateStr: string) {
 
 export default function SiteReviewWidget() {
   const { user, language } = useSimbaStore();
+  const pathname = usePathname();
+
+  // Hide on staff-facing pages
+  const isStaffPage = pathname.startsWith('/admin') || pathname.startsWith('/branch') || pathname.startsWith('/staff');
+  if (isStaffPage) return null;
 
   const [isOpen, setIsOpen] = useState(false);
   const [activeView, setActiveView] = useState<'form' | 'list'>('form');
@@ -227,7 +233,7 @@ export default function SiteReviewWidget() {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 1.5, type: 'spring', stiffness: 260, damping: 20 }}
         onClick={() => { setIsOpen(true); setSubmitted(false); setActiveView('form'); }}
-        className="fixed bottom-24 right-4 sm:bottom-44 sm:right-6 z-[55] flex items-center gap-2 px-4 py-3 bg-brand text-gray-900 rounded-2xl shadow-brand-lg font-black text-sm hover:bg-brand-dark hover:text-white transition-all"
+        className="fixed bottom-32 right-4 sm:bottom-24 sm:right-6 z-[55] flex items-center gap-2 px-4 py-3 bg-brand text-gray-900 rounded-2xl shadow-brand-lg font-black text-sm hover:bg-brand-dark hover:text-white transition-all"
         style={{ boxShadow: '0 8px 32px rgba(252,125,0,0.45)' }}
         aria-label={lbl.trigger}
       >
@@ -297,8 +303,8 @@ export default function SiteReviewWidget() {
                         animate={{ scale: 1, opacity: 1 }}
                         className="flex flex-col items-center text-center py-8 gap-4"
                       >
-                        <div className="w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center">
-                          <span className="text-3xl">🎉</span>
+                        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                          <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
                         </div>
                         <div>
                           <h3 className="font-black text-xl text-gray-900 dark:text-white mb-1">
@@ -436,7 +442,7 @@ export default function SiteReviewWidget() {
                       </div>
                     ) : reviews.length === 0 ? (
                       <div className="py-12 text-center">
-                        <p className="text-4xl mb-3">💬</p>
+                        <MessageSquare className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
                         <p className="text-gray-400 text-sm font-medium">{lbl.noReviews}</p>
                         <button
                           onClick={() => setActiveView('form')}
