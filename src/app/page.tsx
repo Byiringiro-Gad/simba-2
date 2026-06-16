@@ -225,7 +225,7 @@ export default function Home() {
             {showProducts ? (
               /* ── PRODUCT / SEARCH VIEW ── */
               <motion.div key="products" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-                <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-[6.5rem] z-30">
+                <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-14 sm:top-[5.5rem] z-30">
                   <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
                     <button onClick={() => goHome()} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl flex-shrink-0">
                       <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
@@ -246,7 +246,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="max-w-screen-xl mx-auto flex">
-                  <aside className="hidden lg:block w-56 flex-shrink-0 sticky top-[10rem] h-[calc(100vh-10rem)] overflow-y-auto border-r border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950">
+                  <aside className="hidden lg:block w-56 flex-shrink-0 sticky top-[8.5rem] h-[calc(100vh-8.5rem)] overflow-y-auto border-r border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950">
                     <CategorySidebar categories={categories} onSelect={handleCategorySelect} />
                   </aside>
                   <main className="flex-1 min-w-0 px-4 sm:px-6 py-5 pb-24 sm:pb-8">

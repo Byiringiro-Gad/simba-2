@@ -83,7 +83,7 @@ export default function CompareDrawer() {
 
             {/* Scrollable compare table */}
             <div className="flex-1 overflow-auto">
-              <div className="min-w-[600px]">
+              <div className="min-w-max sm:min-w-0">
                 {/* Product columns header */}
                 <div className="grid gap-0" style={{ gridTemplateColumns: `160px repeat(${compareList.length}, 1fr)` }}>
                   {/* Empty top-left cell */}

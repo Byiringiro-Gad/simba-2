@@ -152,7 +152,7 @@ export default function ProductGrid({ products }: ProductGridProps) {
       )}
 
       {/* ── Toolbar: Sort + Filter + View toggle ── */}
-      <div className="flex items-center gap-2 mb-4 sticky top-[7.5rem] z-20 bg-gray-50 dark:bg-gray-950 py-2 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-2 mb-4 sticky top-[6.5rem] sm:top-[8.5rem] z-20 bg-gray-50 dark:bg-gray-950 py-2 overflow-x-auto no-scrollbar">
         {/* Result count */}
         <p className="text-xs font-bold text-gray-400 flex-1 truncate">
           {filteredProducts.length} {filteredProducts.length === 1 ? t.item : t.items}

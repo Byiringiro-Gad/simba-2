@@ -100,7 +100,7 @@ export default function HeroSection({ onShopNow }: { onShopNow: () => void }) {
           </div>
 
           {/* Left content — text block */}
-          <div className="relative z-10 h-full flex flex-col justify-center px-4 sm:px-8 lg:px-16 max-w-screen-2xl mx-auto">
+          <div className="relative z-10 h-full flex flex-col justify-center px-4 sm:px-8 lg:px-16 max-w-screen-xl mx-auto">
             <div className="max-w-[55%] sm:max-w-[50%]">
               <p className="text-white/65 text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1 leading-none">
                 {slide.eyebrow[lang] ?? slide.eyebrow.en}
