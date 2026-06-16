@@ -315,9 +315,9 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
 
   const selectedBranch = getBranchById(pickupBranchId);
 
-  const handleApplyPromo = () => {
+  const handleApplyPromo = async () => {
     if (!promoInput.trim()) return;
-    const ok = applyPromo(promoInput.trim());
+    const ok = await applyPromo(promoInput.trim());
     if (ok) {
       toast.success(t.promoApplied);
       setPromoInput('');

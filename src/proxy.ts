@@ -11,9 +11,6 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  // Branch routes are protected client-side via localStorage token
-  // (middleware can't read localStorage — protection is in the page components)
-
   return NextResponse.next();
 }
 
