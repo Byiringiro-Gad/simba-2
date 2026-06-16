@@ -225,7 +225,7 @@ export default function Home() {
             {showProducts ? (
               /* ── PRODUCT / SEARCH VIEW ── */
               <motion.div key="products" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-                <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-14 sm:top-[5.5rem] z-30">
+                <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-14 sm:top-[7.5rem] z-30">
                   <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
                     <button onClick={() => goHome()} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl flex-shrink-0">
                       <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
@@ -401,6 +401,20 @@ export default function Home() {
               </div>
               <div className="flex-1 overflow-y-auto">
                 <CategorySidebar categories={categories} onSelect={handleCategorySelect} />
+              </div>
+              {/* Mobile-only quick links (utility bar is hidden on mobile) */}
+              <div className="flex-shrink-0 border-t border-gray-100 dark:border-gray-800 p-3 sm:hidden space-y-1">
+                {[
+                  { href: '/about',   label: language === 'fr' ? 'À propos' : language === 'rw' ? 'Ibyerekeye twe' : 'About Us' },
+                  { href: '/faq',     label: 'FAQ' },
+                  { href: '/contact', label: language === 'fr' ? 'Contact' : language === 'rw' ? 'Twandikire' : 'Contact' },
+                  { href: '/login',   label: language === 'fr' ? 'Se connecter' : language === 'rw' ? 'Injira' : 'Sign In' },
+                ].map(link => (
+                  <Link key={link.href} href={link.href} onClick={() => setSidebarOpen(false)}
+                    className="block px-4 py-2.5 rounded-xl text-sm font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    {link.label}
+                  </Link>
+                ))}
               </div>
             </motion.div>
           </>
