@@ -151,6 +151,7 @@ export const useSimbaStore = create<SimbaState>()(
       recentlyViewed: [],
       addresses: DEFAULT_ADDRESSES,
       selectedAddressId: null,
+      isAddressModalOpen: false,
       searchQuery: '',
       selectedCategory: null,
       language: 'en',
