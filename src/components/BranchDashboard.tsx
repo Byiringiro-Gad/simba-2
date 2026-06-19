@@ -129,8 +129,8 @@ export default function BranchDashboard({ token, staff }: BranchDashboardProps) 
   };
 
   const logout = () => {
-    localStorage.removeItem('branchToken');
-    localStorage.removeItem('branchStaff');
+    localStorage.removeItem('branch_token');
+    localStorage.removeItem('branch_staff');
     router.push('/branch/login');
   };
 

@@ -216,7 +216,7 @@ export default function UnifiedLoginPage() {
 
                   <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
                     {t('noAccount')}{' '}
-                    <Link href="/api/auth/register" className="font-black text-brand-dark dark:text-brand hover:underline">{t('register')}</Link>
+                    <Link href="/register" className="font-black text-brand-dark dark:text-brand hover:underline">{t('register')}</Link>
                   </p>
                 </form>
               </motion.div>

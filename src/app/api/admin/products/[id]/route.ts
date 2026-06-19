@@ -1,10 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPool } from '@/lib/db';
 import { getSimbaData } from '@/lib/data';
+import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
+async function verifyAdmin(req: NextRequest) {
+  const jar = await cookies();
+  if (jar.get('admin_session')?.value === 'authenticated') return true;
+  const headerToken = req.headers.get('x-admin-token') ?? '';
+  return headerToken === (process.env.ADMIN_PASSWORD ?? 'admin123');
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!await verifyAdmin(req)) {
+    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const { id: rawId } = await params;
     const id = Number(rawId);
@@ -39,7 +50,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!await verifyAdmin(req)) {
+    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const { id: rawId } = await params;
     const id = Number(rawId);

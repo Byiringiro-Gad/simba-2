@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPool } from '@/lib/db';
+import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
+async function verifyAdmin(req: NextRequest) {
+  const jar = await cookies();
+  if (jar.get('admin_session')?.value === 'authenticated') return true;
+  const headerToken = req.headers.get('x-admin-token') ?? '';
+  return headerToken === (process.env.ADMIN_PASSWORD ?? 'admin123');
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (!await verifyAdmin(req)) {
+    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  }
   const pool = getPool();
   const conn = await pool.getConnection();
 

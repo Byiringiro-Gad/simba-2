@@ -40,7 +40,7 @@ const CATEGORIES = [
   'Alcoholic Beverages & Spirits','Cleaning & Sanitary','Kitchen Storage','Pet Care',
 ];
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 /* â”€â”€â”€ Product Form Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function ProductModal({
@@ -367,6 +367,11 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') ?? '' : '';
+    if (!token) {
+      router.replace('/admin/login');
+      return;
+    }
     loadOrders();
     loadProducts();
     loadUsers();

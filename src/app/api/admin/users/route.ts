@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPool } from '@/lib/db';
+import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
+async function verifyAdmin(req: NextRequest) {
+  const jar = await cookies();
+  if (jar.get('admin_session')?.value === 'authenticated') return true;
+  const headerToken = req.headers.get('x-admin-token') ?? '';
+  return headerToken === (process.env.ADMIN_PASSWORD ?? 'admin123');
+}
+
 export async function GET(req: NextRequest) {
-  const token = req.headers.get('x-admin-token') ?? '';
-  if (token !== (process.env.ADMIN_PASSWORD ?? 'admin123')) {
+  if (!await verifyAdmin(req)) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
   try {
@@ -23,8 +30,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const token = req.headers.get('x-admin-token') ?? '';
-  if (token !== (process.env.ADMIN_PASSWORD ?? 'admin123')) {
+  if (!await verifyAdmin(req)) {
     return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
   }
   try {

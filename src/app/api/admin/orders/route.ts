@@ -1,7 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getPool } from '@/lib/db';
+import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
+
+async function verifyAdmin(req: NextRequest) {
+  // Accept either httpOnly cookie or x-admin-token header
+  const jar = await cookies();
+  if (jar.get('admin_session')?.value === 'authenticated') return true;
+  const headerToken = req.headers.get('x-admin-token') ?? '';
+  return headerToken === (process.env.ADMIN_PASSWORD ?? 'admin123');
+}
 
 const DEMO_ORDERS = [
   { id: 'DEMO-001', customer_name: 'Jean Pierre Habimana', customer_phone: '+250788123456', pickup_branch: 'Simba Supermarket Remera', pickup_slot: 'asap', payment_method: 'mtn', subtotal: 8500, delivery_fee: 0, discount: 0, deposit_amount: 500, total: 8500, promo_code: null, fulfillment_type: 'pickup', status: 'processing', branch_status: 'pending', assigned_to: null, assigned_name: null, date: new Date().toISOString(), items: [{ id: 1, name: 'Fresh Milk 1L', price: 1200, quantity: 2, unit: 'L', image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400', category: 'Groceries' }, { id: 2, name: 'White Bread', price: 800, quantity: 1, unit: 'Pcs', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400', category: 'Bakery' }, { id: 3, name: 'Cooking Oil 2L', price: 4500, quantity: 1, unit: 'L', image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400', category: 'Groceries' }] },
@@ -12,7 +21,10 @@ const DEMO_ORDERS = [
   { id: 'DEMO-006', customer_name: 'Claudine Ingabire', customer_phone: '+250788999000', pickup_branch: 'Simba Supermarket Nyamirambo', pickup_slot: 'morning', payment_method: 'airtel', subtotal: 9800, delivery_fee: 0, discount: 980, deposit_amount: 500, total: 8820, promo_code: 'WELCOME', fulfillment_type: 'pickup', status: 'cancelled', branch_status: 'pending', assigned_to: null, assigned_name: null, date: new Date(Date.now() - 7200000).toISOString(), items: [{ id: 15, name: 'Colgate Toothpaste', price: 2500, quantity: 2, unit: 'Pcs', image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400', category: 'Cosmetics & Personal Care' }, { id: 16, name: 'Shampoo 400ml', price: 4800, quantity: 1, unit: 'Pcs', image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400', category: 'Cosmetics & Personal Care' }] },
 ];
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  if (!await verifyAdmin(req)) {
+    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const pool = getPool();
     const conn = await pool.getConnection();
