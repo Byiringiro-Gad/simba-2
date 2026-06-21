@@ -190,6 +190,10 @@ export default function Footer() {
             <Link href="/about" className="text-[10px] text-gray-400 transition-colors hover:text-brand-dark dark:hover:text-brand">
               {language === 'fr' ? 'A propos' : language === 'rw' ? 'Ibyerekeye' : 'About'}
             </Link>
+            <span className="text-gray-300 dark:text-gray-700">·</span>
+            <Link href="/deals" className="text-[10px] text-gray-400 transition-colors hover:text-brand-dark dark:hover:text-brand font-black">
+              {language === 'fr' ? '🏷️ Offres' : language === 'rw' ? '🏷️ Ibiciro' : '🏷️ Deals'}
+            </Link>
           </div>
         </div>
       </div>

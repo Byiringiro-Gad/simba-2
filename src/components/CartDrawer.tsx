@@ -7,7 +7,7 @@ import { translations } from '@/lib/translations';
 import {
   X, Plus, Minus, Trash2, CheckCircle2, ChevronLeft, ChevronRight,
   MapPin, Clock, ShieldCheck, Package, Tag, Gift, Store, Smartphone, Star,
-  AlertCircle,
+  AlertCircle, RefreshCw,
 } from 'lucide-react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -264,6 +264,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
   const [orderId, setOrderId] = useState('');
   const [depositAmount, setDepositAmount] = useState(BASE_DEPOSIT);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [recurringOrder, setRecurringOrder] = useState<'none' | 'weekly' | 'biweekly' | 'monthly'>('none');
 
   // Generate pickup slots fresh every time the drawer opens
   const pickupSlots = useMemo(() => generatePickupSlots(), [isOpen]);
@@ -395,6 +396,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
           pickupBranch: selectedBranch?.name ?? '',
           pickupSlot: pickupTime as any,
           depositAmount,
+          recurring: recurringOrder,
         });
 
         setOrderId(id);
@@ -429,6 +431,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
     setOrderId('');
     setPromoInput('');
     setPickupTime(pickupSlots[0]?.value ?? '');
+    setRecurringOrder('none');
     onClose();
   };
 
@@ -871,6 +874,61 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                       <p className="text-[11px] text-gray-400 font-medium mt-2 text-center">
                         {getPaymentMethodNote(paymentMethod, language)}
                       </p>
+                    </div>
+
+                    {/* ── Recurring order toggle ── */}
+                    <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <RefreshCw className="w-4 h-4 text-brand flex-shrink-0" />
+                        <p className="text-xs font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                          {language === 'fr' ? 'Commande récurrente' : language === 'rw' ? 'Itumizwa roisubiwamo' : 'Recurring Order'}
+                        </p>
+                      </div>
+                      <p className="text-[11px] text-gray-400 mb-3 font-medium">
+                        {language === 'fr'
+                          ? 'Répétez automatiquement cette commande selon votre calendrier.'
+                          : language === 'rw'
+                          ? 'Ongera ubone ibyo utiguriye nk\'uko ubibonye.'
+                          : 'Automatically repeat this order on your chosen schedule.'}
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {([
+                          { id: 'none',      label: { en: 'One-time',  fr: 'Unique',          rw: 'Rimwe' } },
+                          { id: 'weekly',    label: { en: 'Weekly',    fr: 'Chaque semaine',   rw: 'Buri cyumweru' } },
+                          { id: 'biweekly',  label: { en: 'Bi-weekly', fr: 'Toutes 2 semaines',rw: 'Buri byumweru 2' } },
+                          { id: 'monthly',   label: { en: 'Monthly',   fr: 'Chaque mois',      rw: 'Buri kwezi' } },
+                        ] as const).map(opt => (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => setRecurringOrder(opt.id)}
+                            className={`py-2.5 px-3 rounded-xl text-xs font-black transition-all border-2 text-left ${
+                              recurringOrder === opt.id
+                                ? 'bg-brand-dark text-white border-brand-dark shadow-sm'
+                                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-brand/40'
+                            }`}
+                          >
+                            {recurringOrder === opt.id && opt.id !== 'none' && (
+                              <RefreshCw className="w-3 h-3 mb-1 inline-block mr-1" />
+                            )}
+                            {opt.label[language as 'en' | 'fr' | 'rw'] ?? opt.label.en}
+                          </button>
+                        ))}
+                      </div>
+                      {recurringOrder !== 'none' && (
+                        <motion.p
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-[10px] font-bold text-brand-dark dark:text-brand mt-2.5 flex items-center gap-1.5"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          {language === 'fr'
+                            ? `Prochaine commande : ${recurringOrder === 'weekly' ? 'dans 7 jours' : recurringOrder === 'biweekly' ? 'dans 14 jours' : 'dans 1 mois'}`
+                            : language === 'rw'
+                            ? `Itumizwa rikurikira : ${recurringOrder === 'weekly' ? 'mu minsi 7' : recurringOrder === 'biweekly' ? 'mu minsi 14' : 'mu kwezi 1'}`
+                            : `Next order: ${recurringOrder === 'weekly' ? 'in 7 days' : recurringOrder === 'biweekly' ? 'in 14 days' : 'in 1 month'}`}
+                        </motion.p>
+                      )}
                     </div>
                   </motion.div>
                 )}

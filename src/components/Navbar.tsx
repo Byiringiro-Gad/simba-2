@@ -361,6 +361,14 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                   <ShoppingBag className="w-3.5 h-3.5" />
                   {L('Shop', 'Boutique', 'Kugura')}
                 </button>
+
+                {/* Deals */}
+                <Link
+                  href="/deals"
+                  className="flex items-center gap-1.5 px-4 py-2.5 text-yellow-300 hover:text-white hover:bg-white/10 transition-colors text-xs font-black whitespace-nowrap"
+                >
+                  🏷️ {L('Deals', 'Offres', 'Ibiciro')}
+                </Link>
               </div>
             </div>
           </div>

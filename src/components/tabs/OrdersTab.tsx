@@ -6,7 +6,7 @@ import { translations } from '@/lib/translations';
 import {
   Package, Clock, CheckCircle2, XCircle, RefreshCw,
   MapPin, ChevronDown, ChevronUp, ShoppingBag, LogIn,
-  RotateCcw,
+  RotateCcw, CalendarClock,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
@@ -196,6 +196,14 @@ export default function OrdersTab() {
                       <span className={clsx('px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide', cfg.bg, cfg.color)}>
                         {cfg.label[lang]}
                       </span>
+                      {(order as any).recurring && (order as any).recurring !== 'none' && (
+                        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-brand/10 text-brand-dark dark:text-brand">
+                          <RefreshCw className="w-2.5 h-2.5" />
+                          {(order as any).recurring === 'weekly'   ? (lang === 'fr' ? 'Hebdo' : lang === 'rw' ? 'Buri cyumweru' : 'Weekly')
+                          : (order as any).recurring === 'biweekly' ? (lang === 'fr' ? '2 sem.' : lang === 'rw' ? 'Byumweru 2' : 'Bi-weekly')
+                          : (lang === 'fr' ? 'Mensuel' : lang === 'rw' ? 'Buri kwezi' : 'Monthly')}
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-gray-400 mt-0.5 truncate">
                       {orderDate} · {order.items.length} {order.items.length === 1 ? (lang === 'fr' ? 'article' : lang === 'rw' ? 'akagari' : 'item') : (lang === 'fr' ? 'articles' : lang === 'rw' ? 'ibintu' : 'items')}
@@ -310,6 +318,29 @@ export default function OrdersTab() {
                             </div>
                           )}
                         </div>
+
+                        {/* Next delivery — shown for recurring orders */}
+                        {(order as any).recurring && (order as any).recurring !== 'none' && (order as any).nextDelivery && (
+                          <div className="flex items-center gap-3 p-3 bg-brand/5 dark:bg-brand/10 rounded-xl border border-brand/15">
+                            <CalendarClock className="w-4 h-4 text-brand flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                {lang === 'fr' ? 'Prochaine commande' : lang === 'rw' ? 'Itumizwa rikurikira' : 'Next Delivery'}
+                              </p>
+                              <p className="text-xs font-bold text-gray-900 dark:text-white">
+                                {new Date((order as any).nextDelivery).toLocaleDateString(
+                                  lang === 'fr' ? 'fr-FR' : lang === 'rw' ? 'rw-RW' : 'en-US',
+                                  { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }
+                                )}
+                              </p>
+                            </div>
+                            <span className="text-[9px] font-black px-2 py-1 bg-brand/10 text-brand-dark dark:text-brand rounded-full flex-shrink-0">
+                              {(order as any).recurring === 'weekly'    ? (lang === 'fr' ? 'Chaque semaine'    : lang === 'rw' ? 'Buri cyumweru'  : 'Weekly')
+                              : (order as any).recurring === 'biweekly' ? (lang === 'fr' ? 'Toutes 2 semaines' : lang === 'rw' ? 'Byumweru 2'     : 'Bi-weekly')
+                              : (lang === 'fr' ? 'Chaque mois' : lang === 'rw' ? 'Buri kwezi' : 'Monthly')}
+                            </span>
+                          </div>
+                        )}
 
                         {/* Reorder button */}
                         <button

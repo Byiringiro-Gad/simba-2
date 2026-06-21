@@ -4,7 +4,7 @@ import { Product } from '@/types';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { useCompareStore } from '@/store/useCompareStore';
 import { translations } from '@/lib/translations';
-import { Plus, Minus, Heart, BarChart2 } from 'lucide-react';
+import { Plus, Minus, Heart, BarChart2, Bell, BellRing } from 'lucide-react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -33,6 +33,9 @@ export default function ProductCard({ product, index = 0, viewMode = 'grid' }: P
   const prevQty = useRef(quantity);
   const [floats, setFloats] = useState<number[]>([]);
   const [displayName, setDisplayName] = useState(product.name);
+  const [notifyEmail, setNotifyEmail] = useState('');
+  const [notifyOpen, setNotifyOpen] = useState(false);
+  const [notifyDone, setNotifyDone] = useState(false);
 
   useEffect(() => {
     if (language === 'en') { setDisplayName(product.name); return; }
@@ -74,6 +77,20 @@ export default function ProductCard({ product, index = 0, viewMode = 'grid' }: P
   const handleFav = (e: React.MouseEvent) => {
     e.preventDefault(); e.stopPropagation();
     toggleFavorite(product.id);
+  };
+  const handleNotify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!notifyEmail.includes('@')) return;
+    try {
+      await fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: product.id, email: notifyEmail }),
+      });
+    } catch { /* non-blocking */ }
+    setNotifyDone(true);
+    const msg = lang === 'fr' ? 'Vous serez notifié !' : lang === 'rw' ? 'Uzabimenyeshwa!' : 'You\'ll be notified!';
+    toast.success(msg);
   };
   const handleCompare = (e: React.MouseEvent) => {
     e.preventDefault(); e.stopPropagation();
@@ -265,10 +282,36 @@ export default function ProductCard({ product, index = 0, viewMode = 'grid' }: P
         )}
 
         {!isAvailable && (
-          <div className="absolute inset-0 bg-white/70 dark:bg-black/70 backdrop-blur-[2px] flex items-center justify-center">
+          <div className="absolute inset-0 bg-white/70 dark:bg-black/70 backdrop-blur-[2px] flex flex-col items-center justify-center gap-2">
             <span className="bg-gray-800 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
               {t.outOfStock}
             </span>
+            {notifyDone ? (
+              <span className="flex items-center gap-1 text-[9px] font-black text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                <BellRing className="w-3 h-3" />
+                {lang === 'fr' ? 'Notifié !' : lang === 'rw' ? 'Bizamenyeshwa!' : 'Notified!'}
+              </span>
+            ) : notifyOpen ? (
+              <form onSubmit={handleNotify} onClick={e => e.stopPropagation()} className="w-[90%] flex gap-1">
+                <input
+                  type="email"
+                  value={notifyEmail}
+                  onChange={e => setNotifyEmail(e.target.value)}
+                  placeholder="email@..."
+                  autoFocus
+                  className="flex-1 min-w-0 px-2 py-1.5 rounded-lg text-[10px] font-medium outline-none border border-gray-200 bg-white text-gray-900 placeholder:text-gray-400"
+                />
+                <button type="submit" className="px-2 py-1.5 bg-brand-dark text-white rounded-lg text-[9px] font-black">OK</button>
+              </form>
+            ) : (
+              <button
+                onClick={e => { e.preventDefault(); e.stopPropagation(); setNotifyOpen(true); }}
+                className="flex items-center gap-1 text-[9px] font-black text-white bg-brand-dark hover:bg-gray-800 px-2.5 py-1.5 rounded-full transition-colors"
+              >
+                <Bell className="w-3 h-3" />
+                {lang === 'fr' ? 'Notifie-moi' : lang === 'rw' ? 'Menyesha' : 'Notify Me'}
+              </button>
+            )}
           </div>
         )}
       </Link>

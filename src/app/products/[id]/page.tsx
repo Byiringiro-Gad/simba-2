@@ -11,7 +11,7 @@ import { translations } from '@/lib/translations';
 import {
   ChevronLeft, Plus, Minus, ShieldCheck,
   Star, Package, Heart, Clock, Send, CheckCircle2,
-  Share2, ChevronRight
+  Share2, ChevronRight, Bell, BellRing,
 } from 'lucide-react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -83,6 +83,27 @@ export default function ProductDetail() {
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'reviews'>('details');
+
+  // Notify Me state
+  const [notifyEmail, setNotifyEmail] = useState('');
+  const [notifyDone, setNotifyDone] = useState(false);
+  const [notifySubmitting, setNotifySubmitting] = useState(false);
+
+  const handleNotifyMe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!notifyEmail.includes('@') || !product) return;
+    setNotifySubmitting(true);
+    try {
+      await fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: product.id, email: notifyEmail }),
+      });
+    } catch { /* non-blocking */ }
+    setNotifyDone(true);
+    setNotifySubmitting(false);
+    toast.success(language === 'fr' ? 'Vous serez notifié quand disponible !' : language === 'rw' ? 'Uzabimenyeshwa igihe bizaboneka!' : 'You\'ll be notified when back in stock!');
+  };
 
   useEffect(() => {
     if (product) {
@@ -257,6 +278,45 @@ export default function ProductDetail() {
                 </div>
               )}
             </div>
+
+            {/* Notify Me — shown only when out of stock */}
+            {!product.inStock && (
+              <div className="mb-5 p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-2 mb-3">
+                  <Bell className="w-4 h-4 text-brand flex-shrink-0" />
+                  <p className="font-black text-sm text-gray-900 dark:text-white">
+                    {language === 'fr' ? 'Notifiez-moi quand disponible' : language === 'rw' ? 'Menyesha niboneka' : 'Notify me when back in stock'}
+                  </p>
+                </div>
+                {notifyDone ? (
+                  <div className="flex items-center gap-2 px-4 py-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                    <BellRing className="w-4 h-4 text-green-600 flex-shrink-0" />
+                    <p className="text-sm font-bold text-green-700 dark:text-green-400">
+                      {language === 'fr' ? 'Vous serez notifié !' : language === 'rw' ? 'Uzabimenyeshwa!' : 'You\'re on the waitlist!'}
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleNotifyMe} className="flex gap-2">
+                    <input
+                      type="email"
+                      value={notifyEmail}
+                      onChange={e => setNotifyEmail(e.target.value)}
+                      placeholder={language === 'fr' ? 'Votre email' : language === 'rw' ? 'Imeyili yawe' : 'Your email address'}
+                      required
+                      className="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-medium outline-none focus:border-brand transition-colors text-gray-900 dark:text-white placeholder:text-gray-400 placeholder:font-normal"
+                    />
+                    <button type="submit" disabled={notifySubmitting}
+                      className="px-4 py-2.5 bg-brand-dark text-white rounded-xl text-sm font-black hover:bg-gray-800 transition-colors disabled:opacity-50 flex items-center gap-1.5">
+                      <Bell className="w-3.5 h-3.5" />
+                      {notifySubmitting ? '...' : (language === 'fr' ? 'Alerter' : language === 'rw' ? 'Ohereza' : 'Alert Me')}
+                    </button>
+                  </form>
+                )}
+                <p className="text-[10px] text-gray-400 mt-2 font-medium">
+                  {language === 'fr' ? 'Nous vous enverrons un email dès que le produit sera disponible.' : language === 'rw' ? 'Tuzakwoherereza imeyili igihe ibicuruzwa bizaboneka.' : 'We\'ll email you as soon as this item is restocked.'}
+                </p>
+              </div>
+            )}
 
             {/* Trust badges */}
             <div className="grid grid-cols-2 gap-3 py-4 border-t border-gray-100 dark:border-gray-800">

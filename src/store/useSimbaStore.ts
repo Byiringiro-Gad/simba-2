@@ -18,6 +18,9 @@ interface Order {
   pickupBranch?: string;
   pickupSlot?: PickupSlotId;
   depositAmount?: number;
+  // Recurring order fields
+  recurring?: 'none' | 'weekly' | 'biweekly' | 'monthly';
+  nextDelivery?: string; // ISO date string
 }
 
 export interface User {
@@ -116,7 +119,7 @@ interface SimbaState {
   setShopNowOpen: (open: boolean) => void;
 
   // Actions — Orders
-  placeOrder: (orderData: { id: string, items: CartItem[], total: number, pickupBranch: string, pickupSlot: PickupSlotId, depositAmount: number }) => void;
+  placeOrder: (orderData: { id: string, items: CartItem[], total: number, pickupBranch: string, pickupSlot: PickupSlotId, depositAmount: number, recurring?: 'none' | 'weekly' | 'biweekly' | 'monthly' }) => void;
   fetchOrders: (userId: string) => Promise<void>;
 
   // Actions — Inventory
@@ -265,17 +268,27 @@ export const useSimbaStore = create<SimbaState>()(
 
       // Orders
       placeOrder: (orderData) => {
+        const now = new Date();
+        let nextDelivery: string | undefined;
+        if (orderData.recurring && orderData.recurring !== 'none') {
+          const next = new Date(now);
+          if (orderData.recurring === 'weekly')    next.setDate(next.getDate() + 7);
+          if (orderData.recurring === 'biweekly')  next.setDate(next.getDate() + 14);
+          if (orderData.recurring === 'monthly')   next.setMonth(next.getMonth() + 1);
+          nextDelivery = next.toISOString();
+        }
         const order: Order = {
           id: orderData.id,
-          date: new Date().toISOString(),
+          date: now.toISOString(),
           items: orderData.items,
           total: orderData.total,
           status: 'processing',
           pickupBranch: orderData.pickupBranch,
           pickupSlot: orderData.pickupSlot,
           depositAmount: orderData.depositAmount,
+          recurring: orderData.recurring ?? 'none',
+          nextDelivery,
         };
-
         set((s) => ({ orders: [order, ...s.orders] }));
       },
 
