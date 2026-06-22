@@ -7,7 +7,7 @@ import { translations } from '@/lib/translations';
 import {
   X, Plus, Minus, Trash2, CheckCircle2, ChevronLeft, ChevronRight,
   MapPin, Clock, ShieldCheck, Package, Tag, Gift, Store, Smartphone, Star,
-  AlertCircle, RefreshCw,
+  AlertCircle, RefreshCw, Bookmark, Printer,
 } from 'lucide-react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -24,6 +24,14 @@ import {
 } from '@/lib/paymentMethods';
 
 const BASE_DEPOSIT = PICKUP_DEPOSIT_RWF; // 500 RWF
+
+const ORDER_MINIMUM = 1000;
+
+function isValidRwandaPhone(raw: string): boolean {
+  const digits = raw.replace(/\D/g, '');
+  // Accept 07XXXXXXXX, 7XXXXXXXX, +2507XXXXXXXX, 2507XXXXXXXX
+  return /^(?:250)?7[2389]\d{7}$/.test(digits);
+}
 
 // ── Generate pickup time slots in Kigali time ─────────────────────────────────
 function generatePickupSlots(): { value: string; label: string }[] {
@@ -241,6 +249,14 @@ function SuccessStep({
       >
         {t.backToStore}
       </button>
+
+      <button
+        onClick={() => window.print()}
+        className="w-full mt-2 py-3 border-2 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl font-black text-sm hover:border-brand hover:text-brand-dark dark:hover:text-brand transition-colors flex items-center justify-center gap-2"
+      >
+        <Printer className="w-4 h-4" />
+        {language === 'fr' ? 'Imprimer le reçu' : language === 'rw' ? 'Fotokorera urupapuro' : 'Print Receipt'}
+      </button>
     </motion.div>
   );
 }
@@ -252,6 +268,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
     language, user, pickupBranchId, setPickupBranchModalOpen,
     appliedPromo, promoDiscount, applyPromo, removePromo,
     placeOrder, setAuthOpen,
+    savedItems, saveForLater, moveToCart, removeSavedItem,
   } = useSimbaStore();
 
   const t = translations[language];
@@ -265,6 +282,8 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
   const [depositAmount, setDepositAmount] = useState(BASE_DEPOSIT);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [recurringOrder, setRecurringOrder] = useState<'none' | 'weekly' | 'biweekly' | 'monthly'>('none');
+  const [deliveryNotes, setDeliveryNotes] = useState('');
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   // Generate pickup slots fresh every time the drawer opens
   const pickupSlots = useMemo(() => generatePickupSlots(), [isOpen]);
@@ -355,11 +374,11 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
 
     // Step 3: payment → place order
     if (step === 'payment') {
-      if (contactPhone.length < 8) {
+      if (paymentMethod !== 'cod' && !isValidRwandaPhone(contactPhone)) {
         toast.error(
-          language === 'fr' ? 'Entrez un numéro valide (+250...)' :
-          language === 'rw' ? 'Injiza nimero y\'imodoka yuzuye' :
-          'Please enter a valid phone number'
+          language === 'fr' ? 'Entrez un numéro rwandais valide (ex. 078 XXX XXX)' :
+          language === 'rw' ? 'Injiza nimero y\'u Rwanda yemewe (urugero: 078 XXX XXX)' :
+          'Enter a valid Rwandan number (e.g. 078 XXX XXX)'
         );
         return;
       }
@@ -434,13 +453,15 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
     setPromoInput('');
     setPickupTime(pickupSlots[0]?.value ?? '');
     setRecurringOrder('none');
+    setDeliveryNotes('');
+    setShowClearConfirm(false);
     onClose();
   };
 
   const canProceed = () => {
-    if (step === 'cart') return cart.length > 0;
+    if (step === 'cart') return cart.length > 0 && subtotal >= ORDER_MINIMUM;
     if (step === 'details') return fullName.trim().length > 0 && !!selectedBranch && !!pickupTime;
-    if (step === 'payment') return contactPhone.length >= 8;
+    if (step === 'payment') return paymentMethod === 'cod' || isValidRwandaPhone(contactPhone);
     return false;
   };
 
@@ -501,7 +522,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
               <div className="flex items-center gap-2">
                 {step === 'cart' && cart.length > 0 && (
                   <button
-                    onClick={() => { clearCart(); toast.info(t.cartCleared); }}
+                    onClick={() => setShowClearConfirm(true)}
                     className="p-2 hover:bg-white/10 rounded-xl transition-colors"
                     title="Clear cart"
                   >
@@ -513,6 +534,32 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                 </button>
               </div>
             </div>
+
+            {/* Clear cart confirmation bar */}
+            <AnimatePresence>
+              {showClearConfirm && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 flex items-center justify-between px-5 py-3 flex-shrink-0 overflow-hidden"
+                >
+                  <p className="text-sm font-bold text-red-700 dark:text-red-400">
+                    {language === 'fr' ? 'Supprimer tous les articles ?' : language === 'rw' ? 'Gukura ibintu byose?' : 'Remove all items?'}
+                  </p>
+                  <div className="flex gap-2">
+                    <button onClick={() => setShowClearConfirm(false)}
+                      className="px-3 py-1.5 text-xs font-black text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 transition-colors">
+                      {language === 'fr' ? 'Annuler' : language === 'rw' ? 'Reka' : 'Cancel'}
+                    </button>
+                    <button onClick={() => { clearCart(); toast.info(t.cartCleared); setShowClearConfirm(false); }}
+                      className="px-3 py-1.5 text-xs font-black text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors">
+                      {language === 'fr' ? 'Vider' : language === 'rw' ? 'Siba' : 'Clear'}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Step progress indicator */}
             {CHECKOUT_STEPS.includes(step as CheckoutStep) && (
@@ -564,7 +611,10 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                           <Package className="w-10 h-10 text-brand/30" />
                         </div>
                         <p className="font-black text-gray-900 dark:text-white mb-1">{t.emptyCart}</p>
-                        <p className="text-sm text-gray-400">{t.emptyCartSub}</p>
+                        <p className="text-sm text-gray-400 mb-4">{t.emptyCartSub}</p>
+                        <button onClick={onClose} className="px-6 py-3 bg-brand-dark text-white rounded-2xl font-black text-sm hover:bg-gray-800 transition-colors">
+                          {t.shopNow}
+                        </button>
                       </div>
                     ) : (
                       <>
@@ -605,6 +655,14 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                                       {(item.price * item.quantity).toLocaleString()} RWF
                                     </span>
                                     <button
+                                      onClick={() => saveForLater(item.id)}
+                                      className="flex items-center gap-1 text-[10px] font-black text-gray-400 hover:text-brand transition-colors"
+                                      aria-label="Save for later"
+                                    >
+                                      <Bookmark className="w-3 h-3" />
+                                      {language === 'fr' ? 'Garder' : language === 'rw' ? 'Bika' : 'Save'}
+                                    </button>
+                                    <button
                                       onClick={() => removeFromCart(item.id)}
                                       className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                       aria-label="Remove item"
@@ -636,6 +694,20 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                               </div>
                               <ChevronRight className="w-4 h-4 text-white/60 flex-shrink-0" />
                             </button>
+                          )}
+
+                          {/* Order minimum warning */}
+                          {cart.length > 0 && subtotal < ORDER_MINIMUM && (
+                            <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
+                              <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                              <p className="text-xs font-bold text-amber-700 dark:text-amber-400">
+                                {language === 'fr'
+                                  ? `Minimum 1 000 RWF. Ajoutez encore ${(ORDER_MINIMUM - subtotal).toLocaleString()} RWF.`
+                                  : language === 'rw'
+                                  ? `Imeze nkeya ni RWF 1 000. Ongeraho RWF ${(ORDER_MINIMUM - subtotal).toLocaleString()} kugira ngo ukomeze.`
+                                  : `Minimum order is 1,000 RWF. Add ${(ORDER_MINIMUM - subtotal).toLocaleString()} RWF more to continue.`}
+                              </p>
+                            </div>
                           )}
 
                           {/* Savings tracker */}
@@ -679,6 +751,36 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                             <p className="text-[10px] text-gray-400 mt-2 font-medium">{t.promoTryHint}</p>
                           </div>
                         </div>
+
+                        {/* Saved for later */}
+                        {savedItems.length > 0 && (
+                          <div className="px-4 pb-2">
+                            <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">
+                              {language === 'fr' ? `Sauvegardés (${savedItems.length})` : language === 'rw' ? `Bibitswe (${savedItems.length})` : `Saved for Later (${savedItems.length})`}
+                            </p>
+                            <div className="space-y-2">
+                              {savedItems.map(item => (
+                                <div key={item.id} className="flex gap-3 p-3 bg-gray-50/60 dark:bg-gray-900/60 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
+                                  <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+                                    <Image src={item.image} alt={item.name} fill className="object-cover opacity-80" sizes="48px" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-bold text-xs text-gray-700 dark:text-gray-300 line-clamp-1">{item.name}</p>
+                                    <p className="text-xs font-black text-gray-500">{item.price.toLocaleString()} RWF</p>
+                                    <div className="flex items-center gap-3 mt-1">
+                                      <button onClick={() => moveToCart(item.id)} className="text-[10px] font-black text-brand-dark dark:text-brand hover:underline">
+                                        {language === 'fr' ? '+ Remettre au panier' : language === 'rw' ? '+ Subiza mu gitebo' : '+ Move to Cart'}
+                                      </button>
+                                      <button onClick={() => removeSavedItem(item.id)} className="text-[10px] text-gray-400 hover:text-red-500 transition-colors">
+                                        {language === 'fr' ? 'Retirer' : language === 'rw' ? 'Siba' : 'Remove'}
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
                         {/* Complete your basket */}
                         <CartSuggestions />
@@ -769,6 +871,21 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                       />
                     </div>
 
+                    {/* Delivery notes */}
+                    <div>
+                      <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
+                        {language === 'fr' ? 'Notes de livraison (facultatif)' : language === 'rw' ? 'Amabwiriza (ntabigomba)' : 'Delivery Notes (optional)'}
+                      </label>
+                      <textarea
+                        value={deliveryNotes}
+                        onChange={e => setDeliveryNotes(e.target.value.slice(0, 300))}
+                        placeholder={language === 'fr' ? 'Ex: Articles fragiles, emballage spécial...' : language === 'rw' ? 'Urugero: Ibintu byoroheje, ...' : 'e.g. Fragile items, special packaging...'}
+                        rows={2}
+                        className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-brand outline-none transition-all text-sm text-gray-900 dark:text-white placeholder:text-gray-400 resize-none"
+                      />
+                      <p className="text-[10px] text-gray-400 text-right mt-1">{deliveryNotes.length}/300</p>
+                    </div>
+
                     {/* Trust badges */}
                     <div className="grid grid-cols-2 gap-2">
                       <div className="flex items-start gap-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl">
@@ -816,12 +933,13 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                       <div className="space-y-3">
 
                         {/* MTN MoMo */}
-                        {(['mtn', 'airtel', 'card'] as const).map(option => {
+                        {(['mtn', 'airtel', 'card', 'cod'] as const).map(option => {
                           const isActive = paymentMethod === option;
                           const cfg = {
                             mtn:    { bg: '#FFCC00', text: '#111', border: '#FFCC00', label: 'MTN',    name: 'MTN MoMo',      sub: 'Mobile Money Rwanda' },
                             airtel: { bg: '#E31837', text: '#fff', border: '#E31837', label: 'AIRTEL', name: 'Airtel Money',   sub: 'Airtel Rwanda' },
                             card:   { bg: '#1e293b', text: '#fff', border: '#1e293b', label: 'CARD',   name: language === 'fr' ? 'Carte' : language === 'rw' ? 'Ikarita' : 'Card', sub: 'Visa / Mastercard' },
+                            cod:    { bg: '#16a34a', text: '#fff', border: '#16a34a', label: 'CASH',   name: language === 'fr' ? 'Paiement à la livraison' : language === 'rw' ? 'Kwishura ugiye gufata' : 'Cash on Delivery', sub: language === 'fr' ? 'Payer au retrait' : language === 'rw' ? 'Wishura igihe ugiye gufata' : 'Pay balance at pickup' },
                           }[option];
 
                           return (
@@ -843,7 +961,6 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                               }`}
                             >
                               <span className="flex items-center gap-3">
-                                {/* Brand badge — always colored */}
                                 <span
                                   style={{ backgroundColor: cfg.bg, color: cfg.text }}
                                   className="w-11 h-11 rounded-xl flex items-center justify-center text-[10px] font-black shadow flex-shrink-0"
@@ -857,7 +974,6 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                                   </p>
                                 </span>
                               </span>
-                              {/* Radio dot */}
                               <span
                                 style={isActive ? { borderColor: cfg.text, backgroundColor: cfg.text } : {}}
                                 className={`w-5 h-5 rounded-full border-2 flex-shrink-0 transition-all ${
@@ -870,7 +986,8 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                       </div>
                     </div>
 
-                    {/* Phone number */}
+                    {/* Phone number — hidden for CoD */}
+                    {paymentMethod !== 'cod' && (
                     <div>
                       <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">{t.phoneNumber} *</label>
                       <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus-within:border-brand transition-all">
@@ -888,14 +1005,23 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                           }
                           className="flex-1 bg-transparent outline-none font-black text-xl tracking-widest text-gray-900 dark:text-white placeholder:text-gray-300 dark:placeholder:text-gray-600 placeholder:font-normal placeholder:text-sm placeholder:tracking-normal"
                         />
-                        {contactPhone.length >= 9 && (
+                        {contactPhone.length >= 9 && isValidRwandaPhone(contactPhone) && (
                           <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
                         )}
+                        {contactPhone.length >= 9 && !isValidRwandaPhone(contactPhone) && (
+                          <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                        )}
                       </div>
+                      {contactPhone.length >= 9 && !isValidRwandaPhone(contactPhone) && (
+                        <p className="text-[11px] text-red-500 font-bold mt-1">
+                          {language === 'fr' ? 'Numéro invalide. Ex: 078 XXX XXX' : language === 'rw' ? 'Nimero si ya Rwanda. Urugero: 078 XXX XXX' : 'Invalid number. e.g. 078 XXX XXX'}
+                        </p>
+                      )}
                       <p className="text-[11px] text-gray-400 font-medium mt-2 text-center">
                         {getPaymentMethodNote(paymentMethod, language)}
                       </p>
                     </div>
+                    )}
 
                     {/* ── Recurring order toggle ── */}
                     <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4">

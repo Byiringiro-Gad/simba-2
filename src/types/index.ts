@@ -27,7 +27,7 @@ export interface SimbaData {
 
 export type Language = 'en' | 'fr' | 'rw';
 
-export type PaymentMethod = 'mtn' | 'airtel' | 'card';
+export type PaymentMethod = 'mtn' | 'airtel' | 'card' | 'cod';
 
 export interface CartItem extends Product {
   quantity: number;

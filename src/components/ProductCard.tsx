@@ -4,7 +4,7 @@ import { Product } from '@/types';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { useCompareStore } from '@/store/useCompareStore';
 import { translations } from '@/lib/translations';
-import { Plus, Minus, Heart, BarChart2, Bell, BellRing } from 'lucide-react';
+import { Plus, Minus, Heart, BarChart2, Bell, BellRing, X, Share2 } from 'lucide-react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -36,6 +36,7 @@ export default function ProductCard({ product, index = 0, viewMode = 'grid' }: P
   const [notifyEmail, setNotifyEmail] = useState('');
   const [notifyOpen, setNotifyOpen] = useState(false);
   const [notifyDone, setNotifyDone] = useState(false);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
 
   useEffect(() => {
     if (language === 'en') { setDisplayName(product.name); return; }
@@ -106,6 +107,24 @@ export default function ProductCard({ product, index = 0, viewMode = 'grid' }: P
     }
   };
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    const url = `${window.location.origin}/products/${product.id}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: product.name, url }); } catch {}
+    } else {
+      await navigator.clipboard.writeText(url);
+      toast.success(lang === 'fr' ? 'Lien copié !' : lang === 'rw' ? 'Uhuza wanakopiye!' : 'Link copied!');
+    }
+  };
+
+  useEffect(() => {
+    if (!quickViewOpen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setQuickViewOpen(false); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [quickViewOpen]);
+
   // ── LIST MODE ──────────────────────────────────────────────────────────────
   if (viewMode === 'list') {
     return (
@@ -173,6 +192,13 @@ export default function ProductCard({ product, index = 0, viewMode = 'grid' }: P
             <button onClick={handleFav}
               className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
               <Heart className={clsx('w-3.5 h-3.5 transition-all', isFav ? 'fill-red-500 text-red-500' : 'text-gray-400')} />
+            </button>
+
+            {/* Share */}
+            <button onClick={handleShare}
+              className="w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center hover:bg-brand/10 hover:text-brand transition-colors text-gray-400"
+              aria-label="Share product">
+              <Share2 className="w-3.5 h-3.5" />
             </button>
 
             {/* Cart */}
@@ -252,7 +278,7 @@ export default function ProductCard({ product, index = 0, viewMode = 'grid' }: P
         />
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none" />
 
-        {/* Fav + Compare overlay buttons */}
+        {/* Fav + Compare + Share overlay buttons */}
         <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
           <motion.button whileTap={{ scale: 1.4 }} onClick={handleFav}
             className="w-7 h-7 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm"
@@ -270,7 +296,21 @@ export default function ProductCard({ product, index = 0, viewMode = 'grid' }: P
             aria-label={inCompare ? 'Remove from compare' : 'Add to compare'}>
             <BarChart2 className="w-3.5 h-3.5" />
           </motion.button>
+
+          <motion.button whileTap={{ scale: 1.2 }} onClick={handleShare}
+            className="w-7 h-7 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm text-gray-400 hover:text-brand transition-colors"
+            aria-label="Share product">
+            <Share2 className="w-3.5 h-3.5" />
+          </motion.button>
         </div>
+
+        {/* Quick View button */}
+        <button
+          onClick={e => { e.preventDefault(); e.stopPropagation(); setQuickViewOpen(true); }}
+          className="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-white/95 dark:bg-gray-900/95 text-gray-900 dark:text-white rounded-xl text-[10px] font-black shadow-md opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all whitespace-nowrap backdrop-blur-sm border border-gray-100 dark:border-gray-700 z-10"
+        >
+          👁 {lang === 'fr' ? 'Aperçu rapide' : lang === 'rw' ? 'Reba vuba' : 'Quick View'}
+        </button>
 
         {stockLeft !== null && isAvailable && (
           <motion.div
@@ -383,6 +423,61 @@ export default function ProductCard({ product, index = 0, viewMode = 'grid' }: P
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Quick View Modal */}
+      <AnimatePresence>
+        {quickViewOpen && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"
+              onClick={() => setQuickViewOpen(false)} />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              role="dialog" aria-modal="true" aria-label={product.name}
+              className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-[201] max-w-sm mx-auto bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto"
+            >
+              <button onClick={() => setQuickViewOpen(false)}
+                className="absolute top-3 right-3 z-10 w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+              <div className="relative aspect-square bg-gray-50">
+                <Image src={product.image} alt={product.name} fill className="object-cover" sizes="480px" />
+              </div>
+              <div className="p-5">
+                <p className="text-xs font-black text-brand uppercase tracking-widest mb-1">{product.category}</p>
+                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-1">{displayName}</h3>
+                <p className="text-xs text-gray-400 mb-3">per {product.unit || 'unit'}</p>
+                {count > 0 && (
+                  <div className="flex items-center gap-1 mb-3">
+                    {[1,2,3,4,5].map(i => <span key={i} className={`text-sm ${i <= Math.round(avg) ? 'text-amber-500' : 'text-gray-200'}`}>★</span>)}
+                    <span className="text-xs text-gray-400 ml-1">({count})</span>
+                  </div>
+                )}
+                <p className="text-2xl font-black text-gray-900 dark:text-white mb-4">{product.price.toLocaleString()} <span className="text-sm text-gray-400">RWF</span></p>
+                {!isAvailable ? (
+                  <div className="mb-4">
+                    <span className="inline-block px-3 py-1 bg-red-100 text-red-600 rounded-full text-xs font-black mb-2">{t.outOfStock}</span>
+                  </div>
+                ) : null}
+                {quantity === 0 ? (
+                  <button onClick={handleAdd} disabled={!isAvailable}
+                    className="w-full py-3.5 bg-brand-dark text-white rounded-2xl font-black text-sm hover:bg-brand transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    {lang === 'fr' ? 'Ajouter au panier' : lang === 'rw' ? 'Ongeraho mu gitebo' : 'Add to Cart'}
+                  </button>
+                ) : (
+                  <div className="flex items-center justify-between bg-brand-dark rounded-2xl overflow-hidden px-1">
+                    <button onClick={handleDec} className="w-12 h-12 text-white hover:bg-black/10 flex items-center justify-center"><Minus className="w-4 h-4 stroke-[3px]" /></button>
+                    <span className="text-white font-black text-lg">{quantity}</span>
+                    <button onClick={handleInc} className="w-12 h-12 text-white hover:bg-black/10 flex items-center justify-center"><Plus className="w-4 h-4 stroke-[3px]" /></button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

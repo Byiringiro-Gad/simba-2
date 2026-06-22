@@ -46,6 +46,9 @@ interface SimbaState {
   pickupBranchId: string;
   isPickupBranchModalOpen: boolean;
 
+  // Saved for Later
+  savedItems: CartItem[];
+
   // Favorites
   favorites: number[];
 
@@ -95,6 +98,11 @@ interface SimbaState {
   setPickupSlot: (slot: PickupSlotId) => void;
   setPickupBranch: (branchId: string) => void;
   setPickupBranchModalOpen: (open: boolean) => void;
+
+  // Actions — Saved for Later
+  saveForLater: (productId: number) => void;
+  moveToCart: (productId: number) => void;
+  removeSavedItem: (productId: number) => void;
 
   // Actions — Favorites
   toggleFavorite: (productId: number) => void;
@@ -150,6 +158,7 @@ export const useSimbaStore = create<SimbaState>()(
       pickupSlot: 'asap',
       pickupBranchId: SIMBA_BRANCHES[0].id,
       isPickupBranchModalOpen: false,
+      savedItems: [],
       favorites: [],
       recentlyViewed: [],
       addresses: DEFAULT_ADDRESSES,
@@ -226,6 +235,31 @@ export const useSimbaStore = create<SimbaState>()(
           .catch(() => {});
       },
       setPickupBranchModalOpen: (isPickupBranchModalOpen) => set({ isPickupBranchModalOpen }),
+
+      // Saved for Later
+      saveForLater: (productId) => set((s) => {
+        const item = s.cart.find(i => i.id === productId);
+        if (!item) return s;
+        const alreadySaved = s.savedItems.find(i => i.id === productId);
+        return {
+          cart: s.cart.filter(i => i.id !== productId),
+          savedItems: alreadySaved ? s.savedItems : [...s.savedItems, { ...item, quantity: item.quantity }],
+        };
+      }),
+      moveToCart: (productId) => set((s) => {
+        const item = s.savedItems.find(i => i.id === productId);
+        if (!item) return s;
+        const inCart = s.cart.find(i => i.id === productId);
+        return {
+          savedItems: s.savedItems.filter(i => i.id !== productId),
+          cart: inCart
+            ? s.cart.map(i => i.id === productId ? { ...i, quantity: i.quantity + 1 } : i)
+            : [...s.cart, { ...item, quantity: 1 }],
+        };
+      }),
+      removeSavedItem: (productId) => set((s) => ({
+        savedItems: s.savedItems.filter(i => i.id !== productId),
+      })),
 
       // Favorites
       toggleFavorite: (id) => set((s) => ({

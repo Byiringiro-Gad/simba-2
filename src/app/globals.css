@@ -133,3 +133,25 @@
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
+/* ── Print styles for receipt ───────────────────────────────────────────── */
+@media print {
+  body > * {
+    display: none !important;
+  }
+  .receipt-print-area {
+    display: block !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 24px;
+    font-family: system-ui, sans-serif;
+    color: #000;
+    background: #fff;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

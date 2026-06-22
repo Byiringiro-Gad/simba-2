@@ -9,16 +9,23 @@ import Navbar from '@/components/Navbar';
 import PickupBranchModal from '@/components/PickupBranchModal';
 import { getBranchById, PICKUP_SLOTS, PICKUP_DEPOSIT_RWF } from '@/lib/branches';
 import { toast } from '@/components/Toast';
-import { ShoppingCart, ArrowLeft, MapPin, Clock, CheckCircle2, Package, Minus, Plus, Trash2, ChevronRight, ShieldCheck, Store } from 'lucide-react';
+import { ArrowLeft, MapPin, Clock, CheckCircle2, Package, Minus, Plus, Trash2, ChevronRight, ShieldCheck, Store, AlertCircle, Printer } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
 import type { PaymentMethod } from '@/types';
-import { PAYMENT_METHODS, PAYMENT_METHOD_THEMES, getPaymentMethodLabel, getPaymentMethodNote, getPaymentMethodSubLabel } from '@/lib/paymentMethods';
+import { getPaymentMethodLabel, getPaymentMethodNote, getPaymentMethodSubLabel } from '@/lib/paymentMethods';
+
+const ORDER_MINIMUM = 1000;
+
+function isValidRwandaPhone(raw: string): boolean {
+  const digits = raw.replace(/\D/g, '');
+  return /^(?:250)?7[2389]\d{7}$/.test(digits);
+}
 
 type Step = 'cart' | 'details' | 'payment' | 'success';
 
 export default function CheckoutPage() {
-  const { cart, updateQuantity, removeFromCart, clearCart, language, user, pickupBranchId, setPickupBranchModalOpen, pickupSlot, setPickupSlot, appliedPromo, promoDiscount, placeOrder, setAuthOpen, addToCart, setPickupBranch } = useSimbaStore();
+  const { cart, updateQuantity, removeFromCart, clearCart, language, user, pickupBranchId, setPickupBranchModalOpen, pickupSlot, setPickupSlot, appliedPromo, promoDiscount, placeOrder, setAuthOpen } = useSimbaStore();
   const t = translations[language];
   const isFr = language === 'fr';
   const isRw = language === 'rw';
@@ -29,6 +36,8 @@ export default function CheckoutPage() {
   const [orderId, setOrderId] = useState('');
   const [placing, setPlacing] = useState(false);
   const [depositAmount] = useState(PICKUP_DEPOSIT_RWF);
+  const [deliveryNotes, setDeliveryNotes] = useState('');
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const selectedBranch = getBranchById(pickupBranchId);
   const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
   const discountAmount = Math.floor(subtotal * (promoDiscount / 100));
@@ -41,14 +50,17 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async () => {
     if (!user) { setAuthOpen(true); return; }
     if (!fullName.trim() || !selectedBranch) { toast.error(t.selectBranch); return; }
-    if (contactPhone.length < 8) { toast.error(t.phoneNumber); return; }
+    if (paymentMethod !== 'cod' && !isValidRwandaPhone(contactPhone)) {
+      toast.error(isFr ? 'Entrez un numéro rwandais valide (ex. 078 XXX XXX)' : isRw ? 'Injiza nimero y\'u Rwanda yemewe' : 'Enter a valid Rwandan number (e.g. 078 XXX XXX)');
+      return;
+    }
     setPlacing(true);
     const id = 'SIMB-' + Math.floor(Math.random() * 90000 + 10000);
+    const effDeposit = paymentMethod === 'cod' ? 0 : depositAmount;
     try {
       const { ordersApi } = await import('@/lib/api');
-      const result = await ordersApi.place({ id, userId: user?.id, customerName: fullName.trim(), customerPhone: `+250${contactPhone}`, pickupBranch: selectedBranch?.name ?? '', pickupSlot, paymentMethod, depositAmount, items: cart, subtotal, deliveryFee: 0, discount: discountAmount, total: orderTotal, promoCode: appliedPromo ?? null });
-      if (!result.ok) throw new Error(result.error ?? 'Failed');
-      placeOrder({ id, items: cart, total: orderTotal, pickupBranch: selectedBranch?.name ?? '', pickupSlot, depositAmount });
+      await ordersApi.place({ id, userId: user?.id, customerName: fullName.trim(), customerPhone: paymentMethod === 'cod' ? '' : `+250${contactPhone}`, pickupBranch: selectedBranch?.name ?? '', pickupSlot, paymentMethod, depositAmount: effDeposit, items: cart, subtotal, deliveryFee: 0, discount: discountAmount, total: orderTotal, promoCode: appliedPromo ?? null });
+      placeOrder({ id, items: cart, total: orderTotal, pickupBranch: selectedBranch?.name ?? '', pickupSlot, depositAmount: effDeposit });
       setOrderId(id); setStep('success');
     } catch { toast.error('Could not place order. Please try again.'); }
     setPlacing(false);
@@ -96,6 +108,13 @@ export default function CheckoutPage() {
         <Link href="/" className="block w-full py-4 bg-brand text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-brand-dark transition-colors active:scale-[0.98] shadow-lg shadow-brand/20">
           {t.backToStore}
         </Link>
+        <button
+          onClick={() => window.print()}
+          className="mt-3 w-full py-3 border-2 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl font-black text-sm hover:border-brand hover:text-brand-dark transition-colors flex items-center justify-center gap-2"
+        >
+          <Printer className="w-4 h-4" />
+          {isFr ? 'Imprimer le reçu' : isRw ? 'Fotokorera urupapuro' : 'Print Receipt'}
+        </button>
       </div>
       <PickupBranchModal />
     </div>
@@ -137,8 +156,25 @@ export default function CheckoutPage() {
                 <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
                   <div className="px-5 py-4 bg-brand-dark flex items-center justify-between">
                     <h2 className="font-black text-white">{isFr ? 'Votre panier' : isRw ? 'Igitebo Cyawe' : 'Your Cart'} ({itemCount})</h2>
-                    {cart.length > 0 && <button onClick={() => clearCart()} className="text-white/60 hover:text-white text-xs font-bold">{isFr ? 'Vider' : isRw ? 'Siba' : 'Clear'}</button>}
+                    {cart.length > 0 && <button onClick={() => setShowClearConfirm(true)} className="text-white/60 hover:text-white text-xs font-bold">{isFr ? 'Vider' : isRw ? 'Siba' : 'Clear'}</button>}
                   </div>
+                  {showClearConfirm && (
+                    <div className="flex items-center justify-between px-5 py-3 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800">
+                      <p className="text-sm font-bold text-red-700 dark:text-red-400">{isFr ? 'Supprimer tous les articles ?' : isRw ? 'Gukura ibintu byose?' : 'Remove all items?'}</p>
+                      <div className="flex gap-2">
+                        <button onClick={() => setShowClearConfirm(false)} className="px-3 py-1 text-xs font-black text-gray-600 bg-white border border-gray-200 rounded-lg">{isFr ? 'Annuler' : 'Cancel'}</button>
+                        <button onClick={() => { clearCart(); setShowClearConfirm(false); }} className="px-3 py-1 text-xs font-black text-white bg-red-500 rounded-lg">{isFr ? 'Vider' : 'Clear'}</button>
+                      </div>
+                    </div>
+                  )}
+                  {cart.length > 0 && subtotal < ORDER_MINIMUM && (
+                    <div className="mx-4 mt-3 flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
+                      <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs font-bold text-amber-700 dark:text-amber-400">
+                        {isFr ? `Minimum 1 000 RWF. Ajoutez encore ${(ORDER_MINIMUM - subtotal).toLocaleString()} RWF.` : isRw ? `Imeze nkeya ni RWF 1 000. Ongeraho RWF ${(ORDER_MINIMUM - subtotal).toLocaleString()}.` : `Minimum order is 1,000 RWF. Add ${(ORDER_MINIMUM - subtotal).toLocaleString()} RWF more.`}
+                      </p>
+                    </div>
+                  )}
                   {cart.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 text-center px-4">
                       <Package className="w-12 h-12 text-gray-200 mb-3" />
@@ -215,6 +251,11 @@ export default function CheckoutPage() {
                     <label className="block text-xs font-black uppercase text-gray-400 mb-2">{t.pickupName} *</label>
                     <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder={t.namePlaceholder} className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-brand outline-none font-bold text-sm text-gray-900 dark:text-white" />
                   </div>
+                  <div>
+                    <label className="block text-xs font-black uppercase text-gray-400 mb-2">{isFr ? 'Notes de livraison (facultatif)' : isRw ? 'Amabwiriza (ntabigomba)' : 'Delivery Notes (optional)'}</label>
+                    <textarea value={deliveryNotes} onChange={e => setDeliveryNotes(e.target.value.slice(0, 300))} placeholder={isFr ? 'Ex: Articles fragiles...' : isRw ? 'Urugero: ...' : 'e.g. Fragile items, special packaging...'} rows={2} className="w-full px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus:border-brand outline-none text-sm text-gray-900 dark:text-white placeholder:text-gray-400 resize-none" />
+                    <p className="text-[10px] text-gray-400 text-right">{deliveryNotes.length}/300</p>
+                  </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl"><ShieldCheck className="w-4 h-4 text-brand flex-shrink-0" /><span className="text-[10px] font-bold text-gray-600 dark:text-gray-400">{t.depositProtects}</span></div>
                     <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-xl"><Store className="w-4 h-4 text-brand flex-shrink-0" /><span className="text-[10px] font-bold text-gray-600 dark:text-gray-400">{t.branchReceivesOrder}</span></div>
@@ -236,62 +277,55 @@ export default function CheckoutPage() {
                   <div>
                     <label className="block text-xs font-black uppercase text-gray-400 mb-3">{t.paymentMethod}</label>
                     <div className="space-y-3">
-                      {(['mtn', 'airtel', 'card'] as const).map(option => {
+                      {(['mtn', 'airtel', 'card', 'cod'] as const).map(option => {
                         const isActive = paymentMethod === option;
                         const PAY_CFG = {
                           mtn:    { bg: '#FFCC00', text: '#111', border: '#FFCC00', label: 'MTN' },
                           airtel: { bg: '#E31837', text: '#fff', border: '#E31837', label: 'AIRTEL' },
                           card:   { bg: '#1e293b', text: '#fff', border: '#1e293b', label: 'CARD' },
+                          cod:    { bg: '#16a34a', text: '#fff', border: '#16a34a', label: 'CASH' },
                         } as const;
                         const c = PAY_CFG[option];
                         return (
-                          <button
-                            key={option}
-                            type="button"
-                            onClick={() => setPaymentMethod(option)}
-                            style={isActive
-                              ? { backgroundColor: c.bg, color: c.text, borderColor: c.border }
-                              : { borderColor: c.border + '44' }
-                            }
-                            className={clsx(
-                              'w-full p-4 rounded-2xl flex items-center justify-between border-2 transition-all',
-                              isActive ? 'shadow-lg' : 'bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200'
-                            )}
-                          >
+                          <button key={option} type="button" onClick={() => setPaymentMethod(option)}
+                            style={isActive ? { backgroundColor: c.bg, color: c.text, borderColor: c.border } : { borderColor: c.border + '44' }}
+                            className={clsx('w-full p-4 rounded-2xl flex items-center justify-between border-2 transition-all', isActive ? 'shadow-lg' : 'bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200')}>
                             <span className="flex items-center gap-3">
-                              <span
-                                style={{ backgroundColor: c.bg, color: c.text }}
-                                className="w-10 h-10 rounded-xl flex items-center justify-center text-[10px] font-black shadow flex-shrink-0"
-                              >
-                                {c.label}
-                              </span>
+                              <span style={{ backgroundColor: c.bg, color: c.text }} className="w-10 h-10 rounded-xl flex items-center justify-center text-[10px] font-black shadow flex-shrink-0">{c.label}</span>
                               <span className="text-left">
                                 <p className="font-black text-sm">{getPaymentMethodLabel(option, language)}</p>
-                                <p className={clsx('text-[10px] mt-0.5', isActive ? 'opacity-60' : 'text-gray-400 dark:text-gray-500')}>
-                                  {getPaymentMethodSubLabel(option, language)}
-                                </p>
+                                <p className={clsx('text-[10px] mt-0.5', isActive ? 'opacity-60' : 'text-gray-400 dark:text-gray-500')}>{getPaymentMethodSubLabel(option, language)}</p>
                               </span>
                             </span>
-                            <span
-                              style={isActive ? { borderColor: c.text, backgroundColor: c.text } : {}}
-                              className={clsx('w-5 h-5 rounded-full border-2 flex-shrink-0 transition-all',
-                                isActive ? '' : 'border-gray-300 dark:border-gray-600'
-                              )}
-                            />
+                            <span style={isActive ? { borderColor: c.text, backgroundColor: c.text } : {}} className={clsx('w-5 h-5 rounded-full border-2 flex-shrink-0 transition-all', isActive ? '' : 'border-gray-300 dark:border-gray-600')} />
                           </button>
                         );
                       })}
                     </div>
                   </div>
+                  {paymentMethod === 'cod' && (
+                    <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl">
+                      <p className="text-sm font-bold text-green-800 dark:text-green-300">
+                        {isFr ? `Paiement total de ${orderTotal.toLocaleString()} RWF en espèces au retrait.` : isRw ? `Wishura amafaranga yose ${orderTotal.toLocaleString()} RWF igihe ugiye gufata.` : `Pay the full ${orderTotal.toLocaleString()} RWF in cash at pickup.`}
+                      </p>
+                    </div>
+                  )}
+                  {paymentMethod !== 'cod' && (
                   <div>
                     <label className="block text-xs font-black uppercase text-gray-400 mb-2">{t.phoneNumber} *</label>
                     <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-900 border-2 border-transparent focus-within:border-brand">
                       <span className="font-black text-gray-500">+250</span>
                       <div className="w-px h-5 bg-gray-200 dark:bg-gray-700" />
-                      <input type="tel" value={contactPhone} onChange={e => setContactPhone(e.target.value.replace(/\D/g,'').slice(0,9))} placeholder={paymentMethod === 'card' ? '7XX XXX XXX' : paymentMethod==='mtn' ? '78X XXX XXX' : '73X XXX XXX'} className="flex-1 bg-transparent outline-none font-black text-lg tracking-widest text-gray-900 dark:text-white placeholder:text-gray-300 placeholder:font-normal placeholder:text-sm" />
+                      <input type="tel" value={contactPhone} onChange={e => setContactPhone(e.target.value.replace(/\D/g,'').slice(0,9))} placeholder={paymentMethod === 'mtn' ? '78X XXX XXX' : paymentMethod==='airtel' ? '73X XXX XXX' : '7XX XXX XXX'} className="flex-1 bg-transparent outline-none font-black text-lg tracking-widest text-gray-900 dark:text-white placeholder:text-gray-300 placeholder:font-normal placeholder:text-sm" />
+                      {contactPhone.length >= 9 && isValidRwandaPhone(contactPhone) && <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />}
+                      {contactPhone.length >= 9 && !isValidRwandaPhone(contactPhone) && <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />}
                     </div>
+                    {contactPhone.length >= 9 && !isValidRwandaPhone(contactPhone) && (
+                      <p className="text-[11px] text-red-500 font-bold mt-1">{isFr ? 'Numéro invalide. Ex: 078 XXX XXX' : 'Invalid number. e.g. 078 XXX XXX'}</p>
+                    )}
                     <p className="text-[11px] text-gray-400 mt-2 text-center">{getPaymentMethodNote(paymentMethod, language)}</p>
                   </div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -311,17 +345,17 @@ export default function CheckoutPage() {
               {step !== 'payment' ? (
                 <button
                   onClick={() => {
-                    if (step === 'cart') { if (!user) { setAuthOpen(true); return; } if (cart.length === 0) return; setStep('details'); }
+                    if (step === 'cart') { if (!user) { setAuthOpen(true); return; } if (cart.length === 0 || subtotal < ORDER_MINIMUM) return; setStep('details'); }
                     else if (step === 'details') { if (!fullName.trim() || !selectedBranch) { toast.error(t.selectBranch); return; } setStep('payment'); }
                   }}
-                  disabled={step === 'cart' && cart.length === 0}
+                  disabled={step === 'cart' && (cart.length === 0 || subtotal < ORDER_MINIMUM)}
                   className="w-full py-4 bg-brand-dark text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-gray-800 disabled:opacity-50 transition-all">
                   {step === 'cart' ? (isFr ? 'Continuer' : isRw ? 'Komeza' : 'Continue') : (isFr ? 'Passer au paiement' : isRw ? 'Jya kwishura' : 'Go to Payment')}
                 </button>
               ) : (
-                <button onClick={handlePlaceOrder} disabled={placing || contactPhone.length < 8}
+                <button onClick={handlePlaceOrder} disabled={placing || (paymentMethod !== 'cod' && !isValidRwandaPhone(contactPhone))}
                   className="w-full py-4 bg-brand-dark text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-gray-800 disabled:opacity-50 transition-all flex items-center justify-center gap-2">
-                  {placing ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{isFr ? 'Traitement...' : isRw ? 'Gutegereza...' : 'Processing...'}</> : `${getPaymentMethodLabel(paymentMethod, language)} — ${depositAmount.toLocaleString()} RWF`}
+                  {placing ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{isFr ? 'Traitement...' : isRw ? 'Gutegereza...' : 'Processing...'}</> : paymentMethod === 'cod' ? (isFr ? `Confirmer — Payer au retrait` : isRw ? `Emeza — Wishure ugifata` : `Confirm — Pay at Pickup`) : `${getPaymentMethodLabel(paymentMethod, language)} — ${depositAmount.toLocaleString()} RWF`}
                 </button>
               )}
               {(step === 'details' || step === 'payment') && (
