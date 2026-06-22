@@ -112,6 +112,7 @@ interface SimbaState {
 
   // Actions — Address
   addAddress: (address: Omit<Address, 'id'>) => void;
+  removeAddress: (id: string) => void;
   selectAddress: (id: string) => void;
   setAddressModalOpen: (open: boolean) => void;
 
@@ -277,6 +278,12 @@ export const useSimbaStore = create<SimbaState>()(
         const newAddr = { ...addr, id: Date.now().toString() };
         return { addresses: [...s.addresses, newAddr], selectedAddressId: newAddr.id };
       }),
+      removeAddress: (id) => set((s) => ({
+        addresses: s.addresses.filter(a => a.id !== id),
+        selectedAddressId: s.selectedAddressId === id
+          ? (s.addresses.find(a => a.id !== id)?.id ?? null)
+          : s.selectedAddressId,
+      })),
       selectAddress: (id) => set({ selectedAddressId: id, isAddressModalOpen: false }),
       setAddressModalOpen: (open) => set({ isAddressModalOpen: open }),
 

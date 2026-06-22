@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
-import { MapPin, Plus, X, Check, Navigation, Loader2, ChevronDown } from 'lucide-react';
+import { MapPin, Plus, X, Check, Navigation, Loader2, ChevronDown, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from './Toast';
 
@@ -39,7 +39,7 @@ export function getDeliveryFeeForDistrict(district: string): number {
 }
 
 export default function AddressModal() {
-  const { isAddressModalOpen, setAddressModalOpen, addresses, selectedAddressId, selectAddress, addAddress, language } = useSimbaStore();
+  const { isAddressModalOpen, setAddressModalOpen, addresses, selectedAddressId, selectAddress, addAddress, removeAddress, language } = useSimbaStore();
   const t = translations[language];
   const lang = language as 'en' | 'fr' | 'rw';
 
@@ -172,11 +172,20 @@ export default function AddressModal() {
                       <p className={`font-black text-sm ${selectedAddressId === addr.id ? 'text-brand' : 'text-gray-900 dark:text-white'}`}>{addr.label}</p>
                       <p className="text-xs text-gray-400 truncate font-medium">{addr.full}</p>
                     </div>
-                    {selectedAddressId === addr.id && (
-                      <div className="w-6 h-6 bg-brand rounded-full flex items-center justify-center flex-shrink-0">
-                        <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {selectedAddressId === addr.id && (
+                        <div className="w-6 h-6 bg-brand rounded-full flex items-center justify-center">
+                          <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />
+                        </div>
+                      )}
+                      <button
+                        onClick={e => { e.stopPropagation(); removeAddress(addr.id); }}
+                        className="w-7 h-7 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                        aria-label="Remove address"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </button>
                 ))}
               </div>

@@ -26,8 +26,12 @@ export default function ProductGrid({ products }: ProductGridProps) {
   const t = translations[language];
   const lang = language as 'en' | 'fr' | 'rw';
 
-  // ── View mode ─────────────────────────────────────────────────────────────
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [initialLoading, setInitialLoading] = useState(products.length === 0);
+
+  useEffect(() => {
+    if (products.length > 0) setInitialLoading(false);
+  }, [products.length]);
 
   // ── AI search state ───────────────────────────────────────────────────────
   const [aiProducts, setAiProducts] = useState<Product[] | null>(null);
@@ -345,7 +349,20 @@ export default function ProductGrid({ products }: ProductGridProps) {
       </AnimatePresence>
 
       {/* ── Product grid ── */}
-      {filteredProducts.length === 0 ? (
+      {initialLoading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-3">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-pulse">
+              <div className="aspect-square bg-gray-100 dark:bg-gray-800" />
+              <div className="p-3 space-y-2">
+                <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full w-3/4" />
+                <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full w-1/2" />
+                <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded-full w-1/3 mt-3" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filteredProducts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="w-16 h-16 bg-brand-muted rounded-2xl flex items-center justify-center mb-4">
             <SearchX className="w-8 h-8 text-brand/40" />
@@ -370,9 +387,7 @@ export default function ProductGrid({ products }: ProductGridProps) {
             <ProductCard key={product.id} product={product} index={index} viewMode={viewMode} />
           ))}
         </div>
-      )}
-
-      {/* ── Compare floating bar ── */}
+      )}      {/* ── Compare floating bar ── */}
       <AnimatePresence>
         {compareList.length > 0 && (
           <motion.div

@@ -8,7 +8,7 @@ import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
 import {
   User, Mail, Phone, MapPin, Plus, Trash2, Check,
-  ArrowLeft, Save, LogOut, Edit3, ChevronDown,
+  ArrowLeft, Save, LogOut, Edit3, ChevronDown, ExternalLink,
 } from 'lucide-react';
 import { toast } from '@/components/Toast';
 import { clsx } from 'clsx';
@@ -24,7 +24,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const {
     user, setUser, logout, language,
-    addresses, selectedAddressId, selectAddress, addAddress,
+    addresses, selectedAddressId, selectAddress, addAddress, removeAddress,
   } = useSimbaStore();
   const t = translations[language];
 
@@ -40,7 +40,11 @@ export default function ProfilePage() {
 
   if (!user) {
     router.push('/');
-    return null;
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   const lang = language as 'en' | 'fr' | 'rw';
@@ -214,11 +218,18 @@ export default function ProfilePage() {
                     <p className="font-black text-sm text-gray-900 dark:text-white">{addr.label}</p>
                     <p className="text-xs text-gray-400 truncate">{addr.full}</p>
                   </div>
-                  <button onClick={() => selectAddress(addr.id)}
-                    className={clsx('w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all',
-                      selectedAddressId === addr.id ? 'bg-brand border-brand' : 'border-gray-300 dark:border-gray-600 hover:border-brand')}>
-                    {selectedAddressId === addr.id && <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />}
-                  </button>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button onClick={() => selectAddress(addr.id)}
+                      className={clsx('w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all',
+                        selectedAddressId === addr.id ? 'bg-brand border-brand' : 'border-gray-300 dark:border-gray-600 hover:border-brand')}>
+                      {selectedAddressId === addr.id && <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />}
+                    </button>
+                    <button onClick={() => removeAddress(addr.id)}
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      aria-label="Remove address">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
