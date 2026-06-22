@@ -1,14 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Store, Lock, User, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import HomeBrandLink from '@/components/HomeBrandLink';
 
 export default function BranchLoginPage() {
-  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -30,7 +28,7 @@ export default function BranchLoginPage() {
       if (!data.ok) { setError(data.error ?? 'Invalid credentials'); setLoading(false); return; }
       localStorage.setItem('branch_token', data.token);
       localStorage.setItem('branch_staff', JSON.stringify(data.staff));
-      router.push(data.staff.role === 'manager' ? '/branch' : '/branch/staff');
+      window.location.href = data.staff.role === 'manager' ? '/branch' : '/branch/staff';
     } catch {
       setError('Could not reach the server. Please try again.');
     }

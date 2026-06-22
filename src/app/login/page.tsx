@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
@@ -14,7 +13,6 @@ import {
 type LoginStep = 'identify' | 'password' | 'success';
 
 export default function UnifiedLoginPage() {
-  const router = useRouter();
   const { login, language, setLanguage } = useSimbaStore();
 
   const [step, setStep] = useState<LoginStep>('identify');
@@ -113,12 +111,14 @@ export default function UnifiedLoginPage() {
         localStorage.setItem('branch_token', data.token);
         localStorage.setItem('branch_staff', JSON.stringify(data.staff));
       }
-      // Admin sets httpOnly cookie server-side — nothing to do client-side
+      // Admin: set admin_token in localStorage so the admin dashboard auth guard passes
+      if (data.role === 'admin') {
+        localStorage.setItem('admin_token', password);
+      }
 
       // Redirect after brief success screen
       setTimeout(() => {
-        router.push(data.redirect ?? '/');
-        router.refresh();
+        window.location.href = data.redirect ?? '/';
       }, 1200);
 
     } catch {

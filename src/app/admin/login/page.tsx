@@ -1,13 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { ShieldCheck, Lock, User, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -26,8 +24,7 @@ export default function AdminLoginPage() {
       const data = await res.json();
       if (!data.ok) { setError('Invalid username or password'); setLoading(false); return; }
       localStorage.setItem('admin_token', password);
-      router.push('/admin');
-      router.refresh();
+      window.location.href = '/admin';
     } catch {
       setError('Could not reach the server. Please try again.');
     }
