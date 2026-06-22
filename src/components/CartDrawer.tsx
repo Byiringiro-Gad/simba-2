@@ -407,7 +407,6 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
         setTimeout(() => setStep('success'), 3000);
       } catch (err: any) {
         setIsPlacingOrder(false);
-        console.error('[Order placement]', err.message);
         toast.error(
           language === 'fr' ? 'Impossible de passer la commande. Réessayez.' :
           language === 'rw' ? 'Ntibishoboye gutumiza. Ongera ugerageze.' :
@@ -933,69 +932,143 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                   </motion.div>
                 )}
 
-                {/* ── STEP 4: TRACKING ── */}
+                {/* ── STEP 4: TRACKING — live order status timeline ── */}
                 {step === 'tracking' && (
                   <motion.div
                     key="tracking"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
                     className="p-4 space-y-4"
                   >
-                    <div className="flex items-center gap-3 p-4 bg-brand-muted rounded-2xl">
-                      <div className="w-3 h-3 bg-brand rounded-full animate-ping flex-shrink-0" />
-                      <span className="text-sm font-black text-brand-dark dark:text-brand uppercase tracking-wide">
-                        {t.orderConfirmedSending}
+                    {/* Live pulse header */}
+                    <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-200 dark:border-green-800">
+                      <span className="relative flex h-3 w-3 flex-shrink-0">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" />
                       </span>
-                    </div>
-
-                    <div className="relative h-56 bg-gray-50 dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 p-5">
-                      <div className="absolute inset-0 overflow-hidden">
-                        <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-brand/10" />
-                        <div className="absolute -bottom-12 -left-8 w-40 h-40 rounded-full bg-brand-dark/10" />
-                      </div>
-                      <div className="relative h-full flex flex-col justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-brand-dark rounded-2xl flex items-center justify-center">
-                            <Store className="w-6 h-6 text-brand" />
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t.preparingAt}</p>
-                            <p className="text-sm font-black text-gray-900 dark:text-white">{selectedBranch?.name}</p>
-                          </div>
-                        </div>
-                        <div className="space-y-2.5">
-                          <div className="flex items-center gap-2.5 text-sm font-bold text-gray-700 dark:text-gray-300">
-                            <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
-                            {t.depositConfirmed}
-                          </div>
-                          <div className="flex items-center gap-2.5 text-sm font-bold text-gray-700 dark:text-gray-300">
-                            <span className="w-2 h-2 rounded-full bg-brand animate-pulse flex-shrink-0" />
-                            {t.branchPreparing}
-                          </div>
-                          <div className="flex items-center gap-2.5 text-sm font-bold text-gray-400">
-                            <span className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600 flex-shrink-0" />
-                            {t.pickupTime}:{' '}
-                            {pickupTime ? new Date(pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800">
-                      <div className="w-12 h-12 bg-brand-muted rounded-2xl flex items-center justify-center">
-                        <Smartphone className="w-6 h-6 text-brand" />
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t.pickupWindow}</p>
-                        <p className="text-sm font-bold text-gray-900 dark:text-white">
-                          {pickupTime ? new Date(pickupTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-black text-green-800 dark:text-green-300 uppercase tracking-wide">
+                          {language === 'fr' ? 'Commande en cours' : language === 'rw' ? 'Itumizwa ririmo gutunganywa' : 'Order in progress'}
+                        </p>
+                        <p className="text-[10px] text-green-600 dark:text-green-400 font-medium mt-0.5">
+                          {t.orderIdLabel} #{orderId}
                         </p>
                       </div>
                     </div>
 
+                    {/* Branch card */}
+                    <div className="flex items-center gap-3 p-4 bg-brand-muted dark:bg-brand/10 rounded-2xl border border-brand/20">
+                      <div className="w-11 h-11 bg-brand-dark rounded-xl flex items-center justify-center flex-shrink-0">
+                        <Store className="w-5 h-5 text-brand" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500">{t.preparingAt}</p>
+                        <p className="text-sm font-black text-gray-900 dark:text-white truncate">{selectedBranch?.name}</p>
+                        <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">{selectedBranch?.area}</p>
+                      </div>
+                    </div>
+
+                    {/* Order timeline */}
+                    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">
+                        {language === 'fr' ? 'Étapes de la commande' : language === 'rw' ? 'Inzira y\'itumizwa' : 'Order Progress'}
+                      </p>
+                      <div className="relative">
+                        {/* Vertical line */}
+                        <div className="absolute left-[10px] top-3 bottom-3 w-0.5 bg-gray-100 dark:bg-gray-800" />
+                        {/* Active fill */}
+                        <div className="absolute left-[10px] top-3 w-0.5 bg-green-500 transition-all duration-1000" style={{ height: '35%' }} />
+
+                        <div className="space-y-4 relative">
+                          {[
+                            {
+                              done: true, active: false,
+                              icon: CheckCircle2,
+                              label: { en: 'Order Placed', fr: 'Commande passée', rw: 'Itumizwa ryashyizweho' },
+                              sub: { en: `Deposit of ${depositAmount.toLocaleString()} RWF confirmed`, fr: `Dépôt de ${depositAmount.toLocaleString()} RWF confirmé`, rw: `Inguzanyo ya RWF ${depositAmount.toLocaleString()} yemejwe` },
+                              color: 'bg-green-500',
+                            },
+                            {
+                              done: true, active: true,
+                              icon: Package,
+                              label: { en: 'Branch Confirmed', fr: 'Agence confirmée', rw: 'Ishami ryemeje' },
+                              sub: { en: 'Staff notified, preparing your basket', fr: "Le personnel est notifié, prépare votre panier", rw: 'Abakozi bamenyeshwa, batunganya igitebo cyawe' },
+                              color: 'bg-brand',
+                            },
+                            {
+                              done: false, active: false,
+                              icon: ShieldCheck,
+                              label: { en: 'Being Packed', fr: 'En cours d\'emballage', rw: 'Birakurunganwa' },
+                              sub: { en: 'Your items are being picked and packed', fr: 'Vos articles sont ramassés et emballés', rw: 'Ibintu byawe biratoranywa bikurunganwa' },
+                              color: 'bg-gray-300 dark:bg-gray-600',
+                            },
+                            {
+                              done: false, active: false,
+                              icon: Store,
+                              label: { en: 'Ready for Pickup', fr: 'Prêt à retirer', rw: 'Biteguye gufatwa' },
+                              sub: { en: 'Come collect at the branch', fr: "Venez retirer à l'agence", rw: 'Iza gufata ku ishami' },
+                              color: 'bg-gray-300 dark:bg-gray-600',
+                            },
+                          ].map((s, i) => {
+                            const Icon = s.icon;
+                            const lbl = s.label[language as 'en' | 'fr' | 'rw'] ?? s.label.en;
+                            const sublbl = s.sub[language as 'en' | 'fr' | 'rw'] ?? s.sub.en;
+                            return (
+                              <div key={i} className="flex items-start gap-3 pl-1">
+                                <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${s.color} ${s.active ? 'ring-2 ring-offset-2 ring-brand dark:ring-offset-gray-900' : ''}`}>
+                                  {s.done
+                                    ? <Icon className="w-3 h-3 text-white" />
+                                    : <span className="w-2 h-2 rounded-full bg-white/40" />
+                                  }
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-xs font-black ${s.done ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'}`}>
+                                    {lbl}
+                                    {s.active && (
+                                      <span className="ml-2 inline-flex items-center gap-1 text-[9px] font-black text-brand bg-brand/10 px-1.5 py-0.5 rounded-full">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
+                                        {language === 'fr' ? 'En cours' : language === 'rw' ? 'Birimo gukorwa' : 'Live'}
+                                      </span>
+                                    )}
+                                  </p>
+                                  <p className={`text-[10px] mt-0.5 font-medium ${s.done ? 'text-gray-500 dark:text-gray-400' : 'text-gray-300 dark:text-gray-600'}`}>
+                                    {sublbl}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Pickup time */}
+                    <div className="flex items-center gap-3 p-3.5 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800">
+                      <Clock className="w-5 h-5 text-brand flex-shrink-0" />
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{t.pickupWindow}</p>
+                        <p className="text-sm font-bold text-gray-900 dark:text-white">
+                          {pickupTime
+                            ? new Date(pickupTime).toLocaleString(
+                                language === 'fr' ? 'fr-FR' : 'en-US',
+                                { weekday: 'short', hour: '2-digit', minute: '2-digit' }
+                              )
+                            : '—'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Payment reminder */}
+                    <div className="flex items-center gap-3 p-3.5 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800">
+                      <Smartphone className="w-5 h-5 text-brand flex-shrink-0" />
+                      <p className="text-xs font-medium text-gray-600 dark:text-gray-400 leading-relaxed">
+                        {getPaymentMethodNote(paymentMethod, language)}
+                      </p>
+                    </div>
+
                     <button
                       onClick={() => setStep('success')}
-                      className="w-full py-4 bg-green-500 hover:bg-green-600 text-white rounded-2xl font-black text-sm transition-all active:scale-[0.98] shadow-lg flex items-center justify-center gap-2"
+                      className="w-full py-4 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white rounded-2xl font-black text-sm transition-all active:scale-[0.98] shadow-lg flex items-center justify-center gap-2"
                     >
                       <CheckCircle2 className="w-5 h-5" />
                       {language === 'fr' ? 'Voir la confirmation' : language === 'rw' ? 'Reba inyandiko' : 'View Order Confirmation'}

@@ -73,8 +73,8 @@ export default function CheckoutPage() {
         <p className="text-gray-400 mb-1">{t.orderIdLabel}: #{orderId}</p>
         <p className="text-sm text-gray-500 mb-2">{t.pickupConfirmedAt} {selectedBranch?.name}</p>
         <p className="text-sm text-gray-500 mb-6">{t.depositPaid}: {depositAmount.toLocaleString()} RWF</p>
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-brand/20 rounded-full mb-8">
-          <span className="text-sm font-black text-amber-700">+{totalPoints} {t.loyaltyPointsEarned}</span>
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-brand/10 rounded-full mb-8">
+          <span className="text-sm font-black text-brand-dark dark:text-brand">+{totalPoints} {t.loyaltyPointsEarned}</span>
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 mb-6 text-left">
           <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-3">
@@ -93,7 +93,7 @@ export default function CheckoutPage() {
             ))}
           </div>
         </div>
-        <Link href="/" className="block w-full py-4 bg-brand-dark text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-gray-800 transition-colors">
+        <Link href="/" className="block w-full py-4 bg-brand text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-brand-dark transition-colors active:scale-[0.98] shadow-lg shadow-brand/20">
           {t.backToStore}
         </Link>
       </div>

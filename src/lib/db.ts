@@ -84,18 +84,7 @@ function buildQuery(sql: string, params?: any[]): { text: string; values: any[] 
   return { text, values: params };
 }
 
-// ── INSERT IGNORE → ON CONFLICT DO NOTHING ───────────────────────────────────
-function fixInsertIgnore(text: string): string {
-  // If it was INSERT IGNORE, add ON CONFLICT DO NOTHING at end
-  if (/INSERT\s+IGNORE/i.test(text) || text.includes('INSERT INTO') && !text.includes('ON CONFLICT')) {
-    // Only add if it looks like a plain INSERT (no ON CONFLICT already)
-    if (!text.includes('ON CONFLICT') && !text.includes('ON DUPLICATE KEY')) {
-      // Check if original had INSERT IGNORE pattern (already translated above)
-      // We'll add it conservatively only when needed
-    }
-  }
-  return text;
-}
+// ── INSERT IGNORE → ON CONFLICT DO NOTHING (handled inline in execute) ───────
 
 // ── SHOW COLUMNS shim ─────────────────────────────────────────────────────────
 async function showColumns(sql_client: ReturnType<typeof neon>, tableName: string, columnName: string): Promise<any[]> {

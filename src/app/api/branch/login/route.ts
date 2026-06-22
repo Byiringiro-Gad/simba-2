@@ -63,7 +63,7 @@ async function ensureBranchTables(conn: any) {
         [uuidv4(), `Staff ${b.name}`, `staff_${b.id}`, staffHash, b.id, b.name, 'staff']
       );
     }
-    console.log('[branch/login] Branch staff seeded into Neon');
+    console.info('[branch/login] Branch staff seeded into Neon');
   }
 }
 

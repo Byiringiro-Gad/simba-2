@@ -1,21 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPool } from '@/lib/db';
-import { cookies } from 'next/headers';
+import { verifyAdmin } from '@/lib/adminAuth';
 
 export const dynamic = 'force-dynamic';
-
-async function verifyAdmin() {
-  const jar = await cookies();
-  const session = jar.get('admin_session');
-  return session?.value === 'authenticated';
-}
 
 export async function GET() {
   try {
     const pool = getPool();
     const conn = await pool.getConnection();
     try {
-      const [rows] = await conn.execute('SELECT * FROM promo_codes ORDER BY created_at DESC') as any[];
+      const [rows] = await conn.execute('SELECT * FROM promo_codes ORDER BY created_at DESC') as [any[], any];
       return NextResponse.json({ ok: true, promos: rows ?? [] });
     } finally { conn.release(); }
   } catch (err: any) {
@@ -24,12 +18,14 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  if (!await verifyAdmin()) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
-
+  if (!await verifyAdmin(req)) {
+    return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
+  }
   try {
     const { code, discount, active } = await req.json();
-    if (!code || !discount) return NextResponse.json({ ok: false, error: 'Code and discount required' }, { status: 400 });
-
+    if (!code || !discount) {
+      return NextResponse.json({ ok: false, error: 'Code and discount required' }, { status: 400 });
+    }
     const pool = getPool();
     const conn = await pool.getConnection();
     try {
