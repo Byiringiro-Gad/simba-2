@@ -238,14 +238,41 @@ export default function CheckoutPage() {
                     <div className="space-y-3">
                       {PAYMENT_METHODS.map(option => {
                         const theme = PAYMENT_METHOD_THEMES[option];
+                        const isActive = paymentMethod === option;
                         return (
-                        <button key={option} onClick={() => setPaymentMethod(option)} className={clsx('w-full p-4 rounded-2xl font-bold flex items-center justify-between border-2 transition-all', paymentMethod===option ? `${theme.activeBg} ${theme.activeText} ${theme.activeBorder} shadow-lg` : 'bg-gray-50 dark:bg-gray-900 text-gray-500 border-transparent hover:border-gray-200')}>
-                          <span className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[10px] font-black shadow-sm text-gray-800">{option.toUpperCase()}</div>
-                            <div className="text-left"><p className="font-black text-sm">{getPaymentMethodLabel(option, language)}</p><p className="text-[10px] opacity-60">{getPaymentMethodSubLabel(option, language)}</p></div>
-                          </span>
-                          <div className={clsx('w-5 h-5 rounded-full border-2', paymentMethod===option ? (option==='mtn' ? 'border-black bg-black' : option === 'airtel' ? 'border-white bg-white' : 'border-white bg-white') : 'border-gray-300')} />
-                        </button>
+                          <button
+                            key={option}
+                            onClick={() => setPaymentMethod(option)}
+                            className={clsx(
+                              'w-full p-4 rounded-2xl font-bold flex items-center justify-between border-2 transition-all',
+                              isActive
+                                ? `${theme.activeBg} ${theme.activeText} ${theme.activeBorder} shadow-lg scale-[1.01]`
+                                : `bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 ${theme.idleBorder} hover:scale-[1.01]`
+                            )}
+                          >
+                            <span className="flex items-center gap-3">
+                              <div className={clsx(
+                                'w-10 h-10 rounded-xl flex items-center justify-center text-[10px] font-black shadow-sm flex-shrink-0',
+                                isActive ? `${theme.badgeBg} ${theme.badgeText}` : `${theme.idleBg} ${theme.idleText}`
+                              )}>
+                                {option.toUpperCase()}
+                              </div>
+                              <div className="text-left">
+                                <p className="font-black text-sm">{getPaymentMethodLabel(option, language)}</p>
+                                <p className={clsx('text-[10px]', isActive ? 'opacity-60' : 'text-gray-400 dark:text-gray-500')}>
+                                  {getPaymentMethodSubLabel(option, language)}
+                                </p>
+                              </div>
+                            </span>
+                            <div className={clsx(
+                              'w-5 h-5 rounded-full border-2 flex-shrink-0 transition-all flex items-center justify-center',
+                              isActive ? theme.radioDot : 'border-gray-300 dark:border-gray-600 bg-transparent'
+                            )}>
+                              {isActive && (
+                                <div className={clsx('w-2 h-2 rounded-full', option === 'mtn' ? 'bg-[#FFCC00]' : 'bg-white')} />
+                              )}
+                            </div>
+                          </button>
                         );
                       })}
                     </div>

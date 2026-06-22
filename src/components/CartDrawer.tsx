@@ -820,28 +820,34 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                               onClick={() => setPaymentMethod(option)}
                               className={`w-full p-4 rounded-2xl font-bold flex items-center justify-between transition-all border-2 ${
                                 isActive
-                                  ? `${theme.activeBg} ${theme.activeText} ${theme.activeBorder} shadow-lg`
-                                  : 'bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-transparent hover:border-gray-200 dark:hover:border-gray-700'
+                                  ? `${theme.activeBg} ${theme.activeText} ${theme.activeBorder} shadow-lg scale-[1.01]`
+                                  : `bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 ${theme.idleBorder} hover:scale-[1.01]`
                               }`}
                             >
                               <span className="flex items-center gap-3">
+                                {/* Brand icon — always shows brand color */}
                                 <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-[11px] font-black shadow-sm flex-shrink-0 ${
-                                  isActive ? `${theme.badgeBg} ${theme.badgeText}` : 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200'
+                                  isActive ? `${theme.badgeBg} ${theme.badgeText}` : `${theme.idleBg} ${theme.idleText}`
                                 }`}>
                                   {option === 'mtn' ? 'MTN' : option === 'airtel' ? 'AIRTEL' : 'CARD'}
                                 </div>
                                 <div className="text-left">
                                   <p className="font-black text-sm">{getPaymentMethodLabel(option, language)}</p>
-                                  <p className="text-[10px] opacity-70">{getPaymentMethodSubLabel(option, language)}</p>
+                                  <p className={`text-[10px] ${isActive ? 'opacity-70' : 'text-gray-400 dark:text-gray-500'}`}>
+                                    {getPaymentMethodSubLabel(option, language)}
+                                  </p>
                                 </div>
                               </span>
-                              <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 transition-all ${
+                              {/* Radio indicator */}
+                              <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 transition-all flex items-center justify-center ${
                                 isActive
-                                  ? option === 'mtn'
-                                    ? 'border-black bg-black'
-                                    : 'border-white bg-white'
-                                  : 'border-gray-300 dark:border-gray-600'
-                              }`} />
+                                  ? `${theme.radioDot}`
+                                  : 'border-gray-300 dark:border-gray-600 bg-transparent'
+                              }`}>
+                                {isActive && <div className={`w-2 h-2 rounded-full ${
+                                  option === 'mtn' ? 'bg-[#FFCC00]' : 'bg-white'
+                                }`} />}
+                              </div>
                             </button>
                           );
                         })}

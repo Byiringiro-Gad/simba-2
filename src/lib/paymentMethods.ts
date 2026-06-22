@@ -60,29 +60,45 @@ export const PAYMENT_METHOD_THEMES: Record<PaymentMethod, {
   activeBg: string;
   activeText: string;
   activeBorder: string;
-  badgeBg: string;
-  badgeText: string;
+  badgeBg: string;       // badge bg when selected
+  badgeText: string;     // badge text when selected
+  idleBg: string;        // badge bg when NOT selected (brand color)
+  idleText: string;      // badge text when NOT selected
+  idleBorder: string;    // button border when NOT selected
+  radioDot: string;      // radio dot color when selected
 }> = {
   mtn: {
-    activeBg: 'bg-[#FFCC00]',
-    activeText: 'text-black',
-    activeBorder: 'border-[#FFCC00]',
-    badgeBg: 'bg-[#FFCC00]',
-    badgeText: 'text-black',
+    activeBg:    'bg-[#FFCC00]',
+    activeText:  'text-gray-900',
+    activeBorder:'border-[#FFCC00]',
+    badgeBg:     'bg-[#FFCC00]',
+    badgeText:   'text-gray-900',
+    idleBg:      'bg-[#FFCC00]',
+    idleText:    'text-gray-900',
+    idleBorder:  'border-[#FFCC00]/40 dark:border-[#FFCC00]/30',
+    radioDot:    'border-gray-900 bg-gray-900',
   },
   airtel: {
-    activeBg: 'bg-[#ED1C24]',
-    activeText: 'text-white',
-    activeBorder: 'border-[#ED1C24]',
-    badgeBg: 'bg-[#ED1C24]',
-    badgeText: 'text-white',
+    activeBg:    'bg-[#ED1C24]',
+    activeText:  'text-white',
+    activeBorder:'border-[#ED1C24]',
+    badgeBg:     'bg-[#ED1C24]',
+    badgeText:   'text-white',
+    idleBg:      'bg-[#ED1C24]',
+    idleText:    'text-white',
+    idleBorder:  'border-[#ED1C24]/40 dark:border-[#ED1C24]/50',
+    radioDot:    'border-white bg-white',
   },
   card: {
-    activeBg: 'bg-slate-900',
-    activeText: 'text-white',
-    activeBorder: 'border-slate-900',
-    badgeBg: 'bg-slate-900',
-    badgeText: 'text-white',
+    activeBg:    'bg-slate-900 dark:bg-slate-700',
+    activeText:  'text-white',
+    activeBorder:'border-slate-900 dark:border-slate-600',
+    badgeBg:     'bg-slate-900 dark:bg-slate-700',
+    badgeText:   'text-white',
+    idleBg:      'bg-slate-700 dark:bg-slate-600',
+    idleText:    'text-white',
+    idleBorder:  'border-slate-300 dark:border-slate-600',
+    radioDot:    'border-white bg-white',
   },
 };
 

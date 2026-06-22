@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pickup', 'processing')`,
         [id, userId ?? null, customerName ?? '', customerPhone ?? '', pickupBranch ?? '',
          pickupSlot ?? 'asap', paymentMethod ?? 'mtn', subtotal ?? 0, deliveryFee ?? 0,
-         discount ?? 0, depositAmount ?? 0, total, promoCode ?? null]
+         discount ?? 0, depositAmount ?? 0, Number(total) || 0, promoCode ?? null]
       );
 
       for (const item of items ?? []) {
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
 
       // ── Add loyalty points ────────────────────────────────────────────────
       if (userId) {
-        const points = Math.floor(total / 100);
+        const points = Math.floor((Number(total) || 0) / 100);
         try {
           await conn.execute(
             'UPDATE users SET loyalty_points = loyalty_points + ? WHERE id = ?',
@@ -140,11 +140,14 @@ export async function POST(req: NextRequest) {
         } catch { /* non-blocking */ }
       }
     } finally { conn.release(); }
+
+    return NextResponse.json({ ok: true, id });
   } catch (dbErr: any) {
     console.warn('[POST /api/orders] DB error:', dbErr.message);
+    // DB unavailable — still return ok so the user sees their order
+    // The order is persisted locally in Zustand store
+    return NextResponse.json({ ok: true, id });
   }
-
-  return NextResponse.json({ ok: true, id });
 }
 
 export async function GET(req: NextRequest) {
