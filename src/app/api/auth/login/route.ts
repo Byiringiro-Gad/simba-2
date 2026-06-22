@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
             const hash = await (await import('bcryptjs')).hash(demoPassword, 10);
             await conn.execute(`INSERT INTO users (id, name, email, phone, password_hash, referral_code, loyalty_points) VALUES (?,?,?,?,?,?,?) ON CONFLICT (id) DO NOTHING`, ['demo-user-001', 'Demo Customer', demoEmail, '+250788000000', hash, 'SIMBADEMO', 150]);
           }
-        } catch { /* non-blocking */ } finally { conn.release(); }
+        } catch { /* Demo user seeding is best-effort; failure does not block login. */ } finally { conn.release(); }
       }).catch(() => {});
       return NextResponse.json({
         ok: true, token,
@@ -84,7 +84,8 @@ export async function POST(req: NextRequest) {
     }
   } catch (err: any) {
     console.error('[POST /api/auth/login]', err.message);
-    // Give a clear DB error message so the user knows what's wrong
+    // Distinguish connection errors from other server errors to surface a
+    // more actionable message to the client.
     const isDbError = err.message?.includes('ECONNREFUSED') || err.message?.includes('connect');
     return NextResponse.json(
       { ok: false, error: isDbError ? 'Database unavailable. Please try again shortly.' : 'Server error' },

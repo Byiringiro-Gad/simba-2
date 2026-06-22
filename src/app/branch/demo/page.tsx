@@ -27,10 +27,10 @@ export default function BranchDemo() {
           localStorage.setItem('branch_staff', JSON.stringify(data.staff));
           router.replace('/branch');
         } else {
-          router.replace('/staff');
+          router.replace('/branch/staff');
         }
       } catch {
-        router.replace('/staff');
+        router.replace('/branch/staff');
       }
     };
     autoLogin();

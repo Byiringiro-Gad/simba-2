@@ -126,7 +126,11 @@ export default function OrdersTab() {
           </div>
         </div>
         <button
-          onClick={() => { setLoading(true); fetchOrders(user.id).finally(() => setLoading(false)); }}
+          onClick={() => {
+            if (!user) return;
+            setLoading(true);
+            fetchOrders(user.id).finally(() => setLoading(false));
+          }}
           disabled={loading}
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors disabled:opacity-50"
         >

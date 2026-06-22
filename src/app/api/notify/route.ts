@@ -35,7 +35,8 @@ export async function POST(req: NextRequest) {
         );
       } finally { conn.release(); }
     } catch (dbErr: any) {
-      // Non-blocking — still return ok so the UI doesn't show an error
+      // Database write failure is non-fatal; the registration request is
+      // still acknowledged so the client does not display an error state.
       console.warn('[POST /api/notify] DB unavailable:', dbErr.message);
     }
 

@@ -367,7 +367,7 @@ export const useSimbaStore = create<SimbaState>()(
             const data = await res.json();
             if (data.ok) set({ branchRatings: data.ratings ?? {} });
           }
-        } catch { /* silent */ }
+        } catch { /* Rating refresh is best-effort; a failure does not affect state. */ }
       },
       submitBranchReview: async ({ branchId, branchName, orderId, rating, comment }) => {
         try {

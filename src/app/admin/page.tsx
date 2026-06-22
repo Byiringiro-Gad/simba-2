@@ -267,6 +267,7 @@ export default function AdminDashboard() {
 
   // View
   const [activeView, setActiveView] = useState<AdminView>('orders');
+  const [authed, setAuthed] = useState(false);
 
   const adminToken = typeof window !== 'undefined' ? localStorage.getItem('admin_token') ?? '' : '';
   const { isDarkMode, language } = useSimbaStore();
@@ -372,6 +373,7 @@ export default function AdminDashboard() {
       router.replace('/admin/login');
       return;
     }
+    setAuthed(true);
     loadOrders();
     loadProducts();
     loadUsers();
@@ -591,6 +593,8 @@ export default function AdminDashboard() {
     additions: products.filter(p => p.source === 'addition').length,
     overrides: products.filter(p => p.source === 'override').length,
   }), [products]);
+
+  if (!authed) return null;
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>

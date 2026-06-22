@@ -1,82 +1,92 @@
-# Simba 2.0 — Deployment Checklist
+# Simba 2.0 — Deployment Guide
 
-## Before Demo Day — Verify All of These
+## Environment Variables
 
-### 1. Vercel Environment Variables
-Go to: vercel.com → simba2gad → Settings → Environment Variables
+### Vercel (Frontend)
 
-| Variable | Value | Status |
-|----------|-------|--------|
-| `NEXT_PUBLIC_API_URL` | `https://simba-backend-lg22.onrender.com` | Required |
-| `NEXT_PUBLIC_SITE_URL` | `https://simba2gad.vercel.app` | Required |
-| `JWT_SECRET` | `185320@Jules` | Required |
-| `ADMIN_USERNAME` | `admin` | Required |
-| `ADMIN_PASSWORD` | `admin123` | Required |
-| `GROQ_API_KEY` | (from console.groq.com) | For AI search |
-| `GOOGLE_CLIENT_ID` | (from Google Console) | For Google OAuth |
-| `GOOGLE_CLIENT_SECRET` | (from Google Console) | For Google OAuth |
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_API_URL` | Backend API base URL |
+| `NEXT_PUBLIC_SITE_URL` | Frontend public URL |
+| `JWT_SECRET` | Secret used to sign/verify JWT tokens |
+| `ADMIN_USERNAME` | Admin portal username |
+| `ADMIN_PASSWORD` | Admin portal password |
+| `GROQ_API_KEY` | Groq API key for AI search and chat |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
 
-**After setting any variable → Redeploy Vercel (mandatory for NEXT_PUBLIC_* vars)**
+> After updating any `NEXT_PUBLIC_*` variable, redeploy the Vercel project for the change to take effect.
 
-### 2. Render Environment Variables
-Go to: render.com → simba-backend-lg22 → Environment
+### Render (Backend)
 
-| Variable | Value |
-|----------|-------|
-| `DB_HOST` | `shinkansen.proxy.rlwy.net` |
-| `DB_PORT` | `28715` |
-| `DB_USER` | `root` |
-| `DB_PASSWORD` | `nqkbvGlLCaYAiIkgAUUDgWXuuPNlKDKs` |
-| `DB_NAME` | `railway` |
-| `DB_SSL` | `true` |
-| `JWT_SECRET` | `185320@Jules` |
-| `ADMIN_USERNAME` | `admin` |
-| `ADMIN_PASSWORD` | `admin123` |
-| `FRONTEND_URL` | `https://simba2gad.vercel.app` ← NO trailing slash |
-| `PORT` | `4000` |
+| Variable | Description |
+|----------|-------------|
+| `DB_HOST` | PostgreSQL host |
+| `DB_PORT` | PostgreSQL port |
+| `DB_USER` | PostgreSQL user |
+| `DB_PASSWORD` | PostgreSQL password |
+| `DB_NAME` | Database name |
+| `DB_SSL` | Set to `true` for SSL connections |
+| `JWT_SECRET` | Must match the frontend value |
+| `ADMIN_USERNAME` | Admin portal username |
+| `ADMIN_PASSWORD` | Admin portal password |
+| `FRONTEND_URL` | Frontend URL without trailing slash |
+| `PORT` | Server port (default: 4000) |
 
-### 3. Pre-Demo Verification (30 min before)
+---
 
-Run through this checklist on the live site:
+## Pre-Deployment Verification
 
-- [ ] Visit https://simba2gad.vercel.app — hero loads, value props visible
-- [ ] Switch language to Kinyarwanda — UI translates
-- [ ] Register new account — success message
-- [ ] Login with that account — redirects, name shows in navbar
-- [ ] Add 3 products to cart
-- [ ] Click checkout — auth modal appears if not logged in
-- [ ] Complete checkout: select Remera branch → ASAP → MTN MoMo → 780000000 → Pay
-- [ ] Order success screen shows with review prompt
-- [ ] Go to /branch/login → manager_remera / manager123 → order appears
-- [ ] Assign order to staff
-- [ ] Login as staff_remera / staff123 → order appears → mark ready
-- [ ] Go to /admin/login → admin / admin123 → order appears in all orders
-- [ ] AI search: type "Do you have fresh milk?" → products appear
-- [ ] Switch to French → AI search in French works
+- [ ] Homepage loads and hero section is visible
+- [ ] Language switching works (EN → FR → RW)
+- [ ] User registration and login complete successfully
+- [ ] Products load and can be added to cart
+- [ ] Checkout flow completes: branch selection → payment → order confirmation
+- [ ] Branch dashboard accessible at `/branch/login`
+- [ ] Orders appear in branch dashboard after placement
+- [ ] Admin panel accessible at `/admin/login`
+- [ ] AI search returns products for natural language queries
+- [ ] Groq chat assistant responds via the Pulse widget
 
-### 4. Demo Credentials
+---
+
+## Test Credentials
 
 | Role | Username | Password | URL |
 |------|----------|----------|-----|
-| Admin (HQ) | admin | admin123 | /admin/login |
-| Branch Manager (Remera) | manager_remera | manager123 | /branch/login |
-| Branch Staff (Remera) | staff_remera | staff123 | /branch/login |
-| Branch Manager (Kimironko) | manager_kimironko | manager123 | /branch/login |
+| Admin | admin | *(set in env)* | `/admin/login` |
+| Branch Manager (Remera) | manager_remera | manager123 | `/branch/login` |
+| Branch Staff (Remera) | staff_remera | staff123 | `/branch/login` |
+| Branch Manager (Kimironko) | manager_kimironko | manager123 | `/branch/login` |
 
-### 5. Known Limitations
+---
 
-- Product names show in English when FR/RW selected (Groq translates on-demand if API key set)
-- Password reset email requires SMTP config on Render (reset link shows on screen as fallback)
-- Branch inventory seeds from order history — first order at a branch triggers seeding
+## Promo Codes
 
-### 6. Emergency Fallbacks
+| Code | Discount |
+|------|----------|
+| SIMBA10 | 10% off |
+| WELCOME | 15% off |
+| KIGALI5 | 5% off |
 
-If Render is down:
-- Auth still works via Vercel's own routes (fallback to JWT from Google data)
-- Orders still confirm (saved to client state even if DB unavailable)
-- Branch dashboard won't work (depends entirely on Render)
+---
 
-If Groq API key missing:
-- AI search falls back to keyword search
-- Product names stay in English
-- Simba Pulse chat uses local pattern engine
+## Known Limitations
+
+- Product names default to English when FR/RW is selected; Groq translates on demand if the API key is configured.
+- Password reset emails require SMTP configuration on the backend. Without it, the reset link is displayed on screen as a fallback.
+- Branch inventory is seeded from order history — the first order at a branch triggers the initial stock seed.
+- The branch dashboard requires the backend to be running; it does not have a local fallback.
+
+---
+
+## Fallback Behaviour
+
+**If the backend (Render) is unavailable:**
+- Authentication via the frontend's own API routes continues to work.
+- Orders are saved to the client Zustand store and displayed to the user even if the database write fails.
+- The branch dashboard will not load.
+
+**If `GROQ_API_KEY` is not set:**
+- AI search falls back to keyword matching via `smartSearchProducts`.
+- The Pulse chat assistant uses a local pattern-matching engine.

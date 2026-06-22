@@ -137,18 +137,15 @@ class NeonConnection {
                        .replace(/(\w+)\s*=\s*NOW\s*\(\s*\)/gi, '$1=NOW()');
           });
           // Need to find the conflict column — use the first unique/primary key
-          // For simplicity, use DO UPDATE SET
+          // Transforms MySQL ON DUPLICATE KEY UPDATE to PostgreSQL ON CONFLICT DO UPDATE SET
           return `ON CONFLICT DO UPDATE SET ${setParts.join(',')}`;
         }
       );
-      // Fix: ON CONFLICT DO UPDATE needs a conflict target
-      // Replace "ON CONFLICT DO UPDATE" with a version that specifies conflict target
-      // We'll use a generic approach — if we can't determine the key, use DO NOTHING
+      // ON CONFLICT DO UPDATE requires an explicit conflict target.
+      // When the conflict column cannot be determined from the query, fall back to DO NOTHING.
       if (finalText.includes('ON CONFLICT DO UPDATE SET') && !finalText.match(/ON CONFLICT\s*\(/)) {
-        // Try to extract table name and find primary key
-        // For now, use the upsert pattern with explicit conflict columns
-        // This is handled per-table in the route files that use ON DUPLICATE KEY
-        // Fall back to DO NOTHING if we can't parse it
+        // Conflict column is specified per-table in the individual route handlers that use ON DUPLICATE KEY.
+        // Without a parsable conflict target, substitute a safe no-op.
         finalText = finalText.replace('ON CONFLICT DO UPDATE SET', 'ON CONFLICT DO NOTHING --');
       }
     }
@@ -164,7 +161,7 @@ class NeonConnection {
   }
 
   release() {
-    // No-op — Neon HTTP connections are stateless
+    // Neon HTTP connections are stateless; no resource to release.
   }
 }
 

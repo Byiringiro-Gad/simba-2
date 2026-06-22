@@ -88,8 +88,7 @@ export default function ProductCard({ product, index = 0, viewMode = 'grid' }: P
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId: product.id, email: notifyEmail }),
       });
-    } catch { /* non-blocking */ }
-    setNotifyDone(true);
+    } catch { /* Notify registration failed; failure is intentionally swallowed. */ }
     const msg = lang === 'fr' ? 'Vous serez notifié !' : lang === 'rw' ? 'Uzabimenyeshwa!' : 'You\'ll be notified!';
     toast.success(msg);
   };

@@ -82,7 +82,7 @@ async function decreaseStock(conn: any, branchId: string, items: any[]) {
          WHERE branch_id = ? AND product_id = ?`,
         [item.quantity, item.quantity, branchId, item.id]
       );
-    } catch { /* non-blocking */ }
+    } catch { /* Inventory update is best-effort; a failure does not block the order. */ }
   }
 }
 
@@ -137,15 +137,15 @@ export async function POST(req: NextRequest) {
             'UPDATE users SET loyalty_points = loyalty_points + ? WHERE id = ?',
             [points, userId]
           );
-        } catch { /* non-blocking */ }
+        } catch { /* Loyalty points update is best-effort; failure does not block the order. */ }
       }
     } finally { conn.release(); }
 
     return NextResponse.json({ ok: true, id });
   } catch (dbErr: any) {
     console.warn('[POST /api/orders] DB error:', dbErr.message);
-    // DB unavailable — still return ok so the user sees their order
-    // The order is persisted locally in Zustand store
+    // Database write failed. The order ID is returned so the client can
+    // display the confirmation; the order is held in the Zustand store.
     return NextResponse.json({ ok: true, id });
   }
 }

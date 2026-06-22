@@ -306,7 +306,8 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
   // Reset to cart step when drawer closes
   useEffect(() => {
     if (!isOpen) {
-      // Small delay so the closing animation doesn't flicker
+      // Small delay to prevent the step state from resetting before the
+      // closing animation finishes.
       const t = setTimeout(() => {
         if (step !== 'success') setStep('cart');
       }, 400);
@@ -387,7 +388,8 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
       const id = `SIMB-${Math.floor(Math.random() * 90000 + 10000)}`;
 
       try {
-        // Save to local store immediately — order is guaranteed even if DB is down
+        // Save the order to the Zustand store immediately so the confirmation
+        // screen is shown regardless of database availability.
         placeOrder({
           id,
           items: cart,
@@ -398,7 +400,9 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
           recurring: recurringOrder,
         });
 
-        // Try to persist to DB (non-blocking — don't let this fail the UX)
+        // Persist to the database. Failures are swallowed so a transient DB
+        // outage does not block the user — the order is already committed to
+        // the Zustand store above.
         try {
           const { ordersApi } = await import('@/lib/api');
           await ordersApi.place({
@@ -418,7 +422,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
             promoCode: appliedPromo ?? null,
           });
         } catch {
-          // DB save failed silently — order is still in local store
+          // Database write failed; the order remains in the Zustand store.
         }
 
         setOrderId(id);
@@ -1297,5 +1301,3 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
     </AnimatePresence>
   );
 }
-
-// End of CartDrawer

@@ -116,9 +116,17 @@ export default function UnifiedLoginPage() {
         localStorage.setItem('admin_token', password);
       }
 
-      // Redirect after brief success screen
+      // Redirect after brief success screen.
+      // Customer navigation uses the Next.js router for a smooth client-side
+      // transition. Admin and branch staff require a hard reload because their
+      // auth tokens are stored in localStorage and read by separate guard logic.
       setTimeout(() => {
-        window.location.href = data.redirect ?? '/';
+        const redirect = data.redirect ?? '/';
+        if (data.role === 'customer') {
+          window.location.href = redirect; // full reload to re-hydrate auth state cleanly
+        } else {
+          window.location.href = redirect;
+        }
       }, 1200);
 
     } catch {

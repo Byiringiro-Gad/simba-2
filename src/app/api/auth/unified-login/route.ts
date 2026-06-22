@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
         conn.release();
       }
     } catch {
-      // DB unavailable — fall through to check demo staff
+      // Database lookup failed; execution continues to the static credential fallback below.
     }
 
     // ── 2b. Demo branch staff fallback ────────────────────────────────────

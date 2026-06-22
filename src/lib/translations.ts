@@ -388,6 +388,13 @@ export const translations = {
     // ── Branch review labels ──
     rateExperience:       "Rate your experience",
     noReviewsYetBranch:   "No reviews yet",
+    // ── Profile page ──
+    editProfile:          "Edit Profile",
+    personalInfo:         "Personal Information",
+    cannotChange:         "Cannot be changed",
+    nameUpdated:          "Name updated",
+    phoneUpdated:         "Phone updated",
+    addressAdded:         "Address added",
   },
 
   // ── FRANÇAIS ───────────────────────────────────────────────────────────────
@@ -773,6 +780,13 @@ export const translations = {
     // ── Avis sur les agences ──
     rateExperience:       "Évaluez votre expérience",
     noReviewsYetBranch:   "Aucun avis pour l'instant",
+    // ── Page profil ──
+    editProfile:          "Modifier le profil",
+    personalInfo:         "Informations personnelles",
+    cannotChange:         "Non modifiable",
+    nameUpdated:          "Nom mis à jour",
+    phoneUpdated:         "Téléphone mis à jour",
+    addressAdded:         "Adresse ajoutée",
   },
 
   // ── IKINYARWANDA ───────────────────────────────────────────────────────────
@@ -1158,6 +1172,13 @@ export const translations = {
     // ── Ibitekerezo ku mashami ──
     rateExperience:       "Tanga Igitekerezo",
     noReviewsYetBranch:   "Nta bitekerezo birabaho",
+    // ── Urupapuro rw'umwirondoro ──
+    editProfile:          "Hindura Umwirondoro",
+    personalInfo:         "Amakuru Yihariye",
+    cannotChange:         "Ntibishobora guhindurwa",
+    nameUpdated:          "Izina ryavugururiwe",
+    phoneUpdated:         "Terefone yavugururiwe",
+    addressAdded:         "Aderesi yongeweho",
   },
 };
 

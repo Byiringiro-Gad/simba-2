@@ -99,7 +99,7 @@ export default function ProductDetail() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId: product.id, email: notifyEmail }),
       });
-    } catch { /* non-blocking */ }
+    } catch { /* Notify registration failed; failure is intentionally swallowed. */ }
     setNotifyDone(true);
     setNotifySubmitting(false);
     toast.success(language === 'fr' ? 'Vous serez notifié quand disponible !' : language === 'rw' ? 'Uzabimenyeshwa igihe bizaboneka!' : 'You\'ll be notified when back in stock!');

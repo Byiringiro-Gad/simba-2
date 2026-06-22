@@ -46,7 +46,8 @@ export async function GET(req: NextRequest) {
         conn.release();
       }
     } catch (dbErr: any) {
-      // DB unavailable — return user from JWT payload so session still works
+      // Database unavailable. Return the user object derived from the JWT
+      // payload so the session remains valid without a database round-trip.
       console.warn('[GET /api/auth/me] DB unavailable, using JWT payload:', dbErr.message);
       return NextResponse.json({
         ok: true,

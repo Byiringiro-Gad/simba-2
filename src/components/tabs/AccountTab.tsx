@@ -5,9 +5,9 @@ import { translations } from '@/lib/translations';
 import {
   User, MapPin, ClipboardList, Heart,
   Star, LogOut, LogIn, Package, ShoppingBag,
-  ChevronRight, Phone, Shield, Moon, Sun,
+  ChevronRight, Shield, Moon, Sun,
   Globe, FileText, Lock, HelpCircle, MessageCircle,
-  TrendingUp, Award,
+  Award,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
@@ -283,7 +283,8 @@ export default function AccountTab() {
 
         {/* Settings items */}
         {[
-          { icon: MapPin,        label: t.deliveryAddresses, sub: selectedAddress?.full ?? t.noAddressYet, action: () => setAddressModalOpen(true) },
+          { icon: User,          label: language === 'fr' ? 'Modifier le profil' : language === 'rw' ? 'Hindura Umwirondoro' : 'Edit Profile', sub: user.email, href: '/profile' },
+          { icon: MapPin,        label: t.deliveryAddresses, sub: selectedAddress?.full ?? t.noAddressYet, href: '/profile' },
           { icon: MessageCircle, label: t.contactUs,         sub: '+250 788 386 386', action: () => window.open('https://wa.me/250788386386', '_blank') },
           { icon: HelpCircle,    label: 'FAQ',               sub: language === 'fr' ? 'Questions fréquentes' : language === 'rw' ? 'Ibibazo byinshi' : 'Frequently asked questions', href: '/faq' },
           { icon: Shield,        label: t.aboutSimba,        sub: t.aboutSimbaDesc, href: '/about' },
