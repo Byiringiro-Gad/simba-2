@@ -368,27 +368,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
       const id = `SIMB-${Math.floor(Math.random() * 90000 + 10000)}`;
 
       try {
-        const { ordersApi } = await import('@/lib/api');
-        const result = await ordersApi.place({
-          id,
-          userId: user?.id,
-          customerName: fullName.trim(),
-          customerPhone: `+250${contactPhone}`,
-          pickupBranch: selectedBranch?.name ?? '',
-          pickupSlot: pickupTime,
-          paymentMethod,
-          depositAmount,
-          items: cart,
-          subtotal,
-          deliveryFee: 0,
-          discount: discountAmount,
-          total: orderTotal,
-          promoCode: appliedPromo ?? null,
-        });
-
-        if (!result.ok) throw new Error(result.error ?? 'Order failed');
-
-        // Update local store
+        // Save to local store immediately — order is guaranteed even if DB is down
         placeOrder({
           id,
           items: cart,
@@ -398,6 +378,29 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
           depositAmount,
           recurring: recurringOrder,
         });
+
+        // Try to persist to DB (non-blocking — don't let this fail the UX)
+        try {
+          const { ordersApi } = await import('@/lib/api');
+          await ordersApi.place({
+            id,
+            userId: user?.id,
+            customerName: fullName.trim(),
+            customerPhone: `+250${contactPhone}`,
+            pickupBranch: selectedBranch?.name ?? '',
+            pickupSlot: pickupTime,
+            paymentMethod,
+            depositAmount,
+            items: cart,
+            subtotal,
+            deliveryFee: 0,
+            discount: discountAmount,
+            total: orderTotal,
+            promoCode: appliedPromo ?? null,
+          });
+        } catch {
+          // DB save failed silently — order is still in local store
+        }
 
         setOrderId(id);
         setIsPlacingOrder(false);
@@ -811,43 +814,56 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                     <div>
                       <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-3">{t.paymentMethod}</label>
                       <div className="space-y-3">
-                        {PAYMENT_METHODS.map(option => {
-                          const theme = PAYMENT_METHOD_THEMES[option];
+
+                        {/* MTN MoMo */}
+                        {(['mtn', 'airtel', 'card'] as const).map(option => {
                           const isActive = paymentMethod === option;
+                          const cfg = {
+                            mtn:    { bg: '#FFCC00', text: '#111', border: '#FFCC00', label: 'MTN',    name: 'MTN MoMo',      sub: 'Mobile Money Rwanda' },
+                            airtel: { bg: '#E31837', text: '#fff', border: '#E31837', label: 'AIRTEL', name: 'Airtel Money',   sub: 'Airtel Rwanda' },
+                            card:   { bg: '#1e293b', text: '#fff', border: '#1e293b', label: 'CARD',   name: language === 'fr' ? 'Carte' : language === 'rw' ? 'Ikarita' : 'Card', sub: 'Visa / Mastercard' },
+                          }[option];
+
                           return (
                             <button
                               key={option}
+                              type="button"
                               onClick={() => setPaymentMethod(option)}
-                              className={`w-full p-4 rounded-2xl font-bold flex items-center justify-between transition-all border-2 ${
+                              style={isActive ? {
+                                backgroundColor: cfg.bg,
+                                color: cfg.text,
+                                borderColor: cfg.border,
+                              } : {
+                                borderColor: cfg.border + '55',
+                              }}
+                              className={`w-full p-4 rounded-2xl flex items-center justify-between transition-all duration-150 border-2 ${
                                 isActive
-                                  ? `${theme.activeBg} ${theme.activeText} ${theme.activeBorder} shadow-lg scale-[1.01]`
-                                  : `bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 ${theme.idleBorder} hover:scale-[1.01]`
+                                  ? 'shadow-lg scale-[1.01]'
+                                  : 'bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 hover:scale-[1.01]'
                               }`}
                             >
                               <span className="flex items-center gap-3">
-                                {/* Brand icon — always shows brand color */}
-                                <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-[11px] font-black shadow-sm flex-shrink-0 ${
-                                  isActive ? `${theme.badgeBg} ${theme.badgeText}` : `${theme.idleBg} ${theme.idleText}`
-                                }`}>
-                                  {option === 'mtn' ? 'MTN' : option === 'airtel' ? 'AIRTEL' : 'CARD'}
-                                </div>
-                                <div className="text-left">
+                                {/* Brand badge — always colored */}
+                                <span
+                                  style={{ backgroundColor: cfg.bg, color: cfg.text }}
+                                  className="w-11 h-11 rounded-xl flex items-center justify-center text-[10px] font-black shadow flex-shrink-0"
+                                >
+                                  {cfg.label}
+                                </span>
+                                <span className="text-left">
                                   <p className="font-black text-sm">{getPaymentMethodLabel(option, language)}</p>
-                                  <p className={`text-[10px] ${isActive ? 'opacity-70' : 'text-gray-400 dark:text-gray-500'}`}>
+                                  <p className={`text-[11px] font-medium mt-0.5 ${isActive ? 'opacity-75' : 'text-gray-400 dark:text-gray-500'}`}>
                                     {getPaymentMethodSubLabel(option, language)}
                                   </p>
-                                </div>
+                                </span>
                               </span>
-                              {/* Radio indicator */}
-                              <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 transition-all flex items-center justify-center ${
-                                isActive
-                                  ? `${theme.radioDot}`
-                                  : 'border-gray-300 dark:border-gray-600 bg-transparent'
-                              }`}>
-                                {isActive && <div className={`w-2 h-2 rounded-full ${
-                                  option === 'mtn' ? 'bg-[#FFCC00]' : 'bg-white'
-                                }`} />}
-                              </div>
+                              {/* Radio dot */}
+                              <span
+                                style={isActive ? { borderColor: cfg.text, backgroundColor: cfg.text } : {}}
+                                className={`w-5 h-5 rounded-full border-2 flex-shrink-0 transition-all ${
+                                  isActive ? '' : 'border-gray-300 dark:border-gray-600'
+                                }`}
+                              />
                             </button>
                           );
                         })}

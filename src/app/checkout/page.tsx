@@ -236,42 +236,48 @@ export default function CheckoutPage() {
                   <div>
                     <label className="block text-xs font-black uppercase text-gray-400 mb-3">{t.paymentMethod}</label>
                     <div className="space-y-3">
-                      {PAYMENT_METHODS.map(option => {
-                        const theme = PAYMENT_METHOD_THEMES[option];
+                      {(['mtn', 'airtel', 'card'] as const).map(option => {
                         const isActive = paymentMethod === option;
+                        const PAY_CFG = {
+                          mtn:    { bg: '#FFCC00', text: '#111', border: '#FFCC00', label: 'MTN' },
+                          airtel: { bg: '#E31837', text: '#fff', border: '#E31837', label: 'AIRTEL' },
+                          card:   { bg: '#1e293b', text: '#fff', border: '#1e293b', label: 'CARD' },
+                        } as const;
+                        const c = PAY_CFG[option];
                         return (
                           <button
                             key={option}
+                            type="button"
                             onClick={() => setPaymentMethod(option)}
+                            style={isActive
+                              ? { backgroundColor: c.bg, color: c.text, borderColor: c.border }
+                              : { borderColor: c.border + '44' }
+                            }
                             className={clsx(
-                              'w-full p-4 rounded-2xl font-bold flex items-center justify-between border-2 transition-all',
-                              isActive
-                                ? `${theme.activeBg} ${theme.activeText} ${theme.activeBorder} shadow-lg scale-[1.01]`
-                                : `bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 ${theme.idleBorder} hover:scale-[1.01]`
+                              'w-full p-4 rounded-2xl flex items-center justify-between border-2 transition-all',
+                              isActive ? 'shadow-lg' : 'bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200'
                             )}
                           >
                             <span className="flex items-center gap-3">
-                              <div className={clsx(
-                                'w-10 h-10 rounded-xl flex items-center justify-center text-[10px] font-black shadow-sm flex-shrink-0',
-                                isActive ? `${theme.badgeBg} ${theme.badgeText}` : `${theme.idleBg} ${theme.idleText}`
-                              )}>
-                                {option.toUpperCase()}
-                              </div>
-                              <div className="text-left">
+                              <span
+                                style={{ backgroundColor: c.bg, color: c.text }}
+                                className="w-10 h-10 rounded-xl flex items-center justify-center text-[10px] font-black shadow flex-shrink-0"
+                              >
+                                {c.label}
+                              </span>
+                              <span className="text-left">
                                 <p className="font-black text-sm">{getPaymentMethodLabel(option, language)}</p>
-                                <p className={clsx('text-[10px]', isActive ? 'opacity-60' : 'text-gray-400 dark:text-gray-500')}>
+                                <p className={clsx('text-[10px] mt-0.5', isActive ? 'opacity-60' : 'text-gray-400 dark:text-gray-500')}>
                                   {getPaymentMethodSubLabel(option, language)}
                                 </p>
-                              </div>
+                              </span>
                             </span>
-                            <div className={clsx(
-                              'w-5 h-5 rounded-full border-2 flex-shrink-0 transition-all flex items-center justify-center',
-                              isActive ? theme.radioDot : 'border-gray-300 dark:border-gray-600 bg-transparent'
-                            )}>
-                              {isActive && (
-                                <div className={clsx('w-2 h-2 rounded-full', option === 'mtn' ? 'bg-[#FFCC00]' : 'bg-white')} />
+                            <span
+                              style={isActive ? { borderColor: c.text, backgroundColor: c.text } : {}}
+                              className={clsx('w-5 h-5 rounded-full border-2 flex-shrink-0 transition-all',
+                                isActive ? '' : 'border-gray-300 dark:border-gray-600'
                               )}
-                            </div>
+                            />
                           </button>
                         );
                       })}
