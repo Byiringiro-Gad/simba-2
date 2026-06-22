@@ -373,7 +373,6 @@ export default function AdminDashboard() {
       router.replace('/admin/login');
       return;
     }
-    setAuthed(true);
     loadOrders();
     loadProducts();
     loadUsers();
@@ -593,8 +592,6 @@ export default function AdminDashboard() {
     additions: products.filter(p => p.source === 'addition').length,
     overrides: products.filter(p => p.source === 'override').length,
   }), [products]);
-
-  if (!authed) return null;
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
