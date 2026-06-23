@@ -137,11 +137,15 @@
 /* ── Print styles for receipt ───────────────────────────────────────────── */
 @media print {
   body > * {
-    display: none !important;
+    visibility: hidden !important;
+  }
+  .receipt-print-area,
+  .receipt-print-area * {
+    visibility: visible !important;
   }
   .receipt-print-area {
     display: block !important;
-    position: fixed;
+    position: fixed !important;
     top: 0;
     left: 0;
     width: 100%;

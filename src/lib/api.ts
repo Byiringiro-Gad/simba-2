@@ -77,6 +77,7 @@ export const ordersApi = {
     pickupBranch: string; pickupSlot: string; paymentMethod: PaymentMethod;
     depositAmount: number; items: any[]; subtotal: number; deliveryFee: number;
     discount: number; total: number; promoCode?: string | null;
+    deliveryNotes?: string;
   }) => request<{ ok: boolean; id?: string; error?: string }>(
     '/orders', { method: 'POST', body: JSON.stringify(body) }
   ),

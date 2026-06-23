@@ -288,6 +288,28 @@ export default function ProfilePage() {
           )}
         </motion.div>
 
+        {/* Order history quick-link */}
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
+          className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+          <button
+            onClick={() => router.push('/')}
+            className="w-full flex items-center gap-4 px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+          >
+            <div className="w-10 h-10 bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
+              <span className="text-xl">📦</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-black text-sm text-gray-900 dark:text-white">
+                {lang === 'fr' ? 'Historique des commandes' : lang === 'rw' ? 'Amateka y\'Itumiziwa' : 'Order History'}
+              </p>
+              <p className="text-xs text-gray-400">
+                {lang === 'fr' ? 'Voir et suivre vos commandes' : lang === 'rw' ? 'Reba no gukurikira amabwiriza' : 'View and track your orders'}
+              </p>
+            </div>
+            <ExternalLink className="w-4 h-4 text-gray-300 flex-shrink-0" />
+          </button>
+        </motion.div>
+
         {/* Sign out */}
         <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
           onClick={() => { logout(); router.push('/'); }}

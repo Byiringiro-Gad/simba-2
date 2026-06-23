@@ -114,6 +114,7 @@ function generatePickupSlots(): { value: string; label: string }[] {
 function SuccessStep({
   orderId, selectedBranch, totalPoints, t, onReset,
   pickupBranchId, language, depositAmount, paymentMethod,
+  orderItems, orderTotal, pickupSlot, orderDate,
 }: {
   orderId: string;
   selectedBranch: ReturnType<typeof getBranchById>;
@@ -124,6 +125,10 @@ function SuccessStep({
   language: Language;
   depositAmount: number;
   paymentMethod: PaymentMethod;
+  orderItems: any[];
+  orderTotal: number;
+  pickupSlot: string;
+  orderDate: string;
 }) {
   const { submitBranchReview } = useSimbaStore();
   const [rating, setRating] = useState(0);
@@ -257,6 +262,44 @@ function SuccessStep({
         <Printer className="w-4 h-4" />
         {language === 'fr' ? 'Imprimer le reçu' : language === 'rw' ? 'Fotokorera urupapuro' : 'Print Receipt'}
       </button>
+
+      {/* Hidden receipt — shown only during print */}
+      <div className="receipt-print-area" style={{ visibility: 'hidden', position: 'absolute', pointerEvents: 'none', height: 0, overflow: 'hidden' }}>
+        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+          <div style={{ fontWeight: 900, fontSize: '20px' }}>🛒 Simba Supermarket</div>
+          <div style={{ fontSize: '12px', color: '#666' }}>Kigali, Rwanda · simbaonlineshopping.com</div>
+        </div>
+        <hr style={{ margin: '12px 0' }} />
+        <div style={{ fontSize: '13px', marginBottom: '8px' }}><strong>Order ID:</strong> #{orderId}</div>
+        <div style={{ fontSize: '13px', marginBottom: '8px' }}><strong>Date:</strong> {orderDate}</div>
+        <div style={{ fontSize: '13px', marginBottom: '8px' }}><strong>Branch:</strong> {selectedBranch?.name}</div>
+        <div style={{ fontSize: '13px', marginBottom: '16px' }}><strong>Pickup:</strong> {pickupSlot}</div>
+        <hr style={{ margin: '12px 0' }} />
+        <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Items</div>
+        {orderItems.map((item: any, i: number) => (
+          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
+            <span>{item.name} ×{item.quantity}</span>
+            <span>{(item.price * item.quantity).toLocaleString()} RWF</span>
+          </div>
+        ))}
+        <hr style={{ margin: '12px 0' }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
+          <span>Subtotal</span><span>{orderTotal.toLocaleString()} RWF</span>
+        </div>
+        {depositAmount > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px', color: '#16a34a' }}>
+            <span>Deposit paid</span><span>-{depositAmount.toLocaleString()} RWF</span>
+          </div>
+        )}
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: 900, marginTop: '8px' }}>
+          <span>Balance due at pickup</span>
+          <span>{Math.max(0, orderTotal - depositAmount).toLocaleString()} RWF</span>
+        </div>
+        <hr style={{ margin: '16px 0' }} />
+        <div style={{ fontSize: '11px', color: '#888', textAlign: 'center' }}>
+          Payment: {paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod.toUpperCase()} · Thank you for shopping at Simba!
+        </div>
+      </div>
     </motion.div>
   );
 }
@@ -420,6 +463,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
             discount: discountAmount,
             total: orderTotal,
             promoCode: appliedPromo ?? null,
+            deliveryNotes: deliveryNotes.trim() || undefined,
           });
         } catch {
           // Database write failed; the order remains in the Zustand store.
@@ -1240,6 +1284,10 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                     language={language}
                     depositAmount={depositAmount}
                     paymentMethod={paymentMethod}
+                    orderItems={cart}
+                    orderTotal={orderTotal}
+                    pickupSlot={pickupTime}
+                    orderDate={new Date().toLocaleString()}
                   />
                 )}
 

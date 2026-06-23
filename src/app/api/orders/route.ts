@@ -36,6 +36,7 @@ async function ensureOrderSchema(conn: any) {
       assigned_to      VARCHAR(36)   DEFAULT NULL,
       assigned_name    VARCHAR(100)  DEFAULT NULL,
       branch_status    VARCHAR(20)   NOT NULL DEFAULT 'pending',
+      delivery_notes   VARCHAR(300)  DEFAULT NULL,
       created_at       TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
       updated_at       TIMESTAMPTZ   NOT NULL DEFAULT NOW()
     )
@@ -95,6 +96,7 @@ export async function POST(req: NextRequest) {
   const {
     id, userId, customerName, customerPhone, pickupBranch, pickupSlot,
     paymentMethod, depositAmount, items, subtotal, deliveryFee, discount, total, promoCode,
+    deliveryNotes,
   } = body;
 
   try {
@@ -107,11 +109,12 @@ export async function POST(req: NextRequest) {
         `INSERT INTO orders
           (id, user_id, customer_name, customer_phone, pickup_branch, pickup_slot,
            payment_method, subtotal, delivery_fee, discount, deposit_amount, total,
-           promo_code, fulfillment_type, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pickup', 'processing')`,
+           promo_code, delivery_notes, fulfillment_type, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pickup', 'processing')`,
         [id, userId ?? null, customerName ?? '', customerPhone ?? '', pickupBranch ?? '',
          pickupSlot ?? 'asap', paymentMethod ?? 'mtn', subtotal ?? 0, deliveryFee ?? 0,
-         discount ?? 0, depositAmount ?? 0, Number(total) || 0, promoCode ?? null]
+         discount ?? 0, depositAmount ?? 0, Number(total) || 0, promoCode ?? null,
+         deliveryNotes ?? null]
       );
 
       for (const item of items ?? []) {
