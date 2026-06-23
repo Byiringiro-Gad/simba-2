@@ -63,9 +63,10 @@ export default function Footer() {
   const t = copy[language];
 
   const COMPANY_LINKS: { href: string; label: { en: string; fr: string; rw: string }; external?: boolean }[] = [
-    { href: '/about',   label: { en: 'About Us',      fr: 'A propos de nous',      rw: 'Ibyerekeye twe' } },
-    { href: '/faq',     label: { en: 'FAQ',            fr: 'FAQ',                   rw: 'Ibibazo' } },
-    { href: '/contact', label: { en: 'Contact',        fr: 'Contact',               rw: 'Twandikire' } },
+    { href: '/about',    label: { en: 'About Us',    fr: 'A propos de nous',  rw: 'Ibyerekeye twe' } },
+    { href: '/branches', label: { en: 'Our Branches', fr: 'Nos Agences',      rw: 'Amashami Yacu' } },
+    { href: '/faq',      label: { en: 'FAQ',          fr: 'FAQ',               rw: 'Ibibazo' } },
+    { href: '/contact',  label: { en: 'Contact',      fr: 'Contact',           rw: 'Twandikire' } },
   ];
 
   const LEGAL_LINKS = [

@@ -12,7 +12,6 @@ import GoogleAuthHandler from "@/components/GoogleAuthHandler";
 import PageLoader from "@/components/PageLoader";
 import ScrollToTop from "@/components/ScrollToTop";
 import SiteReviewWidget from "@/components/SiteReviewWidget";
-import MiniCartBar from "@/components/MiniCartBar";
 import CompareDrawer from "@/components/CompareDrawer";
 import { Suspense } from "react";
 
@@ -74,7 +73,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ToastContainer />
           <ScrollToTop />
           <SiteReviewWidget />
-          <MiniCartBar />
           <CompareDrawer />
         </ThemeProvider>
       </body>

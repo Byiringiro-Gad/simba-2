@@ -571,10 +571,9 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                 {step === 'cart' && cart.length > 0 && (
                   <button
                     onClick={() => setShowClearConfirm(true)}
-                    className="p-2 hover:bg-white/10 rounded-xl transition-colors"
-                    title="Clear cart"
+                    className="px-3 py-1.5 text-xs font-black text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-colors"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    {language === 'fr' ? 'Vider' : language === 'rw' ? 'Siba' : 'Clear'}
                   </button>
                 )}
                 <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
@@ -712,10 +711,10 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
                                     </button>
                                     <button
                                       onClick={() => removeFromCart(item.id)}
-                                      className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                      className="text-[10px] font-black text-gray-400 hover:text-red-500 transition-colors"
                                       aria-label="Remove item"
                                     >
-                                      <Trash2 className="w-3.5 h-3.5" />
+                                      {language === 'fr' ? 'Retirer' : language === 'rw' ? 'Kura' : 'Remove'}
                                     </button>
                                   </div>
                                 </div>
