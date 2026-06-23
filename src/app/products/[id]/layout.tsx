@@ -2,13 +2,14 @@ import { getSimbaData } from '@/lib/data';
 import type { Metadata } from 'next';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
   children: React.ReactNode;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
   const { products } = getSimbaData();
-  const product = products.find(p => p.id === Number(params.id));
+  const product = products.find(p => p.id === Number(id));
 
   if (!product) {
     return {
@@ -36,6 +37,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function ProductLayout({ children }: Props) {
+export default function ProductLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
