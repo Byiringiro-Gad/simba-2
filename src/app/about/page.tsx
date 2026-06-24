@@ -84,8 +84,8 @@ export default function AboutPage() {
           </div>
           <div className="relative h-64 lg:h-auto rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800">
             <Image
-              src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&q=80"
-              alt="Supermarket interior"
+              src="/store-images/store-3.jpg"
+              alt="Simba Supermarket Kigali"
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 50vw"

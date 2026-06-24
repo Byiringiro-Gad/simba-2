@@ -76,16 +76,20 @@ function ShelfCard({ product, onClose }: { product: Product; onClose: () => void
 
 // ── Category visual tile ──────────────────────────────────────────────────────
 const CAT_IMAGES: Record<string, { img: string; gradient: string }> = {
-  'Groceries':                     { img: 'https://images.unsplash.com/photo-1543168256-418811576931?w=400&q=80', gradient: 'from-green-700/80' },
-  'Bakery':                        { img: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&q=80', gradient: 'from-amber-700/80' },
+  'Groceries':                     { img: '/store-images/store-main.jpg',  gradient: 'from-green-700/80' },
+  'Bakery':                        { img: '/store-images/store-6.jpg',     gradient: 'from-amber-700/80' },
   'Cosmetics & Personal Care':     { img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&q=80', gradient: 'from-pink-700/80' },
   'Baby Products':                 { img: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=400&q=80', gradient: 'from-sky-700/80' },
   'Kitchenware & Electronics':     { img: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80', gradient: 'from-orange-700/80' },
   'Electronics':                   { img: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&q=80', gradient: 'from-slate-700/80' },
   'Sports & Wellness':             { img: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80', gradient: 'from-teal-700/80' },
+  'Alcoholic Drinks':              { img: 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400&q=80', gradient: 'from-red-800/80' },
   'Alcoholic Beverages & Spirits': { img: 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400&q=80', gradient: 'from-red-800/80' },
-  'Cleaning & Sanitary':           { img: 'https://images.unsplash.com/photo-1563453392212-326f5e854473?w=400&q=80', gradient: 'from-cyan-700/80' },
-  'Kitchen Storage':               { img: 'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=400&q=80', gradient: 'from-lime-700/80' },
+  'Cleaning & Sanitary':           { img: '/store-images/store-2.jpg',     gradient: 'from-cyan-700/80' },
+  'Kitchen Storage':               { img: '/store-images/store-3.jpg',     gradient: 'from-lime-700/80' },
+  'Household':                     { img: '/store-images/store-4.jpg',     gradient: 'from-indigo-700/80' },
+  'Food Products':                 { img: '/store-images/store-main.jpg',  gradient: 'from-green-700/80' },
+  'General':                       { img: '/store-images/store-6.jpg',     gradient: 'from-gray-700/80' },
   'Pet Care':                      { img: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400&q=80', gradient: 'from-rose-700/80' },
 };
 
@@ -255,7 +259,7 @@ export default function ShopNowPanel({ isOpen, onClose, onCategorySelect }: Prop
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {categories.map((cat, i) => {
-                    const meta = CAT_IMAGES[cat] ?? { img: 'https://images.unsplash.com/photo-1543168256-418811576931?w=400&q=80', gradient: 'from-gray-700/80' };
+                    const meta = CAT_IMAGES[cat] ?? { img: '/store-images/store-main.jpg', gradient: 'from-gray-700/80' };
                     const count = allProducts.filter(p => p.category === cat && p.inStock).length;
                     const label = translateCategory(cat, language);
                     return (

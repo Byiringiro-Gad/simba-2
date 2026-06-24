@@ -13,6 +13,7 @@ import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 import ReferralCard from '@/components/ReferralCard';
 import Link from 'next/link';
+import Image from 'next/image';
 
 // ── Loyalty Wallet Card ──────────────────────────────────────────────────────
 function LoyaltyWallet() {
@@ -117,8 +118,21 @@ export default function AccountTab() {
     return (
       <div className="max-w-md mx-auto px-4 py-12 pb-24 sm:pb-12 flex flex-col items-center text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full">
-          <div className="w-20 h-20 bg-brand-dark rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
-            <User className="w-10 h-10 text-brand" />
+          {/* Store photo banner */}
+          <div className="relative w-full h-36 rounded-3xl overflow-hidden mb-6">
+            <Image
+              src="/store-images/store-5.jpg"
+              alt="Simba Supermarket"
+              fill
+              className="object-cover"
+              sizes="400px"
+            />
+            <div className="absolute inset-0 bg-brand-dark/70 flex flex-col items-center justify-center gap-2">
+              <div className="w-14 h-14 bg-brand rounded-3xl flex items-center justify-center shadow-xl">
+                <User className="w-7 h-7 text-gray-900" />
+              </div>
+              <p className="text-white font-black text-sm">Simba Supermarket</p>
+            </div>
           </div>
           <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{t.myAccount}</h2>
           <p className="text-gray-400 text-sm font-medium mb-8 leading-relaxed">{t.signInToTrack}</p>
@@ -165,35 +179,52 @@ export default function AccountTab() {
   return (
     <div className="max-w-screen-sm mx-auto px-4 sm:px-6 py-5 pb-28 sm:pb-8 space-y-4">
 
-      {/* Profile header */}
+      {/* Profile header — real store photo background */}
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-        className="bg-brand-dark rounded-3xl overflow-hidden">
-        <div className="px-6 pt-6 pb-4 flex items-center gap-4">
-          <div className="w-14 h-14 bg-brand rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
-            <span className="font-black text-2xl text-gray-900">{user.name.charAt(0).toUpperCase()}</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="font-black text-lg text-white leading-tight truncate">{user.name}</h2>
-            <p className="text-white/50 text-xs font-medium truncate">{user.email}</p>
-            {user.phone && <p className="text-white/40 text-xs font-medium">{user.phone}</p>}
-          </div>
-          <button onClick={logout} className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors" title="Sign out">
-            <LogOut className="w-4 h-4 text-white/70" />
-          </button>
+        className="rounded-3xl overflow-hidden relative">
+        {/* Store photo */}
+        <div className="absolute inset-0">
+          <Image
+            src="/store-images/store-4.jpg"
+            alt="Simba Supermarket"
+            fill
+            className="object-cover"
+            sizes="600px"
+            priority
+          />
+          {/* Dark overlay so text stays readable */}
+          <div className="absolute inset-0 bg-brand-dark/85" />
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 divide-x divide-white/10 border-t border-white/10">
-          {[
-            { label: t.orders,     value: orders.length },
-            { label: t.savedItems, value: favorites.length },
-            { label: t.spent,      value: `${Math.round(totalSpent / 1000)}K RWF` },
-          ].map(({ label, value }) => (
-            <div key={label} className="py-4 text-center">
-              <p className="font-black text-white text-lg leading-none">{value}</p>
-              <p className="text-white/40 text-xs font-medium mt-1 uppercase tracking-wider">{label}</p>
+        {/* Content on top of image */}
+        <div className="relative z-10">
+          <div className="px-6 pt-6 pb-4 flex items-center gap-4">
+            <div className="w-14 h-14 bg-brand rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+              <span className="font-black text-2xl text-gray-900">{user.name.charAt(0).toUpperCase()}</span>
             </div>
-          ))}
+            <div className="flex-1 min-w-0">
+              <h2 className="font-black text-lg text-white leading-tight truncate">{user.name}</h2>
+              <p className="text-white/50 text-xs font-medium truncate">{user.email}</p>
+              {user.phone && <p className="text-white/40 text-xs font-medium">{user.phone}</p>}
+            </div>
+            <button onClick={logout} className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors" title="Sign out">
+              <LogOut className="w-4 h-4 text-white/70" />
+            </button>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 divide-x divide-white/10 border-t border-white/10">
+            {[
+              { label: t.orders,     value: orders.length },
+              { label: t.savedItems, value: favorites.length },
+              { label: t.spent,      value: `${Math.round(totalSpent / 1000)}K RWF` },
+            ].map(({ label, value }) => (
+              <div key={label} className="py-4 text-center">
+                <p className="font-black text-white text-lg leading-none">{value}</p>
+                <p className="text-white/40 text-xs font-medium mt-1 uppercase tracking-wider">{label}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </motion.div>
 

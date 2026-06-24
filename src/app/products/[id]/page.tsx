@@ -379,7 +379,7 @@ export default function ProductDetail() {
                     ? 'border-brand-dark text-brand-dark dark:text-brand dark:border-brand'
                     : 'border-transparent text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                 )}>
-                {tab === 'reviews' ? `${t.reviewsTab} (${reviews.length + count})` : t.detailsTab}
+                {tab === 'reviews' ? `${t.reviewsTab} (${reviewCount})` : t.detailsTab}
               </button>
             ))}
           </div>
