@@ -8,37 +8,46 @@ let cachedData: SimbaData | null = null;
 // This map overrides them at runtime without altering the JSON file.
 const CATEGORY_OVERRIDES: Record<number, string> = {
   // Bakery/bread items → Food Products
-  61001:1, 61003:1, 61005:1, 61006:1, 61007:1, 61008:1, 61009:1,
-  61010:1, 61011:1, 61012:1, 61013:1, 61014:1,
+  61001:'Food Products', 61003:'Food Products', 61005:'Food Products', 61006:'Food Products',
+  61007:'Food Products', 61008:'Food Products', 61009:'Food Products', 61010:'Food Products',
+  61011:'Food Products', 61012:'Food Products', 61013:'Food Products', 61014:'Food Products',
   // Dairy/milk → Food Products
-  66001:1, 66002:1, 66003:1, 66005:1, 66006:1, 66007:1, 66008:1, 66009:1, 66010:1,
+  66001:'Food Products', 66002:'Food Products', 66003:'Food Products', 66005:'Food Products',
+  66006:'Food Products', 66007:'Food Products', 66008:'Food Products', 66009:'Food Products', 66010:'Food Products',
   // Coffee → Food Products
-  74001:1, 74002:1, 74003:1, 74004:1, 74005:1, 74006:1, 74007:1, 74008:1,
-  74009:1, 74010:1, 74011:1, 74012:1,
+  74001:'Food Products', 74002:'Food Products', 74003:'Food Products', 74004:'Food Products',
+  74005:'Food Products', 74006:'Food Products', 74007:'Food Products', 74008:'Food Products',
+  74009:'Food Products', 74010:'Food Products', 74011:'Food Products', 74012:'Food Products',
   // Hand wash mismatch
-  245026:1,
+  245026:'Food Products',
   // Jams → Food Products
-  258001:1, 258002:1, 258003:1, 258004:1, 258005:1, 258006:1, 258007:1, 258008:1,
-  258009:1, 258010:1, 258011:1, 258012:1, 258013:1, 258014:1, 258015:1, 258016:1,
-  258017:1, 258018:1,
+  258001:'Food Products', 258002:'Food Products', 258003:'Food Products', 258004:'Food Products',
+  258005:'Food Products', 258006:'Food Products', 258007:'Food Products', 258008:'Food Products',
+  258009:'Food Products', 258010:'Food Products', 258011:'Food Products', 258012:'Food Products',
+  258013:'Food Products', 258014:'Food Products', 258015:'Food Products', 258016:'Food Products',
+  258017:'Food Products', 258018:'Food Products',
   // Candy/sweets → Food Products
-  366001:1, 366002:1, 366003:1, 366004:1, 366005:1, 366007:1, 366008:1, 366009:1,
-  366010:1, 366011:1, 366012:1, 366013:1, 366014:1, 366015:1,
-  367001:1, 367002:1, 367003:1, 367004:1, 367006:1, 367007:1, 367008:1, 367009:1,
-  367010:1, 367011:1, 367012:1, 367013:1, 367014:1, 367015:1, 367016:1, 367017:1,
-  367018:1, 367019:1, 367020:1, 367021:1, 367022:1,
+  366001:'Food Products', 366002:'Food Products', 366003:'Food Products', 366004:'Food Products',
+  366005:'Food Products', 366007:'Food Products', 366008:'Food Products', 366009:'Food Products',
+  366010:'Food Products', 366011:'Food Products', 366012:'Food Products', 366013:'Food Products',
+  366014:'Food Products', 366015:'Food Products',
+  367001:'Food Products', 367002:'Food Products', 367003:'Food Products', 367004:'Food Products',
+  367006:'Food Products', 367007:'Food Products', 367008:'Food Products', 367009:'Food Products',
+  367010:'Food Products', 367011:'Food Products', 367012:'Food Products', 367013:'Food Products',
+  367014:'Food Products', 367015:'Food Products', 367016:'Food Products', 367017:'Food Products',
+  367018:'Food Products', 367019:'Food Products', 367020:'Food Products', 367021:'Food Products',
+  367022:'Food Products',
   // Fresh fruits → Food Products
-  664001:1, 664002:1, 664003:1, 664004:1, 664005:1, 664006:1, 664007:1, 664009:1, 664010:1,
+  664001:'Food Products', 664002:'Food Products', 664003:'Food Products', 664004:'Food Products',
+  664005:'Food Products', 664006:'Food Products', 664007:'Food Products', 664009:'Food Products', 664010:'Food Products',
   // Farmer's Choice sausages / pet food → Pet Care
-  62003:2,
-  354001:2, 354002:2, 354003:2, 354004:2, 354005:2, 354006:2, 354007:2, 354008:2, 354009:2,
-  // Farmer's Choice sausages in Pet Care range
-  471001:2, 471002:2, 471003:2, 471004:2, 471005:2, 471006:2, 471007:2, 471008:2,
-  471009:2, 471010:2, 471011:2, 471012:2, 471013:2, 471014:2, 471015:2, 471016:2,
-};
-const CAT_CODE: Record<number, string> = {
-  1: 'Food Products',
-  2: 'Pet Care',
+  62003:'Pet Care',
+  354001:'Pet Care', 354002:'Pet Care', 354003:'Pet Care', 354004:'Pet Care', 354005:'Pet Care',
+  354006:'Pet Care', 354007:'Pet Care', 354008:'Pet Care', 354009:'Pet Care',
+  471001:'Pet Care', 471002:'Pet Care', 471003:'Pet Care', 471004:'Pet Care', 471005:'Pet Care',
+  471006:'Pet Care', 471007:'Pet Care', 471008:'Pet Care', 471009:'Pet Care', 471010:'Pet Care',
+  471011:'Pet Care', 471012:'Pet Care', 471013:'Pet Care', 471014:'Pet Care', 471015:'Pet Care',
+  471016:'Pet Care',
 };
 
 export const getSimbaData = (): SimbaData => {
@@ -51,7 +60,7 @@ export const getSimbaData = (): SimbaData => {
         .filter((p: any) => p.price >= 10 && p.image && p.image.length > 0)
         .map((p: any) => {
           const override = CATEGORY_OVERRIDES[p.id];
-          return override ? { ...p, category: CAT_CODE[override] } : p;
+          return override ? { ...p, category: override } : p;
         }),
     } as SimbaData;
   }
