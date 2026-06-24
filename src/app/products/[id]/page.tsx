@@ -2,7 +2,8 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { getSimbaData, getRelatedProducts } from '@/lib/data';
-import { getReviews, addReview, getProductRating, getStockCount } from '@/lib/reviews';
+import { getReviews, getProductRating, getStockCount } from '@/lib/reviews';
+import { useLiveProducts } from '@/hooks/useLiveProducts';
 import Navbar from '@/components/Navbar';
 import CartDrawer from '@/components/CartDrawer';
 import ProductCard from '@/components/ProductCard';
@@ -66,18 +67,20 @@ export default function ProductDetail() {
   } = useSimbaStore();
   const t = translations[language];
 
-  const data = useMemo(() => getSimbaData(), []);
+  const liveProducts = useLiveProducts();
+  const data = useMemo(() => ({ ...getSimbaData(), products: liveProducts }), [liveProducts]);
   const product = data.products.find(p => p.id === Number(id));
-  const related = product ? getRelatedProducts(product, 6) : [];
+  const related = product ? liveProducts.filter(p => p.category === product.category && p.id !== product.id).slice(0, 6) : [];
 
   const cartItem = cart.find(item => item.id === product?.id);
   const quantity = cartItem?.quantity ?? 0;
   const isFav = product ? favorites.includes(product.id) : false;
-  const { avg, count } = product ? getProductRating(product.id) : { avg: 0, count: 0 };
   const stockLeft = product ? getStockCount(product.id) : null;
 
   // Reviews state
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewAvg, setReviewAvg] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
@@ -106,10 +109,25 @@ export default function ProductDetail() {
   };
 
   useEffect(() => {
-    if (product) {
-      addToRecentlyViewed(product.id);
-      setReviews(getReviews(product.id));
-    }
+    if (!product) return;
+    addToRecentlyViewed(product.id);
+    // Load reviews from DB
+    fetch(`/api/product-reviews?productId=${product.id}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          setReviews(data.reviews ?? []);
+          setReviewAvg(data.avg ?? 0);
+          setReviewCount(data.count ?? 0);
+        }
+      })
+      .catch(() => {
+        // Fallback to localStorage reviews if API fails
+        setReviews(getReviews(product.id));
+        const local = getProductRating(product.id);
+        setReviewAvg(local.avg);
+        setReviewCount(local.count);
+      });
   }, [product?.id]);
 
   if (!product) {
@@ -130,22 +148,37 @@ export default function ProductDetail() {
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
+    if (!user) { toast.error('Please sign in to leave a review'); return; }
     setSubmitting(true);
-    await new Promise(r => setTimeout(r, 600));
-    const review = addReview({
-      productId: product.id,
-      userId: user?.id ?? 'guest',
-      userName: user?.name ?? 'Anonymous',
-      rating: newRating,
-      comment: newComment.trim(),
-      verified: !!user,
-    });
-    setReviews(prev => [review, ...prev]);
-    setNewComment('');
-    setNewRating(5);
-    setShowReviewForm(false);
+    try {
+      const res = await fetch('/api/product-reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: product.id,
+          userId: user.id,
+          userName: user.name ?? 'Anonymous',
+          rating: newRating,
+          comment: newComment.trim(),
+          verified: true,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok && data.review) {
+        setReviews(prev => [data.review, ...prev]);
+        setReviewAvg(prev => parseFloat(((prev * reviewCount + newRating) / (reviewCount + 1)).toFixed(1)));
+        setReviewCount(prev => prev + 1);
+        setNewComment('');
+        setNewRating(5);
+        setShowReviewForm(false);
+        toast.success(t.reviewSubmitted);
+      } else {
+        toast.error(data.error ?? 'Failed to submit review');
+      }
+    } catch {
+      toast.error('Failed to submit review. Please try again.');
+    }
     setSubmitting(false);
-    toast.success(t.reviewSubmitted);
   };
 
   const handleShare = () => {
@@ -227,11 +260,11 @@ export default function ProductDetail() {
             <div className="flex items-center gap-2 mb-4">
               <div className="flex gap-0.5">
                 {[1,2,3,4,5].map(i => (
-                  <span key={i} className={`text-sm ${count > 0 && i <= Math.round(avg) ? 'text-amber-500' : 'text-gray-200 dark:text-gray-700'}`}>★</span>
+                  <span key={i} className={`text-sm ${reviewCount > 0 && i <= Math.round(reviewAvg) ? 'text-amber-500' : 'text-gray-200 dark:text-gray-700'}`}>★</span>
                 ))}
               </div>
-              {count > 0 ? (
-                <span className="text-sm text-gray-400">({count} {count === 1 ? t.review : t.reviews})</span>
+              {reviewCount > 0 ? (
+                <span className="text-sm text-gray-400">({reviewCount} {reviewCount === 1 ? t.review : t.reviews})</span>
               ) : (
                 <span className="text-sm text-gray-400">
                   {language === 'fr' ? 'Pas encore d\'avis' : language === 'rw' ? 'Nta bitekerezo birabaho' : 'No reviews yet'}
@@ -381,11 +414,11 @@ export default function ProductDetail() {
                 {/* Rating summary */}
                 <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 flex items-center gap-6">
                   <div className="text-center flex-shrink-0">
-                    {count > 0 ? (
+                    {reviewCount > 0 ? (
                       <>
-                        <p className="text-5xl font-black text-gray-900 dark:text-white">{avg}</p>
-                        <StarRating value={Math.round(avg)} size="sm" />
-                        <p className="text-xs text-gray-400 mt-1">{count} {count === 1 ? t.review : t.reviews}</p>
+                        <p className="text-5xl font-black text-gray-900 dark:text-white">{reviewAvg}</p>
+                        <StarRating value={Math.round(reviewAvg)} size="sm" />
+                        <p className="text-xs text-gray-400 mt-1">{reviewCount} {reviewCount === 1 ? t.review : t.reviews}</p>
                       </>
                     ) : (
                       <>
@@ -398,7 +431,7 @@ export default function ProductDetail() {
                   <div className="flex-1 space-y-1.5">
                     {[5, 4, 3, 2, 1].map(star => {
                       const reviewsForStar = reviews.filter(r => r.rating === star).length;
-                      const pct = count > 0 ? Math.round((reviewsForStar / count) * 100) : 0;
+                      const pct = reviewCount > 0 ? Math.round((reviewsForStar / reviewCount) * 100) : 0;
                       return (
                         <div key={star} className="flex items-center gap-2">
                           <span className="text-xs font-bold text-gray-400 w-3">{star}</span>

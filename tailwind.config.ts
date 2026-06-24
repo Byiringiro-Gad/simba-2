@@ -9,6 +9,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // ── Tailwind gray-950 (missing from v3) ──
+        gray: {
+          950: '#030712',
+        },
         // ── Simba Brand Colors — Official Simba Orange (from logo image) ──
         brand: {
           DEFAULT:        '#FF6600',   // Simba Orange — exact match from official header

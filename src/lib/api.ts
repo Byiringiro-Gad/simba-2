@@ -74,10 +74,11 @@ export const authApi = {
 export const ordersApi = {
   place: (body: {
     id: string; userId?: string; customerName: string; customerPhone: string;
+    customerEmail?: string;
     pickupBranch: string; pickupSlot: string; paymentMethod: PaymentMethod;
     depositAmount: number; items: any[]; subtotal: number; deliveryFee: number;
     discount: number; total: number; promoCode?: string | null;
-    deliveryNotes?: string;
+    deliveryNotes?: string; recurring?: string;
   }) => request<{ ok: boolean; id?: string; error?: string }>(
     '/orders', { method: 'POST', body: JSON.stringify(body) }
   ),

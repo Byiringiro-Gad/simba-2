@@ -8,7 +8,7 @@ import {
   ShoppingBag, Clock, CheckCircle2, XCircle, LogOut, Search, Eye, Store,
   TrendingUp, Package, DollarSign, RefreshCw, X, Bike, Star,
   Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Image as ImageIcon,
-  ChevronDown, AlertTriangle, Users, Tag, Settings
+  ChevronDown, AlertTriangle, Users, Tag, Settings, UserCheck, Key, Lock
 } from 'lucide-react';
 import Image from 'next/image';
 import { clsx } from 'clsx';
@@ -31,7 +31,7 @@ interface Product {
   description?: string | null; source: 'json' | 'override' | 'addition';
 }
 
-type AdminView = 'orders' | 'products' | 'branches' | 'promos' | 'users' | 'settings';
+type AdminView = 'orders' | 'products' | 'branches' | 'promos' | 'users' | 'staff' | 'settings';
 type StatusFilter = 'all' | 'processing' | 'delivered' | 'cancelled';
 
 const CATEGORIES = [
@@ -233,6 +233,7 @@ export default function AdminDashboard() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   // Products state
   const [products, setProducts] = useState<Product[]>([]);
@@ -248,6 +249,17 @@ export default function AdminDashboard() {
   // Users state
   const [users, setUsers] = useState<any[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
+
+  // Staff state
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [staffLoading, setStaffLoading] = useState(false);
+  const [staffError, setStaffError] = useState('');
+  const [showStaffModal, setShowStaffModal] = useState(false);
+  const [editStaff, setEditStaff] = useState<any | null>(null);
+  const [staffForm, setStaffForm] = useState({ name: '', username: '', password: '', branchId: '', branchName: '', role: 'staff' as 'manager' | 'staff' });
+  const [staffFormError, setStaffFormError] = useState('');
+  const [savingStaff, setSavingStaff] = useState(false);
+  const [deletingStaffId, setDeletingStaffId] = useState<string | null>(null);
 
   // Promo codes state â€” loaded from real API
   const [promos, setPromos] = useState<{ code: string; discount: number; uses: number; active: boolean }[]>([]);
@@ -323,12 +335,16 @@ export default function AdminDashboard() {
         fetch(`${API}/admin/orders`, { headers: { 'x-admin-token': token } }),
         fetch(`${API}/reviews`),
       ]);
+      if (!oRes.ok) throw new Error(`Server returned ${oRes.status}`);
       const oData = await oRes.json();
       const rData = await rRes.json();
       setOrders(Array.isArray(oData) ? oData : []);
       if (rData.ok) setRatings(rData.ratings ?? {});
       setLastRefresh(new Date());
-    } catch { /* silent */ }
+      setLoadError('');
+    } catch (err: any) {
+      setLoadError(err.message ?? 'Failed to load orders');
+    }
     setLoading(false);
   };
 
@@ -367,6 +383,112 @@ export default function AdminDashboard() {
     } catch { /* silent */ }
   };
 
+  // ── Staff CRUD ──────────────────────────────────────────────────────────────
+  const BRANCHES_LIST = [
+    { id: 'remera',     name: 'Simba Supermarket Remera' },
+    { id: 'kimironko',  name: 'Simba Supermarket Kimironko' },
+    { id: 'kacyiru',    name: 'Simba Supermarket Kacyiru' },
+    { id: 'nyamirambo', name: 'Simba Supermarket Nyamirambo' },
+    { id: 'gikondo',    name: 'Simba Supermarket Gikondo' },
+    { id: 'kanombe',    name: 'Simba Supermarket Kanombe' },
+    { id: 'kinyinya',   name: 'Simba Supermarket Kinyinya' },
+    { id: 'kibagabaga', name: 'Simba Supermarket Kibagabaga' },
+    { id: 'nyanza',     name: 'Simba Supermarket Nyanza' },
+    { id: 'centenary',  name: 'Simba Supermarket Centenary' },
+    { id: 'kigali_heights', name: 'Simba Supermarket Kigali Heights' },
+    { id: 'gisozi',     name: 'Simba Supermarket Gisozi' },
+  ];
+
+  const loadStaff = async () => {
+    setStaffLoading(true);
+    setStaffError('');
+    try {
+      const token = localStorage.getItem('admin_token') ?? '';
+      const res = await fetch('/api/admin/staff', { headers: { 'x-admin-token': token } });
+      const data = await res.json();
+      if (data.ok) setStaffList(data.staff ?? []);
+      else setStaffError(data.error ?? 'Failed to load staff');
+    } catch (e: any) {
+      setStaffError(e.message ?? 'Network error');
+    }
+    setStaffLoading(false);
+  };
+
+  const openNewStaff = () => {
+    setEditStaff(null);
+    setStaffForm({ name: '', username: '', password: '', branchId: BRANCHES_LIST[0].id, branchName: BRANCHES_LIST[0].name, role: 'staff' });
+    setStaffFormError('');
+    setShowStaffModal(true);
+  };
+
+  const openEditStaff = (s: any) => {
+    setEditStaff(s);
+    setStaffForm({ name: s.name, username: s.username, password: '', branchId: s.branch_id, branchName: s.branch_name, role: s.role });
+    setStaffFormError('');
+    setShowStaffModal(true);
+  };
+
+  const handleSaveStaff = async () => {
+    if (!staffForm.username.trim() || !staffForm.branchId) {
+      setStaffFormError('Username and branch are required.');
+      return;
+    }
+    if (!editStaff && !staffForm.password) {
+      setStaffFormError('Password is required for new accounts.');
+      return;
+    }
+    setSavingStaff(true);
+    setStaffFormError('');
+    try {
+      const token = localStorage.getItem('admin_token') ?? '';
+      const branch = BRANCHES_LIST.find(b => b.id === staffForm.branchId);
+      const payload: any = {
+        name: staffForm.name.trim() || staffForm.username.trim(),
+        username: staffForm.username.trim().toLowerCase(),
+        branchId: staffForm.branchId,
+        branchName: branch?.name ?? staffForm.branchId,
+        role: staffForm.role,
+      };
+      if (staffForm.password) payload.password = staffForm.password;
+
+      let res: Response;
+      if (editStaff) {
+        res = await fetch(`/api/admin/staff/${editStaff.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        res = await fetch('/api/admin/staff', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+          body: JSON.stringify(payload),
+        });
+      }
+      const data = await res.json();
+      if (!data.ok) { setStaffFormError(data.error ?? 'Save failed'); setSavingStaff(false); return; }
+      setShowStaffModal(false);
+      await loadStaff();
+    } catch (e: any) {
+      setStaffFormError(e.message ?? 'Network error');
+    }
+    setSavingStaff(false);
+  };
+
+  const handleDeleteStaff = async (staffId: string, staffName: string) => {
+    if (!confirm(`Delete account for "${staffName}"? They will no longer be able to log in.`)) return;
+    setDeletingStaffId(staffId);
+    try {
+      const token = localStorage.getItem('admin_token') ?? '';
+      await fetch(`/api/admin/staff/${staffId}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-token': token },
+      });
+      setStaffList(prev => prev.filter(s => s.id !== staffId));
+    } catch { /* silent — list will reconcile on next refresh */ }
+    setDeletingStaffId(null);
+  };
+
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') ?? '' : '';
     if (!token) {
@@ -378,6 +500,7 @@ export default function AdminDashboard() {
     loadUsers();
     loadPromos();
     loadSettings();
+    loadStaff();
     const iv = setInterval(loadOrders, 30000);
     return () => clearInterval(iv);
   }, []);
@@ -618,6 +741,7 @@ export default function AdminDashboard() {
             { id: 'branches', label: 'Branches', icon: Store },
             { id: 'promos',   label: 'Promos',   icon: Tag,        badge: promos.filter(p => p.active).length > 0 ? promos.filter(p => p.active).length : undefined },
             { id: 'users',    label: 'Users',    icon: Users },
+            { id: 'staff',    label: 'Staff',    icon: UserCheck,  badge: staffList.length > 0 ? staffList.length : undefined },
             { id: 'settings', label: 'Settings', icon: Settings },
           ] as { id: AdminView; label: string; icon: any; badge?: number }[]).map(item => {
             const Icon = item.icon;
@@ -669,6 +793,108 @@ export default function AdminDashboard() {
               {activeView === 'branches' && `${branchStats.length} active branches`}
               {activeView === 'promos' && `${promos.filter(p => p.active).length} active codes`}
               {activeView === 'users' && `${users.length} registered users`}
+
+          {/* STAFF VIEW */}
+          {activeView === 'staff' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-black text-gray-900 dark:text-white">Branch Staff</p>
+                  <p className="text-sm text-gray-400 mt-0.5">Manage manager and staff accounts for all branches</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={loadStaff}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 hover:border-brand transition-colors">
+                    <RefreshCw className="w-3.5 h-3.5" /> Refresh
+                  </button>
+                  <button onClick={openNewStaff}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-brand-dark text-white rounded-xl text-xs font-black hover:bg-gray-800 transition-colors">
+                    <Plus className="w-3.5 h-3.5" /> Add Staff
+                  </button>
+                </div>
+              </div>
+
+              {staffLoading ? (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-16 flex justify-center">
+                  <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : staffError ? (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-red-200 dark:border-red-800 p-12 text-center">
+                  <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-3" />
+                  <p className="font-black text-gray-900 dark:text-white mb-1">Failed to load staff</p>
+                  <p className="text-sm text-red-500 mb-4">{staffError}</p>
+                  <button onClick={loadStaff}
+                    className="px-5 py-2 bg-brand-dark text-white rounded-xl font-bold text-sm hover:bg-gray-800 transition-colors inline-flex items-center gap-2 mx-auto">
+                    <RefreshCw className="w-4 h-4" /> Try Again
+                  </button>
+                </div>
+              ) : staffList.length === 0 ? (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 p-16 text-center">
+                  <UserCheck className="w-12 h-12 text-gray-200 dark:text-gray-700 mx-auto mb-3" />
+                  <p className="font-black text-gray-900 dark:text-white mb-1">No staff accounts yet</p>
+                  <p className="text-sm text-gray-400 mb-4">Staff are seeded automatically on first branch login, or add them manually here.</p>
+                  <button onClick={openNewStaff}
+                    className="px-5 py-2 bg-brand-dark text-white rounded-xl font-black text-sm hover:bg-gray-800 transition-colors inline-flex items-center gap-2 mx-auto">
+                    <Plus className="w-4 h-4" /> Add First Staff Member
+                  </button>
+                </div>
+              ) : (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                  <div className="hidden sm:grid grid-cols-[1fr_180px_120px_90px_100px] gap-4 px-5 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+                    {['Name / Username', 'Branch', 'Role', 'Created', ''].map((h, i) => (
+                      <p key={i} className="text-[10px] font-black uppercase tracking-widest text-gray-400">{h}</p>
+                    ))}
+                  </div>
+                  <div className="divide-y divide-gray-50 dark:divide-gray-800">
+                    {staffList.map((s, i) => (
+                      <motion.div key={s.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
+                        className="grid grid-cols-1 sm:grid-cols-[1fr_180px_120px_90px_100px] gap-3 sm:gap-4 px-5 py-3.5 hover:bg-gray-50/70 dark:hover:bg-gray-800/40 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className={clsx('w-8 h-8 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0',
+                            s.role === 'manager' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
+                          )}>
+                            {s.name?.charAt(0)?.toUpperCase() ?? '?'}
+                          </div>
+                          <div>
+                            <p className="font-bold text-sm text-gray-900 dark:text-white">{s.name}</p>
+                            <p className="text-xs text-gray-400 font-mono">@{s.username}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center">
+                          <p className="text-xs text-gray-600 dark:text-gray-300 truncate">{s.branch_name?.replace('Simba Supermarket ', '')}</p>
+                        </div>
+                        <div className="flex items-center">
+                          <span className={clsx('px-2 py-0.5 rounded-full text-xs font-black',
+                            s.role === 'manager'
+                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                              : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                          )}>
+                            {s.role === 'manager' ? 'Manager' : 'Staff'}
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <p className="text-xs text-gray-400">{new Date(s.created_at).toLocaleDateString()}</p>
+                        </div>
+                        <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => openEditStaff(s)}
+                            className="p-1.5 text-gray-400 hover:text-brand-dark hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleDeleteStaff(s.id, s.name)} disabled={deletingStaffId === s.id}
+                            className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-40">
+                            {deletingStaffId === s.id
+                              ? <div className="w-4 h-4 border-2 border-red-300 border-t-red-500 rounded-full animate-spin" />
+                              : <Trash2 className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
               {activeView === 'settings' && 'Site configuration and feature flags'}
             </p>
           </div>
@@ -716,6 +942,7 @@ export default function AdminDashboard() {
             { id: 'branches', label: 'Branches', icon: Store },
             { id: 'promos',   label: 'Promos',   icon: Tag },
             { id: 'users',    label: 'Users',    icon: Users },
+            { id: 'staff',    label: 'Staff',    icon: UserCheck },
             { id: 'settings', label: 'Settings', icon: Settings },
           ] as { id: AdminView; label: string; icon: any }[]).map(item => {
             const Icon = item.icon;
@@ -839,6 +1066,16 @@ export default function AdminDashboard() {
               {loading ? (
                 <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-16 flex justify-center">
                   <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : loadError ? (
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-red-200 dark:border-red-800 p-12 text-center">
+                  <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-3" />
+                  <p className="font-black text-gray-900 dark:text-white mb-1">Failed to load orders</p>
+                  <p className="text-sm text-red-500 mb-4">{loadError}</p>
+                  <button onClick={loadOrders}
+                    className="px-5 py-2 bg-brand-dark text-white rounded-xl font-bold text-sm hover:bg-gray-800 transition-colors flex items-center gap-2 mx-auto">
+                    <RefreshCw className="w-4 h-4" /> Try Again
+                  </button>
                 </div>
               ) : filteredOrders.length === 0 ? (
                 <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-16 text-center">
@@ -1440,6 +1677,101 @@ export default function AdminDashboard() {
         {showProductModal && (
           <ProductModal product={isNewProduct ? null : editProduct} categories={CATEGORIES} onSave={handleSaveProduct}
             onClose={() => { setShowProductModal(false); setEditProduct(null); setIsNewProduct(false); }} language={language} />
+        )}
+      </AnimatePresence>
+
+      {/* Staff modal */}
+      <AnimatePresence>
+        {showStaffModal && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]" onClick={() => setShowStaffModal(false)} />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed inset-0 z-[110] flex items-center justify-center p-4 pointer-events-none">
+              <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-md pointer-events-auto overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 bg-brand-dark">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-brand rounded-xl flex items-center justify-center">
+                      <UserCheck className="w-4 h-4 text-gray-900" />
+                    </div>
+                    <p className="font-black text-white">{editStaff ? 'Edit Staff Account' : 'Add Staff Account'}</p>
+                  </div>
+                  <button onClick={() => setShowStaffModal(false)} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
+                    <X className="w-5 h-5 text-white" />
+                  </button>
+                </div>
+                <div className="p-6 space-y-4">
+                  {staffFormError && (
+                    <div className="flex items-center gap-2 px-4 py-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                      <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                      <p className="text-sm text-red-700 dark:text-red-400 font-medium">{staffFormError}</p>
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Full Name</label>
+                    <input value={staffForm.name} onChange={e => setStaffForm(f => ({ ...f, name: e.target.value }))}
+                      placeholder="e.g. Jean Pierre Habimana"
+                      className="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-medium outline-none focus:border-brand transition-colors dark:text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Username *</label>
+                    <input value={staffForm.username} onChange={e => setStaffForm(f => ({ ...f, username: e.target.value }))}
+                      placeholder="e.g. manager_remera"
+                      className="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-medium outline-none focus:border-brand transition-colors dark:text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">
+                      {editStaff ? 'New Password (leave blank to keep current)' : 'Password *'}
+                    </label>
+                    <input type="password" value={staffForm.password} onChange={e => setStaffForm(f => ({ ...f, password: e.target.value }))}
+                      placeholder={editStaff ? 'Leave blank to keep existing' : 'Min 6 characters'}
+                      className="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-medium outline-none focus:border-brand transition-colors dark:text-white" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Branch *</label>
+                    <select value={staffForm.branchId}
+                      onChange={e => {
+                        const b = BRANCHES_LIST.find(b => b.id === e.target.value);
+                        setStaffForm(f => ({ ...f, branchId: e.target.value, branchName: b?.name ?? e.target.value }));
+                      }}
+                      className="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm font-medium outline-none focus:border-brand transition-colors dark:text-white">
+                      {BRANCHES_LIST.map(b => <option key={b.id} value={b.id}>{b.name.replace('Simba Supermarket ', '')}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Role *</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(['staff', 'manager'] as const).map(r => (
+                        <button key={r} type="button" onClick={() => setStaffForm(f => ({ ...f, role: r }))}
+                          className={clsx('py-2.5 rounded-xl border-2 text-sm font-black transition-all',
+                            staffForm.role === r
+                              ? r === 'manager' ? 'border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400'
+                                                : 'border-blue-400 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
+                              : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300'
+                          )}>
+                          {r === 'manager' ? 'Manager' : 'Staff'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="px-6 pb-6 flex gap-3">
+                  <button onClick={() => setShowStaffModal(false)}
+                    className="flex-1 py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-black text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    Cancel
+                  </button>
+                  <button onClick={handleSaveStaff} disabled={savingStaff}
+                    className="flex-1 py-3 rounded-2xl bg-brand-dark text-white font-black text-sm hover:bg-gray-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                    {savingStaff
+                      ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Saving...</>
+                      : <><CheckCircle2 className="w-4 h-4" /> {editStaff ? 'Save Changes' : 'Create Account'}</>
+                    }
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>

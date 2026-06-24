@@ -464,6 +464,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean; onClo
             total: orderTotal,
             promoCode: appliedPromo ?? null,
             deliveryNotes: deliveryNotes.trim() || undefined,
+            recurring: recurringOrder !== 'none' ? recurringOrder : undefined,
           });
         } catch {
           // Database write failed; the order remains in the Zustand store.

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { getSimbaData, getCategories } from '@/lib/data';
+import { useLiveProducts } from '@/hooks/useLiveProducts';
 import Navbar from '@/components/Navbar';
 import CategorySidebar from '@/components/CategorySidebar';
 import CategoryGrid from '@/components/CategoryGrid';
@@ -160,8 +161,16 @@ function RecentlyViewedSection({ data }: { data: SimbaData }) {
 const BRANCHES = SIMBA_BRANCHES;
 
 export default function Home() {
-  const data       = useMemo(() => getSimbaData(), []);
-  const categories = useMemo(() => getCategories(),  []);
+  const liveProducts = useLiveProducts();
+  const data       = useMemo(() => ({ ...getSimbaData(), products: liveProducts }), [liveProducts]);
+  const categories = useMemo(() => {
+    const seen = new Set<string>();
+    const cats: string[] = [];
+    for (const p of data.products) {
+      if (!seen.has(p.category)) { seen.add(p.category); cats.push(p.category); }
+    }
+    return cats;
+  }, [data.products]);
 
   const {
     language, isCartOpen, setCartOpen,

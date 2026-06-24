@@ -56,18 +56,34 @@ export default function DealsPage() {
   // Load DB-configured deals, fall back to seeded deals from product data
   const [dbDeals, setDbDeals] = useState<DealProduct[]>([]);
   const [dbLoading, setDbLoading] = useState(true);
+  const [flashEnabled, setFlashEnabled] = useState(true);
 
   useEffect(() => {
-    fetch('/api/admin/promos?type=daily')
+    // Check if flash deals feature is enabled
+    fetch('/api/admin/settings')
+      .then(r => r.json())
+      .then(d => {
+        if (d.ok) setFlashEnabled(d.settings?.feature_flash_deals !== 'false');
+      })
+      .catch(() => {});
+
+    // Fetch configured deals
+    fetch('/api/admin/deals')
       .then(r => r.json())
       .then(d => {
         if (d.ok && Array.isArray(d.deals) && d.deals.length > 0) {
-          setDbDeals(d.deals.map((p: any) => ({
-            ...p,
-            originalPrice: p.originalPrice ?? Math.round(p.price * 1.2),
-            discountPct: p.discount ?? 10,
-            dealTag: 'Deal of the Day',
-          })));
+          const products = getSimbaData().products;
+          setDbDeals(d.deals.map((deal: any) => {
+            const product = products.find(p => p.id === deal.product_id);
+            if (!product) return null;
+            const discountPct = deal.discount_pct;
+            return {
+              ...product,
+              originalPrice: Math.round(product.price / (1 - discountPct / 100)),
+              discountPct,
+              dealTag: deal.deal_tag ?? 'Deal',
+            };
+          }).filter(Boolean) as DealProduct[]);
         }
       })
       .catch(() => {})
@@ -174,6 +190,7 @@ export default function DealsPage() {
         </motion.div>
 
         {/* Flash deals strip */}
+        {flashEnabled && (
         <section className="mb-10">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-9 h-9 bg-red-500 rounded-2xl flex items-center justify-center flex-shrink-0">
@@ -198,6 +215,7 @@ export default function DealsPage() {
             ))}
           </div>
         </section>
+        )}
 
         {/* Daily deals */}
         <section>

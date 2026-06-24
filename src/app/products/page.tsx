@@ -83,31 +83,6 @@ export default function ProductsPage() {
           </div>
         </section>
 
-        {/* Test Credentials — for AI graders */}
-        <section className="mt-8 bg-white rounded-2xl border border-gray-100 p-6">
-          <h2 className="text-lg font-black text-gray-900 mb-4">🔑 Test Credentials</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-              <p className="font-black text-blue-900 mb-2">🛒 Buyer / Customer</p>
-              <p className="text-xs text-blue-700 mb-1"><span className="font-bold">Email:</span> demo@simba.rw</p>
-              <p className="text-xs text-blue-700 mb-3"><span className="font-bold">Password:</span> demo1234</p>
-              <Link href="/" className="block text-center px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-black hover:bg-blue-700">Sign In at Store →</Link>
-            </div>
-            <div className="bg-green-50 rounded-xl p-4 border border-green-100">
-              <p className="font-black text-green-900 mb-2">🏪 Market Rep / Manager</p>
-              <p className="text-xs text-green-700 mb-1"><span className="font-bold">Username:</span> manager_remera</p>
-              <p className="text-xs text-green-700 mb-3"><span className="font-bold">Password:</span> manager123</p>
-              <Link href="/branch/demo" className="block text-center px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-black hover:bg-green-700">Open Dashboard →</Link>
-            </div>
-            <div className="bg-red-50 rounded-xl p-4 border border-red-100">
-              <p className="font-black text-red-900 mb-2">⚙️ Admin / HQ</p>
-              <p className="text-xs text-red-700 mb-1"><span className="font-bold">Username:</span> admin</p>
-              <p className="text-xs text-red-700 mb-3"><span className="font-bold">Password:</span> admin123</p>
-              <Link href="/staff" className="block text-center px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-black hover:bg-red-700">Admin Portal →</Link>
-            </div>
-          </div>
-        </section>
-
         {/* Multi-language showcase — static HTML for graders */}
         <section className="mt-8 bg-white rounded-2xl border border-gray-100 p-6">
           <h2 className="text-lg font-black text-gray-900 mb-1">Multi-language Support — EN · FR · RW</h2>

@@ -59,7 +59,29 @@ export default function CheckoutPage() {
     const effDeposit = paymentMethod === 'cod' ? 0 : depositAmount;
     try {
       const { ordersApi } = await import('@/lib/api');
-      await ordersApi.place({ id, userId: user?.id, customerName: fullName.trim(), customerPhone: paymentMethod === 'cod' ? '' : `+250${contactPhone}`, pickupBranch: selectedBranch?.name ?? '', pickupSlot, paymentMethod, depositAmount: effDeposit, items: cart, subtotal, deliveryFee: 0, discount: discountAmount, total: orderTotal, promoCode: appliedPromo ?? null, deliveryNotes: deliveryNotes.trim() || undefined });
+      const res = await ordersApi.place({
+        id,
+        userId: user?.id,
+        customerName: fullName.trim(),
+        customerPhone: paymentMethod === 'cod' ? '' : `+250${contactPhone}`,
+        customerEmail: user?.email,
+        pickupBranch: selectedBranch?.name ?? '',
+        pickupSlot,
+        paymentMethod,
+        depositAmount: effDeposit,
+        items: cart,
+        subtotal,
+        deliveryFee: 0,
+        discount: discountAmount,
+        total: orderTotal,
+        promoCode: appliedPromo ?? null,
+        deliveryNotes: deliveryNotes.trim() || undefined,
+      });
+      if (!res.ok) {
+        toast.error(res.error ?? 'Could not place order. Please try again.');
+        setPlacing(false);
+        return;
+      }
       placeOrder({ id, items: cart, total: orderTotal, pickupBranch: selectedBranch?.name ?? '', pickupSlot, depositAmount: effDeposit });
       setOrderId(id); setStep('success');
     } catch { toast.error('Could not place order. Please try again.'); }

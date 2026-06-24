@@ -52,10 +52,26 @@ export async function POST(req: NextRequest) {
       );
 
       if (referralCode) {
+        const cleanCode = referralCode.toUpperCase().trim();
+        // Grant 50 loyalty points to the referrer
         await conn.execute(
           `UPDATE users SET loyalty_points = loyalty_points + 50 WHERE referral_code = ?`,
-          [referralCode.toUpperCase()]
+          [cleanCode]
         );
+        // Record the referral in the referrals table (best-effort)
+        try {
+          const [refRows] = await conn.execute(
+            'SELECT id FROM users WHERE referral_code = ?',
+            [cleanCode]
+          ) as any[];
+          const referrerId = (refRows as any[])[0]?.id ?? null;
+          await conn.execute(
+            `INSERT INTO referrals (referral_code, referred_user, referrer_user, bonus_granted)
+             VALUES (?, ?, ?, TRUE)
+             ON CONFLICT (referred_user) DO NOTHING`,
+            [cleanCode, id, referrerId]
+          );
+        } catch { /* referrals table may not exist yet — will be created on first API call */ }
       }
 
       return NextResponse.json({ ok: true, message: 'Account created. Please sign in.' });

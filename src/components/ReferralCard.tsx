@@ -1,32 +1,37 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useSimbaStore } from '@/store/useSimbaStore';
 import { translations } from '@/lib/translations';
 import { Copy, Gift, Users, TrendingUp } from 'lucide-react';
 import { toast } from './Toast';
 import { motion } from 'framer-motion';
 
-// Generate a deterministic referral code from the user's ID
 function generateReferralCode(userId: string): string {
   const clean = userId.replace(/-/g, '').toUpperCase();
   return 'SIMBA' + clean.slice(0, 6);
 }
 
 export default function ReferralCard() {
-  const { user, language, orders } = useSimbaStore();
+  const { user, language } = useSimbaStore();
   const t = translations[language];
+
+  const [referralCount, setReferralCount] = useState<number | null>(null);
+
+  const referralCode = user?.referralCode ?? (user ? generateReferralCode(user.id) : '');
+
+  useEffect(() => {
+    if (!referralCode) return;
+    fetch(`/api/referrals?code=${encodeURIComponent(referralCode)}`)
+      .then(r => r.json())
+      .then(data => { if (data.ok) setReferralCount(data.count); })
+      .catch(() => setReferralCount(0));
+  }, [referralCode]);
 
   if (!user) return null;
 
-  // Use stored referral code if it exists, otherwise generate from user id
-  const referralCode = user.referralCode ?? generateReferralCode(user.id);
-
-  // Count how many orders used this code (proxy for referrals)
-  const referralCount = 0; // Would be fetched from API in production
-
   const handleCopy = () => {
     navigator.clipboard.writeText(referralCode).catch(() => {
-      // Fallback for environments without clipboard API
       const el = document.createElement('textarea');
       el.value = referralCode;
       document.body.appendChild(el);
@@ -93,7 +98,8 @@ export default function ReferralCard() {
         <div className="flex items-center gap-2">
           <Users className="w-3.5 h-3.5 text-white/40" />
           <p className="text-xs text-white/40 font-medium">
-            {referralCount} {t.friendsReferred}
+            {referralCount === null ? '…' : referralCount}{' '}
+            {t.friendsReferred}
             {' · '}
             {language === 'fr' ? '+50 pts par parrainage' : language === 'rw' ? '+50 pts buri gutumira' : '+50 pts per referral'}
           </p>

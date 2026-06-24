@@ -45,6 +45,7 @@ export default function StaffDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [inventory, setInventory] = useState<Record<number, { stockCount: number; isAvailable: boolean }>>({});
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [updating, setUpdating] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'orders' | 'inventory'>('orders');
   const [invSearch, setInvSearch] = useState('');
@@ -69,11 +70,16 @@ export default function StaffDashboard() {
         fetch(`${API}/branch/orders`, { headers: { Authorization: `Bearer ${t}` } }),
         fetch(`${API}/inventory/${branchId}`),
       ]);
+      if (!ordersRes.ok) throw new Error(`Orders request failed (${ordersRes.status})`);
       const ordersData = await ordersRes.json();
       const invData = await invRes.json();
       if (ordersData.ok) setOrders(ordersData.orders ?? []);
       if (invData.ok) setInventory(invData.inventory ?? {});
-    } catch (err) { console.error(err); }
+      setLoadError('');
+    } catch (err: any) {
+      console.error(err);
+      setLoadError(err.message ?? 'Failed to load orders');
+    }
     setLoading(false);
   };
 
@@ -200,6 +206,16 @@ export default function StaffDashboard() {
             {loading ? (
               <div className="flex items-center justify-center py-20">
                 <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : loadError ? (
+              <div className="bg-white rounded-2xl border border-red-200 p-12 text-center">
+                <AlertTriangle className="w-12 h-12 text-red-400 mx-auto mb-3" />
+                <p className="font-black text-gray-900 mb-1">Failed to load orders</p>
+                <p className="text-sm text-red-500 mb-4">{loadError}</p>
+                <button onClick={() => loadAll()}
+                  className="px-5 py-2 bg-brand-dark text-white rounded-xl font-bold text-sm hover:bg-gray-800 transition-colors inline-flex items-center gap-2">
+                  <RefreshCw className="w-4 h-4" /> Try Again
+                </button>
               </div>
             ) : orders.length === 0 ? (
               <div className="bg-white rounded-2xl border border-gray-100 p-16 text-center">

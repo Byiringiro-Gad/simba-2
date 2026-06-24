@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPool } from '@/lib/db';
+import { sendOrderConfirmationEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,6 +33,7 @@ async function ensureOrderSchema(conn: any) {
       total            INT           NOT NULL,
       promo_code       VARCHAR(20)   DEFAULT NULL,
       fulfillment_type VARCHAR(20)   NOT NULL DEFAULT 'pickup',
+      recurring        VARCHAR(10)   NOT NULL DEFAULT 'none',
       status           VARCHAR(20)   NOT NULL DEFAULT 'processing',
       assigned_to      VARCHAR(36)   DEFAULT NULL,
       assigned_name    VARCHAR(100)  DEFAULT NULL,
@@ -41,6 +43,10 @@ async function ensureOrderSchema(conn: any) {
       updated_at       TIMESTAMPTZ   NOT NULL DEFAULT NOW()
     )
   `);
+  // Add recurring column if it doesn't exist on older tables
+  await conn.execute(
+    `ALTER TABLE orders ADD COLUMN IF NOT EXISTS recurring VARCHAR(10) NOT NULL DEFAULT 'none'`
+  ).catch(() => {});
 
   await conn.execute(`
     CREATE TABLE IF NOT EXISTS order_items (
@@ -94,62 +100,92 @@ export async function POST(req: NextRequest) {
   }
 
   const {
-    id, userId, customerName, customerPhone, pickupBranch, pickupSlot,
+    id, userId, customerName, customerPhone, customerEmail, pickupBranch, pickupSlot,
     paymentMethod, depositAmount, items, subtotal, deliveryFee, discount, total, promoCode,
-    deliveryNotes,
+    deliveryNotes, recurring,
   } = body;
 
+  // Validate required fields
+  if (!id || !pickupBranch || !items?.length || !total) {
+    return NextResponse.json(
+      { ok: false, error: 'Missing required order fields (id, pickupBranch, items, total)' },
+      { status: 400 }
+    );
+  }
+
+  const pool = getPool();
+  const conn = await pool.getConnection();
   try {
-    const pool = getPool();
-    const conn = await pool.getConnection();
-    try {
-      await ensureOrderSchema(conn);
+    await ensureOrderSchema(conn);
 
+    await conn.execute(
+      `INSERT INTO orders
+        (id, user_id, customer_name, customer_phone, pickup_branch, pickup_slot,
+         payment_method, subtotal, delivery_fee, discount, deposit_amount, total,
+         promo_code, delivery_notes, recurring, fulfillment_type, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pickup', 'processing')`,
+      [id, userId ?? null, customerName ?? '', customerPhone ?? '', pickupBranch,
+       pickupSlot ?? 'asap', paymentMethod ?? 'mtn', subtotal ?? 0, deliveryFee ?? 0,
+       discount ?? 0, depositAmount ?? 0, Number(total),
+       promoCode ?? null, deliveryNotes ?? null,
+       (recurring && recurring !== 'none') ? recurring : 'none']
+    );
+
+    for (const item of items) {
       await conn.execute(
-        `INSERT INTO orders
-          (id, user_id, customer_name, customer_phone, pickup_branch, pickup_slot,
-           payment_method, subtotal, delivery_fee, discount, deposit_amount, total,
-           promo_code, delivery_notes, fulfillment_type, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pickup', 'processing')`,
-        [id, userId ?? null, customerName ?? '', customerPhone ?? '', pickupBranch ?? '',
-         pickupSlot ?? 'asap', paymentMethod ?? 'mtn', subtotal ?? 0, deliveryFee ?? 0,
-         discount ?? 0, depositAmount ?? 0, Number(total) || 0, promoCode ?? null,
-         deliveryNotes ?? null]
+        `INSERT INTO order_items (order_id, product_id, name, price, quantity, unit, image, category)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id, item.id, item.name, item.price, item.quantity, item.unit ?? 'Pcs',
+         (item.image ?? '').slice(0, 499), item.category ?? '']
       );
+    }
 
-      for (const item of items ?? []) {
+    // ── Decrease branch inventory stock (best-effort) ─────────────────────
+    if (items?.length) {
+      const branchId =
+        BRANCH_NAME_TO_ID[pickupBranch.toLowerCase()] ??
+        pickupBranch.toLowerCase().replace(/\s+/g, '_');
+      await decreaseStock(conn, branchId, items);
+    }
+
+    // ── Add loyalty points (best-effort) ──────────────────────────────────
+    if (userId) {
+      const points = Math.floor(Number(total) / 100);
+      try {
         await conn.execute(
-          `INSERT INTO order_items (order_id, product_id, name, price, quantity, unit, image, category)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-          [id, item.id, item.name, item.price, item.quantity, item.unit ?? 'Pcs',
-           (item.image ?? '').slice(0, 499), item.category ?? '']
+          'UPDATE users SET loyalty_points = loyalty_points + ? WHERE id = ?',
+          [points, userId]
         );
-      }
+      } catch { /* Best-effort — does not block the order */ }
+    }
 
-      // ── Decrease branch inventory stock ──────────────────────────────────
-      if (pickupBranch && items?.length) {
-        const branchId = BRANCH_NAME_TO_ID[pickupBranch.toLowerCase()] ?? pickupBranch.toLowerCase().replace(/\s+/g, '_');
-        await decreaseStock(conn, branchId, items);
-      }
-
-      // ── Add loyalty points ────────────────────────────────────────────────
-      if (userId) {
-        const points = Math.floor((Number(total) || 0) / 100);
-        try {
-          await conn.execute(
-            'UPDATE users SET loyalty_points = loyalty_points + ? WHERE id = ?',
-            [points, userId]
-          );
-        } catch { /* Loyalty points update is best-effort; failure does not block the order. */ }
-      }
-    } finally { conn.release(); }
+    // ── Send order confirmation email (best-effort) ───────────────────────
+    if (customerEmail) {
+      sendOrderConfirmationEmail({
+        orderId: id,
+        name: customerName ?? 'Customer',
+        email: customerEmail,
+        branch: pickupBranch,
+        total: Number(total),
+        deposit: depositAmount ?? 0,
+        items: items.map((i: any) => ({
+          name: i.name,
+          quantity: i.quantity,
+          price: i.price,
+          unit: i.unit,
+        })),
+      }).catch((e) => console.error('[order email]', e.message));
+    }
 
     return NextResponse.json({ ok: true, id });
   } catch (dbErr: any) {
-    console.warn('[POST /api/orders] DB error:', dbErr.message);
-    // Database write failed. The order ID is returned so the client can
-    // display the confirmation; the order is held in the Zustand store.
-    return NextResponse.json({ ok: true, id });
+    console.error('[POST /api/orders] DB error — order NOT saved:', dbErr.message);
+    return NextResponse.json(
+      { ok: false, error: 'Failed to save order. Please try again.' },
+      { status: 500 }
+    );
+  } finally {
+    conn.release();
   }
 }
 
@@ -164,7 +200,8 @@ export async function GET(req: NextRequest) {
         `SELECT o.id, o.user_id, o.customer_name, o.customer_phone, o.pickup_branch,
                 o.pickup_slot, o.payment_method, o.subtotal, o.delivery_fee,
                 o.discount, o.deposit_amount, o.total, o.promo_code,
-                o.fulfillment_type, o.status, o.branch_status, o.assigned_to, o.assigned_name,
+                o.fulfillment_type, o.recurring, o.status, o.branch_status,
+                o.assigned_to, o.assigned_name,
                 o.created_at AS date, o.updated_at
          FROM orders o
          ${userId ? 'WHERE o.user_id = ?' : ''}
